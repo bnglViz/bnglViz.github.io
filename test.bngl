@@ -1,0 +1,53 @@
+begin model
+
+begin compartments
+compartment	3	1
+end compartments
+
+begin parameters
+k1_deg 0.2
+v_EGFR 100.0
+k1_EGFR 2.18503E-5
+k2_EGFR 0.121008
+end parameters
+
+begin molecule types
+EGFR(Y~P~U,State~deg~active)
+EGF(Site0)
+SOS(Active~yes~no)
+Ras(Active~yes~no)
+Raf(Active~yes~no)
+MEK(Active~yes~no)
+ERK(Active~yes~no)
+P90Rsk(Active~yes~no)
+PI3K(Active~yes~no)
+Akt(Active~yes~no)
+C3G(Active~yes~no)
+Rap1(Active~yes~no)
+B_Raf(Active~yes~no)
+PP2A(Active~yes~no)
+P_tase()
+GAP()
+end molecule types
+
+begin seed species
+1 @compartment:EGFR(Y~U!1,State~active).EGF(Site0!1) 0.0
+2 @compartment:EGFR(Y~U,State~active) 80000.0
+3 @compartment:EGFR(Y~U,State~deg) 0.0
+4 @compartment:EGF(Site0) 1.0002E7
+5 @compartment:EGFR(Y~U,State~deg) 1.0
+end seed species
+
+begin observables
+end observables
+
+begin functions
+end functions
+
+begin reaction rules
+end reaction rules
+
+end model
+
+generate_network({max_iter=>3,max_agg=>10,max_stoich=>{EGFR=>100,EGF=>100,SOS=>100,Ras=>100,Raf=>100,MEK=>100,ERK=>100,P90Rsk=>100,PI3K=>100,Akt=>100,C3G=>100,Rap1=>100,B_Raf=>100,PP2A=>100,P_tase=>100,GAP=>100},overwrite=>1})
+

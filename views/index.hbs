@@ -1,0 +1,40 @@
+<p>bngl visualizer</p>
+<p id="bngl"></p>
+<input id="bngl-file-input" type="file">
+<button type="button" onclick="visualize()">Visualize</button>
+{{!-- possible bngl: EGFR(Y~U!1,State~active).EGF(Site0!1) --}}
+<canvas id="main-canvas" width="0" height="0"></canvas>
+<script src="/model-graphics.js"></script>
+<script>
+  //extract bngl element
+  function extractBNGL(bnglStr, elmStr) {
+    let beginToken = "begin " + elmStr + "\n";
+    startIndex = bnglStr.indexOf(beginToken);
+    endIndex = bnglStr.indexOf("\n" + "end " + elmStr);
+    let sliced = bnglStr.slice(startIndex + beginToken.length, endIndex);
+    return sliced.split("\n");
+  }
+
+  //render bngl
+  function visualize() {
+    var bnglFile = document.getElementById("bngl-file-input").files[0];
+
+    reader = new FileReader();
+    reader.onload = () => {
+      let bngl = reader.result;
+      testMolecule = extractBNGL(bngl, "molecule types")[0];
+      var canvas = document.getElementById("main-canvas");
+      var drawObj = new Graphic(testMolecule, "compartment");
+      drawObj.draw(canvas, 0, 0);
+      dims = [drawObj.x, drawObj.y];
+
+      //resize canvas
+      canvas.width = dims[0];
+      canvas.height = dims[1];
+
+      //draw graphic
+      drawObj.doDrawList();
+    }
+    reader.readAsText(bnglFile);
+  }
+</script>
