@@ -1,39 +1,116 @@
 <p>bngl visualizer</p>
 <p id="bngl"></p>
 <input id="bngl-file-input" type="file">
-<button type="button" onclick="visualize()">Visualize</button>
+<button id="visualize-button" type="button" onclick="visualize()">Visualize</button>
+<div id="canvas-container"></div>
 {{!-- possible bngl: EGFR(Y~U!1,State~active).EGF(Site0!1) --}}
-<canvas id="main-canvas" width="0" height="0"></canvas>
 <script src="/model-graphics.js"></script>
 <script>
-  //extract bngl element
-  function extractBNGL(bnglStr, elmStr) {
-    let beginToken = "begin " + elmStr + "\n";
-    startIndex = bnglStr.indexOf(beginToken);
-    endIndex = bnglStr.indexOf("\n" + "end " + elmStr);
-    let sliced = bnglStr.slice(startIndex + beginToken.length, endIndex);
-    return sliced.split("\n");
+  //get button
+  const canvContain = document.getElementById("canvas-container");
+
+  //remove item from array
+  function arrayRemove(arr, value) {
+    var index = arr.indexOf(value);
+    if (index > -1) {
+      arr.splice(index, 1);
+    }
+    return arr;
   }
 
-  //render bngl
+  //extract bngl element
+  function extractBNGL(bnglStr, elmStr) {
+    let beginToken = "begin " + elmStr;
+    startIndex = bnglStr.indexOf(beginToken);
+    if (startIndex >= 0) {
+      //find first new line
+      let nlDist = 0;
+      while (bnglStr[startIndex + beginToken.length + nlDist] != "\n") {
+        nlDist += 1;
+      }
+      //split by line
+      endIndex = bnglStr.indexOf("\n" + "end " + elmStr);
+      let sliced = bnglStr.slice(
+        startIndex + nlDist + beginToken.length + 1,
+        endIndex
+      );
+      //clean list
+      let bngls = sliced.split("\n");
+      let toDelete = [];
+      for (let u = 0; u < bngls.length; u++) {
+        let bngl = bngls[u];
+        bngls[u] = bngl.trim();
+        //remove comments
+        let s = bngls[u];
+        let c = s.search("#");
+        if (c >= 0) {
+          bngls[u] = s.slice(0, c + 1);
+          if (c == 0) {
+            toDelete.push(bngls[u]);
+            continue;
+          }
+        }
+        //remove internal whitespace
+        s = bngls[u];
+        c = s.search(/\s/);
+        if (c >= 0) {
+          bngls[u] = s.slice(0, c + 1);
+        }
+        //mark empty strings for deletion
+        if (!bngls[u]) {
+          toDelete.push(bngls[u]);
+        }
+      }
+      //delete empty strings
+      for (let u = 0; u < toDelete.length; u++) {
+        arrayRemove(bngls, toDelete[u]);
+      }
+      return bngls;
+    } else {
+      return [];
+    }
+  }
+
+  //render one set (need to add compartments)
+  function renderList(list, title) {
+    for (let i = 0; i < list.length; i++) {
+      let objBNGL = list[i];
+      //add paranthesis if there are none
+      if (objBNGL.indexOf("(") < 0) {
+        objBNGL = objBNGL + "()";
+      }
+      //add new canvas
+      const newCan = document.createElement("canvas");
+      newCan.id = title + "." + i;
+      newCan.width = "0";
+      newCan.height = "0";
+      canvContain.appendChild(newCan);
+      //draw object
+      var drawObj = new Graphic(objBNGL, "compartment");
+      drawObj.draw(newCan, 0, 0);
+      dims = [drawObj.x, drawObj.y];
+
+      //resize canvas
+      newCan.width = dims[0];
+      newCan.height = dims[1];
+
+      //draw graphic
+      drawObj.doDrawList();
+    }
+  }
+
+  //render everything in bngl
   function visualize() {
     var bnglFile = document.getElementById("bngl-file-input").files[0];
 
     reader = new FileReader();
     reader.onload = () => {
       let bngl = reader.result;
-      testMolecule = extractBNGL(bngl, "molecule types")[0];
-      var canvas = document.getElementById("main-canvas");
-      var drawObj = new Graphic(testMolecule, "compartment");
-      drawObj.draw(canvas, 0, 0);
-      dims = [drawObj.x, drawObj.y];
-
-      //resize canvas
-      canvas.width = dims[0];
-      canvas.height = dims[1];
-
-      //draw graphic
-      drawObj.doDrawList();
+      //process all things of intrest
+      molecules = extractBNGL(bngl, "molecule types");
+      species = extractBNGL(bngl, "species");
+      renderList(molecules, "molecules");
+      renderList(species, "species");
     }
     reader.readAsText(bnglFile);
   }
