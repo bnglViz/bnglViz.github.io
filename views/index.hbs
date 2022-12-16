@@ -3,11 +3,13 @@
 <input id="bngl-file-input" type="file">
 <button id="visualize-button" type="button" onclick="visualize()">Visualize</button>
 <div id="canvas-container"></div>
+<table id="canvas-table"></table>
 {{!-- possible bngl: EGFR(Y~U!1,State~active).EGF(Site0!1) --}}
 <script src="/model-graphics.js"></script>
 <script>
-  //get button
+  //get major elements
   const canvContain = document.getElementById("canvas-container");
+  const canvTable = document.getElementById("canvas-table");
 
   //remove item from array
   function arrayRemove(arr, value) {
@@ -16,6 +18,39 @@
       arr.splice(index, 1);
     }
     return arr;
+  }
+
+  function standardizeElm(elm) {
+    //create new html element for string inputs
+    if (typeof elm == "string") {
+      newP = document.createElement("p");
+      newP.innerHTML = elm;
+      elm = newP;
+    }
+    return elm;
+  }
+
+  function addElmLast(child, parent) {
+    parent.appendChild(standardizeElm(child));
+  }
+
+  function addToTable(elmNestedList, table) {
+    //iterate through rows
+    for (let rowNum = 0; rowNum < elmNestedList.length; rowNum++) {
+      let row = elmNestedList[rowNum];
+      //make new row
+      let tempRow = document.createElement("tr");
+      tempRow.classList.add("canvas-row");
+      addElmLast(tempRow, table);
+      //iterate though elements in row
+      for (let elmNum = 0; elmNum < row.length; elmNum++) {
+        let elm = standardizeElm(row[elmNum]);
+        //insert elm into row
+        let tempTD = document.createElement("td");
+        addElmLast(elm, tempTD);
+        addElmLast(tempTD, tempRow);
+      }
+    }
   }
 
   //extract bngl element
@@ -72,31 +107,31 @@
   }
 
   //render one set (need to add compartments)
-  function renderList(list, title) {
-    for (let i = 0; i < list.length; i++) {
-      let objBNGL = list[i];
-      //add paranthesis if there are none
-      if (objBNGL.indexOf("(") < 0) {
-        objBNGL = objBNGL + "()";
-      }
-      //add new canvas
-      const newCan = document.createElement("canvas");
-      newCan.id = title + "." + i;
-      newCan.width = "0";
-      newCan.height = "0";
-      canvContain.appendChild(newCan);
-      //draw object
-      var drawObj = new Graphic(objBNGL, "compartment");
-      drawObj.draw(newCan, 0, 0);
-      dims = [drawObj.x, drawObj.y];
-
-      //resize canvas
-      newCan.width = dims[0];
-      newCan.height = dims[1];
-
-      //draw graphic
-      drawObj.doDrawList();
+  function prepareRow(objBNGL, title) {
+    //add paranthesis if there are none
+    if (objBNGL.indexOf("(") < 0) {
+      objBNGL = objBNGL + "()";
     }
+    //get name (change this to only after parenthesis)
+    let name = objBNGL.split("(")[0];
+    //create new canvas
+    const newCan = document.createElement("canvas");
+    newCan.id = title;
+    newCan.width = "0";
+    newCan.height = "0";
+    newCan.classList.add("bngl-canvas");
+    //draw object on canvas
+    //mode can be compartment, normal, or compact
+    var drawObj = new Graphic(objBNGL, "normal");
+    drawObj.draw(newCan, 0, 0);
+    dims = [drawObj.x, drawObj.y];
+    //resize canvas
+    newCan.width = dims[0];
+    newCan.height = dims[1];
+    //draw graphic
+    drawObj.doDrawList();
+    //output as list
+    return [name, objBNGL, newCan];
   }
 
   //render everything in bngl
@@ -109,8 +144,34 @@
       //process all things of intrest
       molecules = extractBNGL(bngl, "molecule types");
       species = extractBNGL(bngl, "species");
-      renderList(molecules, "molecules");
-      renderList(species, "species");
+      //add header
+      if (molecules.length > 0 || species.length > 0) {
+        addToTable([["Name", "BNGL", "Visualization"]], canvTable);
+      } else {
+        addToTable([["No Species or Molecules found.", "", ""]], canvTable);
+      }
+      //render molecules
+      if (molecules.length > 0) {
+        const mcHeader = document.createElement("h1");
+        mcHeader.innerHTML = "Molecules";
+        addElmLast(mcHeader, canvContain);
+        let molcList = [];
+        for (let i = 0; i < molecules.length; i++) {
+          molcList.push(prepareRow(molecules[i], "molecules" + i));
+        }
+        addToTable(molcList, canvTable);
+      }
+      //render species
+      if (species.length > 0) {
+        const scHeader = document.createElement("h1");
+        scHeader.innerHTML = "Species";
+        addElmLast(scHeader, canvContain);
+        let specList = [];
+        for (let i = 0; i < species.length; i++) {
+          specList.push(prepareRow(species[i], "species" + i));
+        }
+        addToTable(specList, canvTable);
+      }
     }
     reader.readAsText(bnglFile);
   }
