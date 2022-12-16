@@ -13,3 +13,11 @@ body {
   border-style: solid;
   background-color: black;
 }
+
+.TableCell {
+  margin: 10px;
+  margin-left: 10px;
+  margin-right: 10px;
+  /* background-color: grey; */
+  align-items: center;
+}
