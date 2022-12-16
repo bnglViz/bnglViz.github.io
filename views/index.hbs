@@ -1,13 +1,37 @@
-<p>bngl visualizer</p>
-<p id="bngl"></p>
+<p><h1>BioNetGenLanguage (BNGL) code visualizer</h1></p>
+<table><p id="bngl"></p>
+<tr>
+<td>
 <input id="bngl-file-input" type="file">
 <button id="visualize-button" type="button" onclick="visualize()">Visualize</button>
+</td>
+<td id="canvas-cell">
+  <canvas id="testCanvas">
+  </canvas>
+</td>
+<td id="canvas-text">
+  Molecule is shown as an oval ...
+</td>
+</tr>
+</table>
 <div id="canvas-container"></div>
 <table id="canvas-table"></table>
 {{!-- possible bngl: EGFR(Y~U!1,State~active).EGF(Site0!1) --}}
 <script src="/model-graphics.js"></script>
 <script>
   //get major elements
+    testCanvas = document.getElementById("testCanvas");
+    //draw object on canvas
+    //mode can be compartment, normal, or compact
+    var drawObj = new Graphic('Molecule(site0,site1~state1~state2, site2~state1~state2~state3)', "normal");
+    drawObj.draw(testCanvas, 0, 0);
+    dims = [drawObj.x, drawObj.y];
+    //resize canvas
+    testCanvas.width = dims[0];
+    testCanvas.height = dims[1];
+    //draw graphic
+    drawObj.doDrawList();
+  
   const canvContain = document.getElementById("canvas-container");
   const canvTable = document.getElementById("canvas-table");
 
@@ -47,6 +71,7 @@
         let elm = standardizeElm(row[elmNum]);
         //insert elm into row
         let tempTD = document.createElement("td");
+        tempTD.classList.add("TableCell");
         addElmLast(elm, tempTD);
         addElmLast(tempTD, tempRow);
       }
@@ -131,7 +156,7 @@
     //draw graphic
     drawObj.doDrawList();
     //output as list
-    return [name, objBNGL, newCan];
+    return [name, newCan, objBNGL];
   }
 
   //render everything in bngl
@@ -142,11 +167,21 @@
     reader.onload = () => {
       let bngl = reader.result;
       //process all things of intrest
-      molecules = extractBNGL(bngl, "molecule types");
-      species = extractBNGL(bngl, "species");
+      //var MoleculesString = new RegExp ("molecule types|molecular types|molecules");
+       //console.log(MoleculesString);
+       molecules = extractBNGL(bngl, "molecular types");
+       species = extractBNGL(bngl, "seed species");
+      //(extractBNGL(bngl, "molecular types"),extractBNGL(bngl, "molec
       //add header
       if (molecules.length > 0 || species.length > 0) {
-        addToTable([["Name", "BNGL", "Visualization"]], canvTable);
+        const NameHeader = document.createElement("h3");
+        NameHeader.innerHTML = "Name";
+        const VisualHeader = document.createElement("h3");
+        VisualHeader.innerHTML = "Visualization";
+        const BNGLHeader = document.createElement("h3");
+        BNGLHeader.innerHTML = "BNGL code";
+
+        addToTable([[NameHeader, VisualHeader,BNGLHeader]], canvTable);
       } else {
         addToTable([["No Species or Molecules found.", "", ""]], canvTable);
       }
