@@ -1,39 +1,51 @@
 <p><h1>BioNetGenLanguage (BNGL) code visualizer</h1></p>
-<table><p id="bngl"></p>
-<tr>
-<td>
-<input id="bngl-file-input" type="file">
-<button id="visualize-button" type="button" onclick="visualize()">Visualize</button>
-</td>
-<td id="canvas-cell">
-  <canvas id="testCanvas">
-  </canvas>
-</td>
-<td id="canvas-text">
-  Molecule is shown as an oval ...
-</td>
-</tr>
+<table>
+  <tr>
+    <td>
+      <input id="bngl-file-input" type="file">
+      <button id="visualize-button" type="button" onclick="visualize()">Visualize</button>
+    </td>
+    <td id="canvas-cell">
+      <canvas id="testCanvas"></canvas>
+    </td>
+    <td id="canvas-text">
+      Molecule is shown as an oval ...
+    </td>
+  </tr>
 </table>
 <div id="canvas-container"></div>
 <table id="canvas-table"></table>
-{{!-- possible bngl: EGFR(Y~U!1,State~active).EGF(Site0!1) --}}
 <script src="/model-graphics.js"></script>
 <script>
+  //set bngl species and molecule begin tokens
+  const speciesTokens = ["molecule types", "molecular types"];
+  const moleculeTokens = ["species", "seed species"];
+
   //get major elements
-    testCanvas = document.getElementById("testCanvas");
-    //draw object on canvas
-    //mode can be compartment, normal, or compact
-    var drawObj = new Graphic('Molecule(site0,site1~state1~state2, site2~state1~state2~state3)', "normal");
-    drawObj.draw(testCanvas, 0, 0);
-    dims = [drawObj.x, drawObj.y];
-    //resize canvas
-    testCanvas.width = dims[0];
-    testCanvas.height = dims[1];
-    //draw graphic
-    drawObj.doDrawList();
-  
+  const testCanvas = document.getElementById("testCanvas");
   const canvContain = document.getElementById("canvas-container");
   const canvTable = document.getElementById("canvas-table");
+  const fileInput = document.getElementById("bngl-file-input");
+  var oldFileInputValue = "";
+
+  //draw test canvas
+  drawBNGL(
+    'Molecule(site0,site1~state1~state2, site2~state1~state2~state3)',
+    testCanvas
+  );
+
+  //draw bngl
+  function drawBNGL(bngl, canvas) {
+    //mode can be compartment, normal, or compact
+    var drawObj = new Graphic(bngl, "normal");
+    drawObj.draw(canvas, 0, 0);
+    //resize canvas
+    dims = [drawObj.x, drawObj.y];
+    canvas.width = dims[0];
+    canvas.height = dims[1];
+    //draw graphic
+    drawObj.doDrawList();
+  }
 
   //remove item from array
   function arrayRemove(arr, value) {
@@ -71,7 +83,7 @@
         let elm = standardizeElm(row[elmNum]);
         //insert elm into row
         let tempTD = document.createElement("td");
-        tempTD.classList.add("TableCell");
+        tempTD.classList.add("main-td");
         addElmLast(elm, tempTD);
         addElmLast(tempTD, tempRow);
       }
@@ -79,46 +91,59 @@
   }
 
   //extract bngl element
-  function extractBNGL(bnglStr, elmStr) {
-    let beginToken = "begin " + elmStr;
-    startIndex = bnglStr.indexOf(beginToken);
-    if (startIndex >= 0) {
-      //find first new line
-      let nlDist = 0;
-      while (bnglStr[startIndex + beginToken.length + nlDist] != "\n") {
-        nlDist += 1;
-      }
-      //split by line
-      endIndex = bnglStr.indexOf("\n" + "end " + elmStr);
-      let sliced = bnglStr.slice(
-        startIndex + nlDist + beginToken.length + 1,
-        endIndex
-      );
-      //clean list
-      let bngls = sliced.split("\n");
-      let toDelete = [];
-      for (let u = 0; u < bngls.length; u++) {
-        let bngl = bngls[u];
-        bngls[u] = bngl.trim();
-        //remove comments
-        let s = bngls[u];
-        let c = s.search("#");
-        if (c >= 0) {
-          bngls[u] = s.slice(0, c + 1);
-          if (c == 0) {
+  function extractBNGL(bnglStr, elmStrList) {
+    let bngls = [];
+    let toDelete = [];
+    for (let i = 0; i < elmStrList.length; i++) {
+      let elmStr = elmStrList[i];
+      let beginToken = "begin " + elmStr;
+      let startIndex = bnglStr.indexOf(beginToken);
+      if (startIndex >= 0) {
+        //find first new line
+        let nlDist = 0;
+        while (bnglStr[startIndex + beginToken.length + nlDist] != "\n") {
+          nlDist += 1;
+        }
+        //split by line
+        let endIndex = bnglStr.indexOf("\n" + "end " + elmStr);
+        let sliced = bnglStr.slice(
+          startIndex + nlDist + beginToken.length + 1,
+          endIndex
+        );
+        bngls = bngls.concat(sliced.split("\n"));
+        //clean list
+        for (let u = 0; u < bngls.length; u++) {
+          let bngl = bngls[u];
+          bngls[u] = bngl.trim();
+          //remove comments
+          let s = bngls[u];
+          let c = s.search("#");
+          if (c >= 0) {
+            bngls[u] = s.slice(0, c + 1);
+            if (c == 0) {
+              toDelete.push(bngls[u]);
+              continue;
+            }
+          }
+          //remove leading numbers
+          s = bngls[u];
+          if (!isNaN(parseFloat(s[0]))) {// if first character is number
+            bngls[u] = s.slice(s.search(/\s/) + 1, s.length);
+          }
+          //remove internal whitespace
+          s = bngls[u];
+          c = s.search(/\s/);
+          if (c >= 0) {
+            bngls[u] = s.slice(0, c + 1);
+          }
+          //mark empty strings for deletion
+          if (!bngls[u]) {
             toDelete.push(bngls[u]);
-            continue;
           }
         }
-        //remove internal whitespace
-        s = bngls[u];
-        c = s.search(/\s/);
-        if (c >= 0) {
-          bngls[u] = s.slice(0, c + 1);
-        }
-        //mark empty strings for deletion
-        if (!bngls[u]) {
-          toDelete.push(bngls[u]);
+        //if begin token not found
+        } else {
+          continue;
         }
       }
       //delete empty strings
@@ -126,9 +151,6 @@
         arrayRemove(bngls, toDelete[u]);
       }
       return bngls;
-    } else {
-      return [];
-    }
   }
 
   //render one set (need to add compartments)
@@ -146,6 +168,7 @@
     newCan.height = "0";
     newCan.classList.add("bngl-canvas");
     //draw object on canvas
+    //drawBNGL(objBNGL, newCan);
     //mode can be compartment, normal, or compact
     var drawObj = new Graphic(objBNGL, "normal");
     drawObj.draw(newCan, 0, 0);
@@ -161,17 +184,28 @@
 
   //render everything in bngl
   function visualize() {
-    var bnglFile = document.getElementById("bngl-file-input").files[0];
-
+    //remove all old visualizations
+    let fileHasChanged = fileInput.value != oldFileInputValue;
+    oldFileInputValue = fileInput.value;
+    //remove everything in table
+    let oldElms = canvTable.children;
+    let numOldElms = oldElms.length;
+    for(let i = 0; i < numOldElms; i++) {
+      oldElms[0].remove();
+    }
+    //remove everything in canvas div
+    oldElms = canvContain.children;
+    numOldElms = oldElms.length;
+    for(let i = 0; i < numOldElms; i++) {
+      oldElms[0].remove();
+    }
+    var bnglFile = fileInput.files[0];
     reader = new FileReader();
     reader.onload = () => {
       let bngl = reader.result;
       //process all things of intrest
-      //var MoleculesString = new RegExp ("molecule types|molecular types|molecules");
-       //console.log(MoleculesString);
-       molecules = extractBNGL(bngl, "molecular types");
-       species = extractBNGL(bngl, "seed species");
-      //(extractBNGL(bngl, "molecular types"),extractBNGL(bngl, "molec
+      molecules = extractBNGL(bngl, moleculeTokens);
+      species = extractBNGL(bngl, speciesTokens);
       //add header
       if (molecules.length > 0 || species.length > 0) {
         const NameHeader = document.createElement("h3");
@@ -180,9 +214,9 @@
         VisualHeader.innerHTML = "Visualization";
         const BNGLHeader = document.createElement("h3");
         BNGLHeader.innerHTML = "BNGL code";
-
         addToTable([[NameHeader, VisualHeader,BNGLHeader]], canvTable);
       } else {
+        //if nothing found
         addToTable([["No Species or Molecules found.", "", ""]], canvTable);
       }
       //render molecules
@@ -208,6 +242,9 @@
         addToTable(specList, canvTable);
       }
     }
-    reader.readAsText(bnglFile);
+    //read if file present
+    if (fileInput.value) {
+      reader.readAsText(bnglFile);
+    }
   }
 </script>
