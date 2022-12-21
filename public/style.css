@@ -15,9 +15,21 @@ body {
 }
 
 .main-td {
-  margin: 10px;
-  margin-left: 10px;
-  margin-right: 10px;
-  /* background-color: grey; */
-  align-items: center;
+  padding: 10px;
+}
+
+.divider-td {
+  padding: 0px;
+  height: 0px;
+}
+
+.bngl-header {
+  text-align: center;
+  margin: 0px;
+}
+
+.table-divider {
+  font-size: 30px;
+  text-align: center;
+  margin: 0px;
 }

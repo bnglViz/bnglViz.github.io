@@ -70,7 +70,7 @@
     parent.appendChild(standardizeElm(child));
   }
 
-  function addToTable(elmNestedList, table) {
+  function addToTable(elmNestedList, table, divider=false) {
     //iterate through rows
     for (let rowNum = 0; rowNum < elmNestedList.length; rowNum++) {
       let row = elmNestedList[rowNum];
@@ -83,7 +83,14 @@
         let elm = standardizeElm(row[elmNum]);
         //insert elm into row
         let tempTD = document.createElement("td");
-        tempTD.classList.add("main-td");
+        if (divider) {
+          tempTD.colSpan = 3;
+        }
+        if (divider) {
+          tempTD.classList.add("divider-td");
+        } else {
+          tempTD.classList.add("main-td");
+        }
         addElmLast(elm, tempTD);
         addElmLast(tempTD, tempRow);
       }
@@ -208,22 +215,26 @@
       species = extractBNGL(bngl, speciesTokens);
       //add header
       if (molecules.length > 0 || species.length > 0) {
-        const NameHeader = document.createElement("h3");
-        NameHeader.innerHTML = "Name";
-        const VisualHeader = document.createElement("h3");
-        VisualHeader.innerHTML = "Visualization";
+        const nameHeader = document.createElement("h3");
+        nameHeader.innerHTML = "Name";
+        nameHeader.classList.add("bngl-header");
+        const visualHeader = document.createElement("h3");
+        visualHeader.innerHTML = "Visualization";
+        visualHeader.classList.add("bngl-header");
         const BNGLHeader = document.createElement("h3");
         BNGLHeader.innerHTML = "BNGL code";
-        addToTable([[NameHeader, VisualHeader,BNGLHeader]], canvTable);
+        BNGLHeader.classList.add("bngl-header");
+        addToTable([[nameHeader, visualHeader, BNGLHeader]], canvTable);
       } else {
         //if nothing found
         addToTable([["No Species or Molecules found.", "", ""]], canvTable);
       }
       //render molecules
       if (molecules.length > 0) {
-        const mcHeader = document.createElement("h1");
-        mcHeader.innerHTML = "Molecules";
-        addElmLast(mcHeader, canvContain);
+        const moleculeDivider = document.createElement("p");
+        moleculeDivider.innerHTML = "Molecules";
+        moleculeDivider.classList.add("table-divider");
+        addToTable([[moleculeDivider]], canvTable, true);
         let molcList = [];
         for (let i = 0; i < molecules.length; i++) {
           molcList.push(prepareRow(molecules[i], "molecules" + i));
@@ -232,9 +243,10 @@
       }
       //render species
       if (species.length > 0) {
-        const scHeader = document.createElement("h1");
-        scHeader.innerHTML = "Species";
-        addElmLast(scHeader, canvContain);
+        const scDivider = document.createElement("p");
+        scDivider.innerHTML = "Species";
+        scDivider.classList.add("table-divider");
+        addToTable([[scDivider]], canvTable, true);
         let specList = [];
         for (let i = 0; i < species.length; i++) {
           specList.push(prepareRow(species[i], "species" + i));
