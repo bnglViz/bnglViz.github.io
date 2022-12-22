@@ -1,7 +1,7 @@
 version("2.0.23");
 
 begin parameters
-egf_tot      1.2e6   
+egf_tot      1.3e6   
 egfr_tot     1.8e5   
 Grb2_tot     1.0e5   
 Shc_tot      2.7e5 
