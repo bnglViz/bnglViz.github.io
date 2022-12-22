@@ -1,0 +1,52 @@
+
+begin parameters
+ S5_0 100
+S11_0 100
+S7_0 100
+F3_0 100
+kp 1
+km 1
+end parameters
+
+begin molecules
+Ste5(s1,s2,s3)
+Ste11(s1,Y~U~P)
+Ste7(s2,Y~U~P)
+Fus3(s3,Y~U~P)
+end molecules
+
+begin species
+Ste5(s1,s2,s3)      S5_0
+Ste11(s1,Y~U)   S11_0
+Ste7(s2,Y~U)    S7_0
+Fus3(s3,Y~U)    F3_0
+end species
+
+begin reaction rules
+
+Ste5(s1) + Ste11(s1) <-> Ste5(s1!1).Ste11(s1!1) kp,km
+Ste5(s2) + Ste7(s2) <-> Ste5(s2!2).Ste7(s2!2) kp,km
+Ste5(s3) + Fus3(s3) <-> Ste5(s3!3).Fus3(s3!3) kp,km
+
+Ste5(s1!1).Ste11(s1!1,Y~U)                     -> Ste5(s1!1).Ste11(s1!1,Y~P)  kp
+Ste5(s1!1,s2!2).Ste11(s1!1,Y~P).Ste7(s2!2,Y~U) -> Ste5(s1!1,s2!2).Ste11(s1!1,Y~P).Ste7(s2!2,Y~P)  kp
+Ste5(s2!2,s3!3).Ste7(s2!2,Y~P).Fus3(s3!3,Y~U)  -> Ste5(s2!2,s3!3).Ste7(s2!2,Y~P).Fus3(s3!3,Y~P)  kp
+
+Ste11(Y~P) -> Ste11(Y~U) km
+Ste7(Y~P) -> Ste7(Y~U) km
+Fus3(Y~P) -> Fus3(Y~U) km
+
+end reaction rules
+
+begin observables
+Molecules Fus3_P_total  Fus3(Y~P)
+Molecules Fus3_P_cytosol  Fus3(s3,Y~P)
+Molecules Fus3_P_aggregate  Fus3(s3!3,Y~P) 
+Molecules Fus3_P_aggregate_Ste5   Ste5(s3!3).Fus3(s3!3,Y~P) 
+Molecules Fus3_P_aggregate_Ste7   Ste5(s2!2).Ste7(s2!2,Y~P!4).Fus3(s3!4,Y~P) 
+   
+end observables
+
+generate_network();
+writeSBML();
+simulate_ode({t_end=>50,n_steps=>50});

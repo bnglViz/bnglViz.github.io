@@ -1,0 +1,79 @@
+# This model follows Figure 2 of Grabner et al. (Nat. Rev. Cancer 6:347-359).
+# It model describes formation of a signaling complex in a nucleus. All signaling steps are very sketchy, but
+# it's easy to add additional biomolecules and their components. The model includes several compartments but
+# does not consider any spatial effects. It predicts translocation of ICN to nucleus and formation of ICN-CSL-MAML complex.
+
+
+begin parameters  # These are unchanged during simulation: initial concentrations and rate constants
+ICN_tot 	100
+Notch_tot   100
+Fringe_tot  100
+Furin_tot   100
+OFUT1_tot 	100
+DSL_tot 	100
+
+CSL_tot     100
+MAML_tot    100
+
+kp1   0.1
+km1   0.1
+end parameters
+
+begin species    # Species that exist before simulation
+
+# I divide Notch receptor into 2 molecules: Notch and ICN. Both have location attribute and several binding sites.
+
+Notch(location~ER,DSLbind,Ibind)	   Notch_tot 	# Initial concentration before simulation
+
+
+# Translocation, fucosalisation, cleavage and heterodimerization 
+# are lumped into translocation steps. These details can be restored 
+# if any need arises, say to include Fringe and Furin explicitely.
+
+ICN(location~ER,Nbind,CSLbind,MAMLbind)                 ICN_tot 
+
+OFUT1                 OFUT1_tot
+Fringe                Fringe_tot
+Furin                 Furin_tot
+DSL(Nbind)            DSL_tot
+
+CSL(Ibind,MAMLbind)      CSL_tot
+MAML(Cbind,Ibind)     MAML_tot
+
+end species
+
+begin reaction rules
+
+1  Fucosylation and translocation from ER to Golgi (G):\
+Notch(location~ER,Ibind) + ICN(location~ER,Nbind,CSLbind) + OFUT1 -> Notch(location~G,Ibind!1).ICN(location~G,Nbind!1,CSLbind) + OFUT1 kp1 
+
+2  Glycosylation, S1 cleavage, translocation from Golgi to Membrane (M) and heterodimerization:\
+Notch(location~G).ICN(location~G,CSLbind) + Furin + Fringe -> Notch(location~M).ICN(location~M,CSLbind) + Furin + Fringe  kp1
+
+3  DSL binding:\
+Notch(location~M,DSLbind) + DSL(Nbind) <-> Notch(location~M,DSLbind!1).DSL(Nbind!1)  kp1,km1
+
+4  S2, S3 cleavage, ICN dissociation and translocation to Nucleus (N):\
+Notch(location~M,DSLbind!2,Ibind!3).ICN(location~M,Nbind!3) ->  Notch(location~M,DSLbind!2,Ibind) + ICN(location~N,Nbind)  kp1
+
+5  Binding CSL to ICN:\
+ICN(location~N,CSLbind,MAMLbind) + CSL(Ibind,MAMLbind) <-> ICN(location~N,CSLbind!1,MAMLbind).CSL(Ibind!1,MAMLbind)  kp1,km1
+
+5  Binding MAML to CSL-ICN:\
+ICN(location~N,CSLbind!1,MAMLbind).CSL(Ibind!1,MAMLbind) + MAML(Cbind,Ibind) <-> \
+ICN(location~N,CSLbind!1,MAMLbind!2).CSL(Ibind!1,MAMLbind!3).MAML(Cbind!3,Ibind!2)  kp1,km1
+
+end reaction rules
+
+
+
+begin observables
+
+Notch_ICN_Complex	      Notch.ICN
+Nucleus_complex         ICN.CSL.MAML
+
+end observables
+
+
+generate_network({overwrite=>1});
+

@@ -1,0 +1,64 @@
+begin parameters
+wnt_tot      1.2e3   
+DSH_tot     1.8e2   
+AxC_init     1.0e2   
+frz_tot      2.7e2 
+lrp5_tot      1.3e2 
+bcat_init     0  
+ABcomplex     4.94e1
+
+kp1           0.006 
+km1           0.0006 
+kd            0.006
+
+end parameters
+
+begin species
+
+wnt(r)                           wnt_tot
+DSH(f,AxC)                       DSH_tot
+AxC(l,d,b)                       AxC_init
+frz(w,l,d)                       frz_tot               
+lrp5(l1,l2,l3,l4,l5,f,AD)        lrp5_tot
+bcat(a)                          bcat_init
+AxC(l,d,b!1).bcat(a!1)           ABcomplex                     
+
+end species
+
+
+begin reaction_rules
+
+# Ligand-receptor binding      
+frz(w)   + wnt(r) <-> frz(w!1).wnt(r!1)   kp1, km1   
+
+# Recruitment of DSH      
+frz(w!1,d)   +  DSH(f,AxC) <-> frz(w!1,d!2).DSH(f!2,AxC)   kp1, km1   
+
+# Recruitment of AxC      
+DSH(f!1,AxC)   +  AxC(d) <-> DSH(f!1,AxC!2).AxC(d!2)   kp1, km1   
+
+# Aggregation of frz and lpr5
+frz(w!1,l,d!2).DSH(f!2,AxC!3).AxC(d!3,l) + lrp5(f,AD) <-> frz(w!1,l!5,d!2).DSH(f!2,AxC!3).AxC(d!3,l!4).lrp5(f!5,AD!4)          kp1,km1
+
+#Release of Bcat when in complex
+frz(w!1,l!5,d!2).DSH(f!2,AxC!3).AxC(d!3,l!4,b!6).lrp5(f!5,AD!4).bcat(a!6) ->  frz(w!1,l!5,d!2).DSH(f!2,AxC!3).AxC(d!3,l!4,b).lrp5(f!5,AD!4)  + bcat(a)      kd   
+
+
+end reaction_rules
+
+begin observables
+Molecules     Bcat        bcat(a)
+Molecules     C1          DSH(f!1,AxC!2).AxC(d!2)   
+Molecules     C2          frz(w!1,l,d!2).DSH(f!2,AxC!3).AxC(d!3,l)
+Molecules     C3          frz(w!1,l!5,d!2).DSH(f!2,AxC!3).AxC(d!3,l!4,b!6).lrp5(f!5,AD!4).bcat(a!6)
+      
+Molecules     frzTest     frz
+Molecules     bcatTest    bcat
+Molecules     AxCTest     AxC
+Molecules     lrp5Test    lrp5
+Molecules     DSHTest    DSH
+end observables
+
+
+generate_network({overwrite=>1});
+simulate_ode({t_end=>10,n_steps=>10,atol=>1e-8,rtol=>1e-8,sparse=>1});
