@@ -2,8 +2,7 @@
 <table>
   <tr>
     <td>
-      <input id="bngl-file-input" type="file">
-      <button id="visualize-button" type="button" onclick="visualize()">Visualize</button>
+      <input id="bngl-file-input" type="file" onchange="visualize()">
     </td>
     <td id="canvas-cell">
       <canvas id="testCanvas"></canvas>
@@ -18,8 +17,9 @@
 <script src="/model-graphics.js"></script>
 <script>
   //set bngl species and molecule begin tokens
-  const speciesTokens = ["molecule types", "molecular types"];
-  const moleculeTokens = ["species", "seed species"];
+  const moleculeTokens = ["molecule types", "molecular types"];
+  const speciesTokens = ["species", "seed species"];
+  const observablesTokens = ["observables"];
 
   //get major elements
   const testCanvas = document.getElementById("testCanvas");
@@ -70,7 +70,7 @@
     parent.appendChild(standardizeElm(child));
   }
 
-  function addToTable(elmNestedList, table, divider=false) {
+  function addToTable(elmNestedList, table, colSpan=0) {
     //iterate through rows
     for (let rowNum = 0; rowNum < elmNestedList.length; rowNum++) {
       let row = elmNestedList[rowNum];
@@ -83,10 +83,10 @@
         let elm = standardizeElm(row[elmNum]);
         //insert elm into row
         let tempTD = document.createElement("td");
-        if (divider) {
-          tempTD.colSpan = 3;
+        if (colSpan) {
+          tempTD.colSpan = colSpan;
         }
-        if (divider) {
+        if (colSpan) {
           tempTD.classList.add("divider-td");
         } else {
           tempTD.classList.add("main-td");
@@ -96,6 +96,87 @@
       }
     }
   }
+
+  //next occurance of char in string
+  function nextOccur(string, index, boolExpr, backwards = false, mod = 0) {
+    let len = string.length;
+    let direction;
+    if (backwards) {
+      direction = -1;
+    } else {
+      direction = 1;
+    }
+    while (index < len) {
+      if (boolExpr(string[index])) {
+        return index + mod;
+      }
+      index += direction;
+    }
+    return len;
+  }
+
+  //might need to add case for when comment immdiatley follows conc
+  function extractSingleLineBNGL(s) {
+    //parse
+    let count = 0;
+    let c = 0;
+    let len = s.length;
+    let char = null;
+    let bnglStart = null;
+    let bnglEnd = null;
+    let concStart = null;
+    let concEnd = null;
+    let commStart = null;
+    let commEnd = null;
+    while (c < len && count < 1000) {
+      char = s[c];
+      //is comment
+      if (char == "#") {
+        commStart = c + 1;
+        commEnd = len - 1;
+        break;
+      }
+      //starts with number
+      if ((bnglStart == null) && (!isNaN(parseFloat(char)))) {
+        c = nextOccur(s, c, (c) => {return /\s/.test(c)});
+        continue;
+      }
+      //is whitespace
+      if (/\s/.test(char)) {
+        c = nextOccur(s, c, (c) => {return !/\s/.test(c)});
+        continue;
+      }
+      //is non-whitespace and non-comment
+      if ((!bnglEnd) && (!/\s/.test(char)) && (char != "#")) {
+        bnglStart = c;
+        c = nextOccur(s, c, (c) => {return /\s/.test(c)}, false, -1);
+        bnglEnd = c;
+        c++;
+        continue;
+      }
+      //start concentration
+      if (bnglEnd && (!/\s/.test(char)) && (char != "#")) {
+        concStart = c;
+        c = nextOccur(s, c, (c) => {return /\s/.test(c)}, false, -1);
+        concEnd = c;
+      }
+      //if at end
+      if (c == len - 1) {
+        break;
+      }
+      c++;
+    }
+    let bngl = s.slice(bnglStart, bnglEnd + 1);
+    let conc = s.slice(concStart, concEnd + 1);
+    let comment = s.slice(commStart, commEnd + 1);
+    return [
+      ((bnglStart == null) ? "" : bngl),
+      ((concStart == null) ? "" : conc),
+      ((commStart == null) ? "" : comment),
+    ];
+  }
+
+  console.log(extractSingleLineBNGL("# Strong"));
 
   //extract bngl element
   function extractBNGL(bnglStr, elmStrList) {
@@ -120,31 +201,10 @@
         bngls = bngls.concat(sliced.split("\n"));
         //clean list
         for (let u = 0; u < bngls.length; u++) {
-          let bngl = bngls[u];
-          bngls[u] = bngl.trim();
-          //remove comments
-          let s = bngls[u];
-          let c = s.search("#");
-          if (c >= 0) {
-            bngls[u] = s.slice(0, c + 1);
-            if (c == 0) {
-              toDelete.push(bngls[u]);
-              continue;
-            }
-          }
-          //remove leading numbers
-          s = bngls[u];
-          if (!isNaN(parseFloat(s[0]))) {// if first character is number
-            bngls[u] = s.slice(s.search(/\s/) + 1, s.length);
-          }
-          //remove internal whitespace
-          s = bngls[u];
-          c = s.search(/\s/);
-          if (c >= 0) {
-            bngls[u] = s.slice(0, c + 1);
-          }
+          let bnglConcPair = extractSingleLineBNGL(bngls[u]);
+          bngls[u] = bnglConcPair;
           //mark empty strings for deletion
-          if (!bngls[u]) {
+          if (!bngls[u][0].trim()) {
             toDelete.push(bngls[u]);
           }
         }
@@ -161,13 +221,18 @@
   }
 
   //render one set (need to add compartments)
-  function prepareRow(objBNGL, title) {
+  function prepareRow(bnglConcPair, title, includeConc=false) {
+    let bngl, conc, comment;
+    [bngl, conc, comment] = bnglConcPair;
+    bngl = bngl.trim();
+    conc = conc.trim();
+    comment = comment.trim();
     //add paranthesis if there are none
-    if (objBNGL.indexOf("(") < 0) {
-      objBNGL = objBNGL + "()";
+    if (bngl.indexOf("(") < 0) {
+      bngl = bngl + "()";
     }
     //get name (change this to only after parenthesis)
-    let name = objBNGL.split("(")[0];
+    let name = bngl.split("(")[0];
     //create new canvas
     const newCan = document.createElement("canvas");
     newCan.id = title;
@@ -175,9 +240,8 @@
     newCan.height = "0";
     newCan.classList.add("bngl-canvas");
     //draw object on canvas
-    //drawBNGL(objBNGL, newCan);
     //mode can be compartment, normal, or compact
-    var drawObj = new Graphic(objBNGL, "normal");
+    var drawObj = new Graphic(bngl, "normal");
     drawObj.draw(newCan, 0, 0);
     dims = [drawObj.x, drawObj.y];
     //resize canvas
@@ -186,7 +250,11 @@
     //draw graphic
     drawObj.doDrawList();
     //output as list
-    return [name, newCan, objBNGL];
+    if (includeConc) {
+      return [name, newCan, bngl, conc, comment];
+    } else {
+      return [name, newCan, bngl, "", comment];
+    }
   }
 
   //render everything in bngl
@@ -213,45 +281,68 @@
       //process all things of intrest
       molecules = extractBNGL(bngl, moleculeTokens);
       species = extractBNGL(bngl, speciesTokens);
+      observables = extractBNGL(bngl, observablesTokens);
       //add header
-      if (molecules.length > 0 || species.length > 0) {
-        const nameHeader = document.createElement("h3");
-        nameHeader.innerHTML = "Name";
-        nameHeader.classList.add("bngl-header");
-        const visualHeader = document.createElement("h3");
-        visualHeader.innerHTML = "Visualization";
-        visualHeader.classList.add("bngl-header");
-        const BNGLHeader = document.createElement("h3");
-        BNGLHeader.innerHTML = "BNGL code";
-        BNGLHeader.classList.add("bngl-header");
-        addToTable([[nameHeader, visualHeader, BNGLHeader]], canvTable);
-      } else {
-        //if nothing found
-        addToTable([["No Species or Molecules found.", "", ""]], canvTable);
-      }
+      const nameHeader = document.createElement("h3");
+      nameHeader.innerHTML = "Name";
+      nameHeader.classList.add("bngl-header");
+      const visualHeader = document.createElement("h3");
+      visualHeader.innerHTML = "Visualization";
+      visualHeader.classList.add("bngl-header");
+      const BNGLHeader = document.createElement("h3");
+      BNGLHeader.innerHTML = "BNGL code";
+      BNGLHeader.classList.add("bngl-header");
+      const concHeader = document.createElement("h3");
+      concHeader.innerHTML = "Concentration";
+      concHeader.classList.add("bngl-header");
+      const commentHeader = document.createElement("h3");
+      commentHeader.innerHTML = "Comment";
+      commentHeader.classList.add("bngl-header");
+      addToTable(
+        [[nameHeader, visualHeader, BNGLHeader, concHeader, commentHeader]],
+        canvTable
+      );
       //render molecules
+      const moleculeDivider = document.createElement("p");
+      moleculeDivider.innerHTML = "Molecules";
+      moleculeDivider.classList.add("table-divider");
+      addToTable([[moleculeDivider]], canvTable, 5);
       if (molecules.length > 0) {
-        const moleculeDivider = document.createElement("p");
-        moleculeDivider.innerHTML = "Molecules";
-        moleculeDivider.classList.add("table-divider");
-        addToTable([[moleculeDivider]], canvTable, true);
         let molcList = [];
         for (let i = 0; i < molecules.length; i++) {
           molcList.push(prepareRow(molecules[i], "molecules" + i));
         }
         addToTable(molcList, canvTable);
+      } else {
+        addToTable([["None", "", "", ""]], canvTable);
+      }
+      //render observables
+      const obsDivider = document.createElement("p");
+      obsDivider.innerHTML = "Observables";
+      obsDivider.classList.add("table-divider");
+      addToTable([[obsDivider]], canvTable, 5);
+      if (observables.length > 0) {
+        let obsList = [];
+        for (let i = 0; i < observables.length; i++) {
+          obsList.push(prepareRow(observables[i], "observables" + i));
+        }
+        addToTable(obsList, canvTable);
+      } else {
+        addToTable([["None", "", "", ""]], canvTable);
       }
       //render species
+      const scDivider = document.createElement("p");
+      scDivider.innerHTML = "Species";
+      scDivider.classList.add("table-divider");
+      addToTable([[scDivider]], canvTable, 5);
       if (species.length > 0) {
-        const scDivider = document.createElement("p");
-        scDivider.innerHTML = "Species";
-        scDivider.classList.add("table-divider");
-        addToTable([[scDivider]], canvTable, true);
         let specList = [];
         for (let i = 0; i < species.length; i++) {
-          specList.push(prepareRow(species[i], "species" + i));
+          specList.push(prepareRow(species[i], "species" + i, true));
         }
         addToTable(specList, canvTable);
+      } else {
+        addToTable([["None", "", "", ""]], canvTable);
       }
     }
     //read if file present

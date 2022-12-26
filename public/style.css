@@ -4,6 +4,7 @@ body {
 
 * {
   color: white;
+  font-family: "Andale Mono";
 }
 
 #visualize-button {
