@@ -13,9 +13,7 @@ Object.defineProperty(String.prototype, 'rgb', {
       hash |= 0; // Convert to 32bit integer
     }
     //changing hash into rgb format:
-    if (hash < 0) {
-      hash *= -1;
-    }
+    hash *= ((hash < 0) ? -1: 1);
     if (hash < 65280) {
       hash++;
       hash *= 17777777;
@@ -257,7 +255,7 @@ window.Molecule = class Molecule {
   }
 
   //draw bionetgen sites with states labeled
-  drawSitesComplex(canvas, x, y, radius, scale = 1, initX = 0) {
+  drawSitesComplex(canvas, x, y, radius, scale = 1, initX = 0, visible = true) {
     var ctx = canvas.getContext('2d');
     const siteRadius = 8;
     var siteLength = 0;
@@ -279,29 +277,33 @@ window.Molecule = class Molecule {
       let colorParam = this.sites[i].color;
       let xParam = x + dx - radius / 2;
       let yParam = y + dy - radius / 2;
-      this.drawList.push({func: (params) => {
-        this.drawRoundRect(
-          canvas,
-          params[0],
-          params[1],
-          params[3],
-          params[4],
-          params[2]
-        );
-      }, params: [xParam, yParam, colorParam, siteRadius, siteLength]});
+      if (visible) {
+        this.drawList.push({func: (params) => {
+          this.drawRoundRect(
+            canvas,
+            params[0],
+            params[1],
+            params[3],
+            params[4],
+            params[2]
+          );
+        }, params: [xParam, yParam, colorParam, siteRadius, siteLength]});
+      }
       //drawing site names
       let nameParam = this.sites[i].name;
       xParam = x + dx - siteRadius / 2;
       yParam = y + dy + siteRadius / 2 + 1;
-      this.drawList.push({func: (params) => {
-        ctx.fillStyle = '#000000';
-        ctx.font = "12px Arial";
-        ctx.fillText(
-          params[2],
-          params[0],
-          params[1]
-        );
-      }, params: [xParam, yParam, nameParam]});
+      if (visible) {
+        this.drawList.push({func: (params) => {
+          ctx.fillStyle = '#000000';
+          ctx.font = "12px Arial";
+          ctx.fillText(
+            params[2],
+            params[0],
+            params[1]
+          );
+        }, params: [xParam, yParam, nameParam]});
+      }
       //drawing states of sites
       var states = this.sites[i].states;
       if (states.length == 0) {
@@ -334,24 +336,26 @@ window.Molecule = class Molecule {
         xParam = sx;
         yParam = sy;
         if (colorIndex > 3) {colorIndex = colorIndex % 3;}
-        this.drawList.push({func: (params) => {
-          ctx.fillStyle = params[3];
-          ctx.beginPath();
-          ctx.rect(params[0], params[1], params[4], 13);
-          ctx.fill();
-          ctx.fillStyle = '#000000';
-          ctx.stroke();
-          ctx.closePath();
-          //naming states
-          ctx.fillStyle = '#000000';
-          ctx.fillText(params[2], params[0] + 1.5, params[1] + 10.5);
-        }, params: [
-          xParam,
-          yParam,
-          stateParam,
-          this.stateColors[colorIndex],
-          stateLength
-        ]});
+        if (visible) {
+          this.drawList.push({func: (params) => {
+            ctx.fillStyle = params[3];
+            ctx.beginPath();
+            ctx.rect(params[0], params[1], params[4], 13);
+            ctx.fill();
+            ctx.fillStyle = '#000000';
+            ctx.stroke();
+            ctx.closePath();
+            //naming states
+            ctx.fillStyle = '#000000';
+            ctx.fillText(params[2], params[0] + 1.5, params[1] + 10.5);
+          }, params: [
+            xParam,
+            yParam,
+            stateParam,
+            this.stateColors[colorIndex],
+            stateLength
+          ]});
+        }
         if (sy + 13 > tallestState) {
           tallestState = sy + 13;
         }
@@ -388,7 +392,7 @@ window.Molecule = class Molecule {
       const radius = 15;
       var length = ctx.measureText(this.name).width;
       if (length < 0) {length *= -1;}
-      var dims = this.drawSitesComplex(canvas, x, y, radius, 1, initX);
+      var dims = this.drawSitesComplex(canvas, x, y, radius, 1, initX, false);
       if (length < dims[0]) {
         length = dims[0];
       }
@@ -662,4 +666,55 @@ window.drawGraphics = function drawGraphics(tableID, BngColumn, CanvasColumn, dr
             }
         }
     }
+}
+
+//get color of single pixle on canvas
+function pixleAlpha(ctx, x, y) {
+  return ctx.getImageData(x, y, 1, 1).data[3];
+}
+
+//find the size of drawing in canvas
+window.getCanvasDimentions = function getCanvasDimentions(canvas) {
+  const ctx = canvas.getContext('2d');
+  let dims = [null, null];
+  //find initial furthest visible pixle right
+  let x = 500;
+  let y = 1;
+  let a = 0;
+  while (a == 0 && x >= 0) {
+    x--;
+    a = pixleAlpha(ctx, x, 1);
+  }
+  x++;
+  //find absolute furthest visible pixle right
+  while (y <= 180) {
+    y++;
+    a = pixleAlpha(ctx, x, y);
+    while (a != 0) {
+      x++;
+      a = pixleAlpha(ctx, x, y);
+    }
+  }
+  let right;
+  right = dims[0] = x;
+  //find initial furthest visible pixle down
+  x = 1;
+  y = 180;
+  a = 0;
+  while (a == 0 && y >= 0) {
+    y--;
+    a = pixleAlpha(ctx, x, y);
+  }
+  y++
+  //find absolute furthest visible pixle right
+  while (x <= right) {
+    x++;
+    a = pixleAlpha(ctx, x, y);
+    while (a != 0) {
+      y++;
+      a = pixleAlpha(ctx, x, y);
+    }
+  }
+  dims[1] = y;
+  return dims;
 }
