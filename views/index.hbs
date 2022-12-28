@@ -38,7 +38,7 @@
   }
 
   //draw test canvas
-  drawBNGL('Molecule(site1~state1,site1)', testCanvas);
+  drawBNGL('Molecule(site1~state1,site2~site1~site2)', testCanvas);
 
   //draw bngl
   function drawBNGL(bngl, canvas) {
@@ -143,7 +143,7 @@
       char = s[c];
       //is comment
       if (char == "#") {
-        commStart = c + 1;
+        commStart = c;
         commEnd = len - 1;
         break;
       }
@@ -351,7 +351,8 @@
       reactions = [];
       //add header
       const nameHeader = document.createElement("h3");
-      nameHeader.innerHTML = "Name";
+      //const hrDivider = document.createElement("hr");
+      /* nameHeader.innerHTML = "Name";
       nameHeader.classList.add("bngl-header");
       const visualHeader = document.createElement("h3");
       visualHeader.innerHTML = "Visualization";
@@ -359,21 +360,23 @@
       const BNGLHeader = document.createElement("h3");
       BNGLHeader.innerHTML = "BNGL code";
       BNGLHeader.classList.add("bngl-header");
-      const concHeader = document.createElement("h3");
-      concHeader.innerHTML = "Concentration";
-      concHeader.classList.add("bngl-header");
-      const commentHeader = document.createElement("h3");
-      commentHeader.innerHTML = "Comment";
-      commentHeader.classList.add("bngl-header");
-      addToTable(
-        [[nameHeader, visualHeader, BNGLHeader, concHeader, commentHeader]],
-        canvTable
-      );
+      const concHeader = document.createElement("h3"); */
+      //concHeader.innerHTML = "Concentration";
+      //concHeader.classList.add("bngl-header");
+      //const commentHeader = document.createElement("h3");
+      //commentHeader.innerHTML = "Comment";
+      //commentHeader.classList.add("bngl-header");
+
       //render molecules
       const moleculeDivider = document.createElement("p");
+      addToTable([[document.createElement("hr")]], canvTable, 5);
       moleculeDivider.innerHTML = "Molecules";
       moleculeDivider.classList.add("table-divider");
       addToTable([[moleculeDivider]], canvTable, 5);
+      addToTable(
+        [['Name', 'Visualization', 'BNGL code', '', 'Comment']],
+        canvTable
+      );
       if (molecules.length > 0) {
         let molcList = [];
         for (let i = 0; i < molecules.length; i++) {
@@ -385,9 +388,14 @@
       }
       //render species
       const scDivider = document.createElement("p");
+      addToTable([[document.createElement("hr")]], canvTable, 5);
       scDivider.innerHTML = "Species";
       scDivider.classList.add("table-divider");
       addToTable([[scDivider]], canvTable, 5);
+      addToTable(
+        [['Name', 'Visualization', 'BNGL code', 'Concentration', 'Comment']],
+        canvTable
+      );
       if (species.length > 0) {
         let specList = [];
         for (let i = 0; i < species.length; i++) {
@@ -399,9 +407,15 @@
       }
       //render observables
       const obsDivider = document.createElement("p");
+      addToTable([[document.createElement("hr")]], canvTable, 5);
       obsDivider.innerHTML = "Observables";
       obsDivider.classList.add("table-divider");
       addToTable([[obsDivider]], canvTable, 5);
+            addToTable(
+        [['Type', 'Name', 'Visualization', 'BNGL code', 'Comment']],
+        canvTable
+      );
+      
       if (observables.length > 0) {
         let obsList = [];
         for (let i = 0; i < observables.length; i++) {
@@ -413,6 +427,7 @@
       }
       //render reactions
       const reacDivider = document.createElement("p");
+      addToTable([[document.createElement("hr")]], canvTable, 5);
       reacDivider.innerHTML = "Reactions";
       reacDivider.classList.add("table-divider");
       addToTable([[reacDivider]], canvTable, 5);
