@@ -24,7 +24,7 @@ begin parameters
 end parameters
 
 begin species
-  1  L(r)       L0  # Ligand has one site for binding to receptor.
+#  1  L(r)Ligand has one site for binding to receptor.
 end species
 
 
@@ -35,25 +35,6 @@ begin reaction rules
 #       be bound.  This prevents dissociation of ligand from R
 #       when R is in a dimer.
   1  L(r) + R(l,d) <-> L(r!1).R(l!1,d) kp1, km1
-
-# Aggregation (R-L + R-L)
-# Note:  R must be bound to ligand to dimerize.
-  2  R(l!+,d) + R(l!+,d) <-> R(l!+,d!2).R(l!+,d!2) kp2, km2
-
-# Transphosphorylation
-# Note:  R must be bound to another R to be transphosphorylated.
-  3  R(d!+,Y~U) -> R(d!+,Y~P) p1
-
-# Dephosphorylation
-# Note:  R can be in any complex, but tyrosine is not protected by bound A.
-  4  R(Y~P) -> R(Y~U) d1
-
-# Adaptor binding phosphotyrosine (reversible).
-# Note: Doesn't depend on whether R is bound to
-#       receptor, i.e. binding rate is same whether R is a monomer, is
-#       in association with a ligand, in a dimer, or in a complex.
-
-  5  R(Y~P) + A(SH2) <-> R(Y~P!1).A(SH2!1) kpA, kmA
 end reaction rules
 
 begin observables

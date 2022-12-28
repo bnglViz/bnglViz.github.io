@@ -5,7 +5,7 @@
       <input id="bngl-file-input" type="file" onchange="visualize()">
     </td>
     <td id="canvas-cell">
-      <canvas id="testCanvas"></canvas>
+      <canvas id="testCanvas" width="500" height="180"></canvas>
     </td>
     <td id="canvas-text">
       Molecule is shown as an oval ...
@@ -38,16 +38,17 @@
   }
 
   //draw test canvas
-  drawBNGL('Molecule(site1~state1,site2)', testCanvas);
+  drawBNGL('Molecule(site1~state1,site1)', testCanvas);
 
   //draw bngl
   function drawBNGL(bngl, canvas) {
-    //mode can be compartment, normal, or compact
-    var drawObj = new Graphic(bngl, "normal");
-    drawObj.draw(canvas, 0, 0);
+    //set up drawing context. "willReadFrequently: true" puts processes in GPU
+    let ctx = canvas.getContext("2d", { willReadFrequently: true });
+    var drawObj = new Graphic(bngl, "compact");
+    drawObj.draw(ctx, 0, 0);
     //draw graphic
     drawObj.doDrawList();
-    let dims = getCanvasDimentions(canvas);
+    let dims = getCanvasDimentions(ctx);
     //resize canvas
     canvas.width = dims[0];
     canvas.height = dims[1];
@@ -124,9 +125,9 @@
   }
 
   //might need to add case for when comment immdiatley follows conc
+  //^ I do, see toy1 (1).bngl
   function extractSingleLineBNGL(s, type="") {
     //initialize vars
-    let count = 0;
     let c = 0;
     let len = s.length;
     let char = null;
@@ -137,9 +138,8 @@
     let commStart = null;
     let commEnd = null;
     let readType = ((type == "observable") ? false : true);
-    let reaction = ((type == "reaction") ? true : false);
     //parse
-    while (c < len && count < 1000) {
+    while (c < len) {
       char = s[c];
       //is comment
       if (char == "#") {
@@ -193,6 +193,59 @@
     ];
   }
 
+  function extractSingleLineReaction(s) {
+    console.log(s);
+    //initialize vars
+    let c = 0;
+    let len = s.length;
+    let char;
+    let bngls = [];
+    let concs = [];
+    let comment = "";
+    //parse
+    while (c < len) {
+      char = s[c];
+      //is comment
+      if (char == "#") {
+        comment = s.slice(c + 1, len);
+        break;
+      }
+      //starts with number
+      if ((bngls.length == 0) && (!isNaN(parseFloat(char)))) {
+        c = nextOccur(s, c, isWhitespace);
+        continue;
+      }
+      //is whitespace
+      if (isWhitespace(char)) {
+        c = nextOccur(s, c, isNotWhitespace);
+        continue;
+      }
+      //is non-whitespace and non-comment
+      if ((bngls.length == 0) && isNotWhitespace(char) && (char != "#")) {
+        let n = nextOccur(s, c, isWhitespace, false, -1);
+        bngls.push(s.slice(c, n + 1));
+        c = n + 1;
+        continue;
+      }
+      //start concentration
+      if ((bngls.length != 0) && isNotWhitespace(char) && (char != "#")) {
+        let n = nextOccur(s, c, isWhitespace, false, -1);
+        concs.push(s.slice(c, n + 1));
+        c = n;
+      }
+      //if at end
+      if (c == len - 1) {
+        break;
+      }
+      c++;
+    }
+    return [
+      bngls.toString(),
+      concs.toString(),
+      comment
+    ];
+  }
+
   //extract bngl element
   function extractBNGL(bnglStr, elmStrList, type="") {
     let bngls = [];
@@ -218,10 +271,7 @@
         for (let u = 0; u < bngls.length; u++) {
           let bnglConcPair;
           if (type == "reaction") {
-            let bngl = bngls[u];
-            let lastWhitespace = nextOccur(bngl, bngl.length - 1, isWhitespace, true);
-            bngl = bngl.slice(0, lastWhitespace).trim();
-            bngls[u] = [bngl, "", ""];
+            bnglConcPair = extractSingleLineReaction(bngls[u]);
           } else {
             bnglConcPair = extractSingleLineBNGL(bngls[u], type);
           }
@@ -259,19 +309,11 @@
     //create new canvas
     const newCan = document.createElement("canvas");
     newCan.id = title;
-    newCan.width = "0";
-    newCan.height = "0";
+    newCan.width = "500";
+    newCan.height = "180";
     newCan.classList.add("bngl-canvas");
     //draw object on canvas
-    //mode can be compartment, normal, or compact
-    var drawObj = new Graphic(bngl, "normal");
-    drawObj.draw(newCan, 0, 0);
-    dims = [drawObj.x, drawObj.y];
-    //resize canvas
-    newCan.width = dims[0];
-    newCan.height = dims[1];
-    //draw graphic
-    drawObj.doDrawList();
+    drawBNGL(bngl, newCan);
     //output as list
     if (includeConc) {
       return [name, newCan, bngl, conc, comment];

@@ -56,6 +56,7 @@ Object.defineProperty(String.prototype, 'rgb', {
   }
 });
 
+
 //splits string at target character;
 function splitString(string, target) {
   list = [];
@@ -68,6 +69,16 @@ function splitString(string, target) {
   }
   list.push(string.slice(lastTagert, string.length));
   return(list);
+}
+
+
+//
+function compactString(s, numChars = 10) {
+  if (s.length <= numChars) {
+    return s;
+  } else {
+    return s.slice(0, numChars - 3) + "...";
+  }
 }
 
 
@@ -140,8 +151,8 @@ window.Molecule = class Molecule {
   process() {
     //notice bond info is kept in this.sites and removed later
     var temp = splitString(this.def, '(');
-    this.name = temp[0];
-    this.color = this.name.rgb();
+    this.name = ((this.mode == "normal") ? temp[0] : compactString(temp[0]));
+    this.color = temp[0].rgb();
     var sites = temp[1].slice(0, -1);
     //sites = sites.slice(sites.length - 2);
     sites = splitString(sites, ',');
@@ -158,7 +169,7 @@ window.Molecule = class Molecule {
         if (this.mode == 'normal') {
           siteList.push(new Site(temp[0], states));
         } else {
-          //if compact mode slice to only first letter
+          //if compact mode slice restrict number of characters
           for (let u = 0; u < states.length; u++) {
             let state = states[u];
             //if state has bond
@@ -166,16 +177,17 @@ window.Molecule = class Molecule {
               let temp = states[u].split('!');
               let stateName = temp[0];
               let bond = temp[1];
-              stateName = stateName.slice(0, 1);
+              stateName = compactString(stateName);
               states[u] = stateName + '!' + bond;
             }
             else {
-              states[u] = state.slice(0, 1);
+              states[u] = compactString(state);
             }
           }
           let originalName = temp[0];
+          let sliced = compactString(originalName);
           siteList.push(new Site(
-            originalName.slice(0, 1),
+            sliced,
             states,
             originalName.rgb())
           );
@@ -197,7 +209,13 @@ window.Molecule = class Molecule {
             sites[i] = siteName + '!' + bond;
             siteList.push(new Site(sites[i], [], originalName.rgb()));
           } else {
-            siteList.push(new Site(site.slice(0, 1), [], originalName.rgb()));
+            siteList.push(
+              new Site(
+                compactString(site),
+                [],
+                originalName.rgb()
+              )
+            );
           }
         }
       } else {
@@ -236,8 +254,7 @@ window.Molecule = class Molecule {
   }
 
   //draw rounded rect
-  drawRoundRect(canvas, x, y, radius, length, rgb) {
-    var ctx = canvas.getContext('2d');
+  drawRoundRect(ctx, x, y, radius, length, rgb) {
     ctx.fillStyle = '#' + rgb;
     ctx.beginPath();
     ctx.arc(x + radius, y + radius, radius, Math.PI / 2, Math.PI * (3/2));
@@ -255,8 +272,7 @@ window.Molecule = class Molecule {
   }
 
   //draw bionetgen sites with states labeled
-  drawSitesComplex(canvas, x, y, radius, scale = 1, initX = 0, visible = true) {
-    var ctx = canvas.getContext('2d');
+  drawSitesComplex(ctx, x, y, radius, scale = 1, initX = 0, visible = true) {
     const siteRadius = 8;
     var siteLength = 0;
     var stateLength = 0;
@@ -280,7 +296,7 @@ window.Molecule = class Molecule {
       if (visible) {
         this.drawList.push({func: (params) => {
           this.drawRoundRect(
-            canvas,
+            ctx,
             params[0],
             params[1],
             params[3],
@@ -386,13 +402,12 @@ window.Molecule = class Molecule {
   }
 
   //draw molecule with states and sites labled
-  initDrawList(canvas, x, y, scale = 1, initX = 0) {
+  initDrawList(ctx, x, y, scale = 1, initX = 0) {
     if (this.def) {
-      var ctx = canvas.getContext('2d');
       const radius = 15;
       var length = ctx.measureText(this.name).width;
-      if (length < 0) {length *= -1;}
-      var dims = this.drawSitesComplex(canvas, x, y, radius, 1, initX, false);
+      length *= ((length < 0) ? -1 : 1);
+      var dims = this.drawSitesComplex(ctx, x, y, radius, 1, initX, false);
       if (length < dims[0]) {
         length = dims[0];
       }
@@ -402,7 +417,7 @@ window.Molecule = class Molecule {
         ctx.font = "15px Arial";
         //drawing pill shape
         this.drawRoundRect(
-          canvas,
+          ctx,
           params[0],
           params[1],
           params[2],
@@ -411,7 +426,7 @@ window.Molecule = class Molecule {
         );
         //drawing sites
         this.drawSitesComplex(
-          canvas,
+          ctx,
           params[0],
           params[1],
           params[2],
@@ -490,10 +505,8 @@ window.Graphic = class Graphic {
   }
 
   //draw membrane, only for species
-  drawMembrane(canvas) {
+  drawMembrane(ctx) {
     if (this.comp) {
-      //init context
-      let ctx = canvas.getContext('2d');
       //box dims
       let textWidth = ctx.measureText(this.comp).width;
 
@@ -503,7 +516,7 @@ window.Graphic = class Graphic {
 
       //add to draw list
       this.drawList.push({func: (params) => {
-        //draw membrane at top right corner, filling canvas
+        //draw membrane at top right corner, filling ctx
         ctx.fillStyle = '#eee';
         ctx.fillRect(0, 0, params[0] + 9, this.y);
         ctx.fillStyle = '#000000';
@@ -526,21 +539,19 @@ window.Graphic = class Graphic {
   }
 
   //only works for species with two molecules or less, fix this
-  draw(canvas, initX, initY, scale = 1) {
+  draw(ctx, initX, initY, scale = 1) {
     if (this.def) {
       let length = 0;
       let height = 0;
       let names = new Set();
       let pairs = [];//list of pairs of xy coords for each bond
-      //drawing the graphics on the canvas
-      let ctx = canvas.getContext('2d');
       //draw membrane
-      this.drawMembrane(canvas);
+      this.drawMembrane(ctx);
       //extracting bonds
       for (let i = 0; i < this.molecules.length; i++) {
         let thisX = scale * (2 + length + initX);
         let thisY = scale * (2 + initY);
-        let dims = this.molecules[i].initDrawList(canvas, thisX, thisY, scale, initX);
+        let dims = this.molecules[i].initDrawList(ctx, thisX, thisY, scale, initX);
         length += dims[0];
         if (dims[1] > height) {
           height = dims[1];
@@ -616,18 +627,18 @@ window.Graphic = class Graphic {
 }
 
 //drawing graphics in html
-window.drawGraphics = function drawGraphics(tableID, BngColumn, CanvasColumn, drawType) {
+window.drawGraphics = function drawGraphics(tableID, BngColumn, ctxColumn, drawType) {
     //get table html elements
     var speciesTable = document.getElementById(tableID);
     const rowsLen = speciesTable.rows.length;
 
-    //loop over each canvas
+    //loop over each ctx
     for (y = 1; y < rowsLen; y++) {
-        //get canvas and bionetgen html elements
-        var canvasElm = speciesTable.rows.item(y).cells.item(CanvasColumn).children[0];
-        if (canvasElm) {
-            let compartment = canvasElm.innerHTML;
-            const canvasID = canvasElm.id;
+        //get ctx and bionetgen html elements
+        var ctxElm = speciesTable.rows.item(y).cells.item(ctxColumn).children[0];
+        if (ctxElm) {
+            let compartment = ctxElm.innerHTML;
+            const ctxID = ctxElm.id;
             var bioNetGen = speciesTable.rows.item(y).cells.item(BngColumn).innerHTML;
 
             //remove bng trailing syntax leftover from mustache templating
@@ -639,25 +650,25 @@ window.drawGraphics = function drawGraphics(tableID, BngColumn, CanvasColumn, dr
             }
             speciesTable.rows.item(y).cells.item(BngColumn).innerHTML = bioNetGen;
 
-            //get canvas dimensions based on draw type
+            //get ctx dimensions based on draw type
             if (drawType == 'g') {
                 var drawObj = new Graphic(bioNetGen, compartment);
-                drawObj.draw(canvasElm, 0, 0);
+                drawObj.draw(ctxElm, 0, 0);
                 dims = [drawObj.x, drawObj.y];
 
-                //resize canvas
-                canvasElm.width = dims[0];
-                canvasElm.height = dims[1];
+                //resize ctx
+                ctxElm.width = dims[0];
+                ctxElm.height = dims[1];
 
                 //draw graphic
                 drawObj.doDrawList();
             } else if (drawType == 'm') {
                 var drawObj = new Molecule(bioNetGen);
-                dims = drawObj.initDrawList(canvasElm, 0.5, 0.5);
+                dims = drawObj.initDrawList(ctxElm, 0.5, 0.5);
 
-                //resize canvas
-                canvasElm.width = dims[0] + 5;
-                canvasElm.height = dims[1] + 5;
+                //resize ctx
+                ctxElm.width = dims[0] + 5;
+                ctxElm.height = dims[1] + 5;
 
                 //draw graphic
                 drawObj.doDrawList();
@@ -668,14 +679,13 @@ window.drawGraphics = function drawGraphics(tableID, BngColumn, CanvasColumn, dr
     }
 }
 
-//get color of single pixle on canvas
-function pixleAlpha(ctx, x, y) {
+//get color of single pixle on ctx
+window.pixleAlpha = function pixleAlpha(ctx, x, y) {
   return ctx.getImageData(x, y, 1, 1).data[3];
 }
 
-//find the size of drawing in canvas
-window.getCanvasDimentions = function getCanvasDimentions(canvas) {
-  const ctx = canvas.getContext('2d');
+//find the size of drawing in ctx
+window.getCanvasDimentions = function getCanvasDimentions(ctx) {
   let dims = [null, null];
   //find initial furthest visible pixle right
   let x = 500;
