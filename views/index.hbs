@@ -27,24 +27,63 @@
   const canvContain = document.getElementById("canvas-container");
   const canvTable = document.getElementById("canvas-table");
   const fileInput = document.getElementById("bngl-file-input");
-  var oldFileInputValue = "";
+  const body = document.body;
 
-  var isWhitespace = (s) => {
+  //other global var declaration
+  var oldFileInputValue = "";
+  var allElms;
+
+  //set mode to dark mode initially
+  var darkMode = true;
+  switchDarkMode(false);
+
+  function switchDarkMode(actuallySwitch = true) {
+    //recompile list of elms
+    allElms = body.getElementsByTagName("*");
+    let len = allElms.length;
+    let oldClass, newClass;
+    //switch mode
+    if (actuallySwitch) {
+      if (darkMode) {
+        darkMode = false;
+        oldClass = "dark-mode";
+        newClass = "light-mode";
+      } else {
+        darkMode = true;
+        oldClass = "light-mode";
+        newClass = "dark-mode";
+      }
+    }
+    //change css classes
+    for (let i = 0; i < len; i++) {
+      allElms[i].classList.remove(oldClass);
+      allElms[i].classList.add(newClass);
+    }
+    //body must be completed sepratley
+    body.classList.remove(oldClass);
+    body.classList.add(newClass);
+  }
+
+  function isWhitespace(s) {
     return /\s/.test(s);
   }
 
-  var isNotWhitespace = (s) => {
+  function isNotWhitespace(s) {
     return !isWhitespace(s);
   }
 
+  function capitalizeFirstLetter(s) {
+    return s[0].toUpperCase() + s.slice(1, s.length);
+  }
+
   //draw test canvas
-  drawBNGL('Molecule(site1~state1,site2~site1~site2)', testCanvas);
+  drawBNGL('Grb2(SH2,SH3!1).Sos(dom!1)', testCanvas);
 
   //draw bngl
   function drawBNGL(bngl, canvas) {
     //set up drawing context. "willReadFrequently: true" puts processes in GPU
     let ctx = canvas.getContext("2d", { willReadFrequently: true });
-    var drawObj = new Graphic(bngl, "compact");
+    var drawObj = new Graphic(bngl, "compact", darkMode);
     drawObj.draw(ctx, 0, 0);
     //draw graphic
     drawObj.doDrawList();
@@ -186,6 +225,7 @@
     let bngl = s.slice(bnglStart, bnglEnd + 1);
     let conc = s.slice(concStart, concEnd + 1);
     let comment = s.slice(commStart, commEnd + 1);
+    console.log(comment);
     return [
       ((bnglStart == null) ? "" : bngl),
       ((concStart == null) ? "" : conc),
@@ -194,7 +234,6 @@
   }
 
   function extractSingleLineReaction(s) {
-    console.log(s);
     //initialize vars
     let c = 0;
     let len = s.length;
@@ -267,7 +306,7 @@
           endIndex
         );
         bngls = bngls.concat(sliced.split("\n"));
-        //clean list
+        //do actual extraction for each line
         for (let u = 0; u < bngls.length; u++) {
           let bnglConcPair;
           if (type == "reaction") {
@@ -277,8 +316,27 @@
           }
           bngls[u] = bnglConcPair;
           //mark empty strings for deletion
-          if (!bngls[u][0].trim()) {
+          let isEmpty = true;
+          let onlyComment = false;
+          for (let y = 0; y < bnglConcPair.length; y++) {
+            //if string has content
+            if (bnglConcPair[y].trim()) {
+              //if comment is only content
+              if (y == 2) {
+                isEmpty = false;
+                onlyComment = true;
+              } else {
+                //if there is non comment content
+                isEmpty = false;
+              }
+              break;
+            }
+          };
+          if (isEmpty) {
             toDelete.push(bngls[u]);
+          }
+          if (onlyComment) {
+            bngls[u] = bngls[u][2];
           }
         }
         //if begin token not found
@@ -309,6 +367,7 @@
     //create new canvas
     const newCan = document.createElement("canvas");
     newCan.id = title;
+    //must have inital dimensions as large as largest possible visualization
     newCan.width = "500";
     newCan.height = "180";
     newCan.classList.add("bngl-canvas");
@@ -319,6 +378,43 @@
       return [name, newCan, bngl, conc, comment];
     } else {
       return [name, newCan, bngl, "", comment];
+    }
+  }
+
+  //render 1 type (molecules, species, etc)
+  function visualizeType(type, list) {
+    //render header
+    addToTable([[document.createElement("hr")]], canvTable, 5);
+    const newDivider = document.createElement("p");
+    newDivider.innerHTML = capitalizeFirstLetter(type);
+    newDivider.classList.add("table-divider");
+    addToTable([[newDivider]], canvTable, 5);
+    if (type == "observables") {
+      addToTable(
+        [['Type', 'Name', 'Visualization', 'BNGL code', 'Comment']],
+        canvTable
+      );
+
+    } else {
+      addToTable(
+        [['Name', 'Visualization', 'BNGL code', 'Concentration', 'Comment']],
+        canvTable
+      );
+    }
+    //render rows
+    if (list.length > 0) {
+      let output = [];
+      for (let i = 0; i < list.length; i++) {
+        item = list[i];
+        if (typeof item == "object") {
+          output.push(prepareRow(item, type + i, true));
+        } else if (typeof item == "string") {
+          addToTable([[item]], canvTable, 5);
+        }
+      }
+      addToTable(output, canvTable);
+    } else {
+      addToTable([["None", "", "", ""]], canvTable);
     }
   }
 
@@ -349,97 +445,11 @@
       observables = extractBNGL(bngl, observablesTokens, "observable");
       //reactions = extractBNGL(bngl, reactionTokens, "reaction");
       reactions = [];
-      //add header
-      const nameHeader = document.createElement("h3");
-      //const hrDivider = document.createElement("hr");
-      /* nameHeader.innerHTML = "Name";
-      nameHeader.classList.add("bngl-header");
-      const visualHeader = document.createElement("h3");
-      visualHeader.innerHTML = "Visualization";
-      visualHeader.classList.add("bngl-header");
-      const BNGLHeader = document.createElement("h3");
-      BNGLHeader.innerHTML = "BNGL code";
-      BNGLHeader.classList.add("bngl-header");
-      const concHeader = document.createElement("h3"); */
-      //concHeader.innerHTML = "Concentration";
-      //concHeader.classList.add("bngl-header");
-      //const commentHeader = document.createElement("h3");
-      //commentHeader.innerHTML = "Comment";
-      //commentHeader.classList.add("bngl-header");
-
-      //render molecules
-      const moleculeDivider = document.createElement("p");
-      addToTable([[document.createElement("hr")]], canvTable, 5);
-      moleculeDivider.innerHTML = "Molecules";
-      moleculeDivider.classList.add("table-divider");
-      addToTable([[moleculeDivider]], canvTable, 5);
-      addToTable(
-        [['Name', 'Visualization', 'BNGL code', '', 'Comment']],
-        canvTable
-      );
-      if (molecules.length > 0) {
-        let molcList = [];
-        for (let i = 0; i < molecules.length; i++) {
-          molcList.push(prepareRow(molecules[i], "molecules" + i));
-        }
-        addToTable(molcList, canvTable);
-      } else {
-        addToTable([["None", "", "", ""]], canvTable);
-      }
-      //render species
-      const scDivider = document.createElement("p");
-      addToTable([[document.createElement("hr")]], canvTable, 5);
-      scDivider.innerHTML = "Species";
-      scDivider.classList.add("table-divider");
-      addToTable([[scDivider]], canvTable, 5);
-      addToTable(
-        [['Name', 'Visualization', 'BNGL code', 'Concentration', 'Comment']],
-        canvTable
-      );
-      if (species.length > 0) {
-        let specList = [];
-        for (let i = 0; i < species.length; i++) {
-          specList.push(prepareRow(species[i], "species" + i, true));
-        }
-        addToTable(specList, canvTable);
-      } else {
-        addToTable([["None", "", "", ""]], canvTable);
-      }
-      //render observables
-      const obsDivider = document.createElement("p");
-      addToTable([[document.createElement("hr")]], canvTable, 5);
-      obsDivider.innerHTML = "Observables";
-      obsDivider.classList.add("table-divider");
-      addToTable([[obsDivider]], canvTable, 5);
-            addToTable(
-        [['Type', 'Name', 'Visualization', 'BNGL code', 'Comment']],
-        canvTable
-      );
-      
-      if (observables.length > 0) {
-        let obsList = [];
-        for (let i = 0; i < observables.length; i++) {
-          obsList.push(prepareRow(observables[i], "observables" + i));
-        }
-        addToTable(obsList, canvTable);
-      } else {
-        addToTable([["None", "", "", ""]], canvTable);
-      }
-      //render reactions
-      const reacDivider = document.createElement("p");
-      addToTable([[document.createElement("hr")]], canvTable, 5);
-      reacDivider.innerHTML = "Reactions";
-      reacDivider.classList.add("table-divider");
-      addToTable([[reacDivider]], canvTable, 5);
-      if (reactions.length > 0) {
-        let reacList = [];
-        for (let i = 0; i < reactions.length; i++) {
-          reacList.push(prepareRow(reactions[i], "reactions" + i));
-        }
-        addToTable(reacList, canvTable);
-      } else {
-        addToTable([["None", "", "", ""]], canvTable);
-      }
+      //visualize everything
+      visualizeType("molecules", molecules);
+      visualizeType("species", species);
+      visualizeType("observables", observables);
+      visualizeType("reactions", reactions);
     }
     //read if file present
     if (fileInput.value) {

@@ -194,20 +194,21 @@ window.Molecule = class Molecule {
         }
         //if there are sites but no states
       } else if (sites[i].length != 0) {
-        //compact vs normal
+        //if normal
         if (this.mode == 'normal') {
           siteList.push(new Site(sites[i], []));
         } else {
-          //if site has bond
+          //if compact
           let site = sites[i];
           let originalName = sites[i];
+          //if site has bond
           if (site.includes('!')) {
             let temp = site.split('!');
             let siteName = temp[0];
             let bond = temp[1];
-            siteName = siteName.slice(0, 1);
+            siteName = compactString(siteName);
             sites[i] = siteName + '!' + bond;
-            siteList.push(new Site(sites[i], [], originalName.rgb()));
+            siteList.push(new Site(sites[i], [], siteName.rgb()));
           } else {
             siteList.push(
               new Site(
@@ -266,7 +267,7 @@ window.Molecule = class Molecule {
     );
     ctx.lineTo(x + radius, y + 2 * radius);
     ctx.fill();
-    ctx.fillStyle = '#000000';
+    ctx.strokeStyle = "#000000";
     ctx.stroke();
     ctx.closePath();
   }
@@ -453,26 +454,32 @@ window.Molecule = class Molecule {
 
 //each bionetgen should have own Graphic instance
 window.Graphic = class Graphic {
-  constructor(def, mode = 'normal') {
-    //draw normal / compact
-    this.mode = mode;
-    //bionetgen definition
-    this.def = def;
-    //compartment name
-    if (mode && mode != 'normal' && mode != 'compact') {
-      this.comp = this.mode;
-      //abreviate compratment name
-      this.comp = this.comp.slice(0, 3) + '...';
-    }
-    //list of instances of molecule classes
-    this.molecules = [];
-    //initializing this.molecules
-    this.process();
+  constructor(def, mode = 'normal', darkMode = false) {
     //list of {drawFunction, parameterList} objects
     this.drawList = [];
-    //dimesntions, calcutlated later
-    this.x = 0;
-    this.y = 0;
+    try {
+      //draw normal / compact
+      this.mode = mode;
+      //bionetgen definition
+      this.def = def;
+      //dark mode boolean
+      this.darkMode = darkMode;
+      //compartment name
+      if (mode && mode != 'normal' && mode != 'compact') {
+        this.comp = this.mode;
+        //abreviate compratment name
+        this.comp = this.comp.slice(0, 3) + '...';
+      }
+      //list of instances of molecule classes
+      this.molecules = [];
+      //initializing this.molecules
+      this.process();
+      //dimesntions, calcutlated later
+      this.x = 0;
+      this.y = 0;
+    } catch(e) {
+      console.log("model-graphics.js Graphic() constructor() error:\n" + e);
+    }
   }
 
   process() {
@@ -601,7 +608,7 @@ window.Graphic = class Graphic {
         let textParamX = pairs[i][0][0] - 7 + initX;
         let textParamY = pairs[i][0][1] + 8.5 + initY;
         this.drawList.push({func: (params) => {
-          ctx.fillStyle = '#000000';
+          ctx.strokeStyle = ((this.darkMode) ? "#FFFFFF" : "#000000");
           ctx.font = "10px Arial";
           ctx.beginPath();
           ctx.moveTo(params[0], params[2]);

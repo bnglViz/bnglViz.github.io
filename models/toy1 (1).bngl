@@ -24,7 +24,8 @@ begin parameters
 end parameters
 
 begin species
-#  1  L(r)Ligand has one site for binding to receptor.
+#a line that is only a comment
+  1  L(r) conc #Ligand has one site for binding to receptor.
 end species
 
 
@@ -38,6 +39,7 @@ begin reaction rules
 end reaction rules
 
 begin observables
+# Strong differences are seen for R_G_S in comparison with path model
 end observables
 
 

@@ -7,6 +7,16 @@ body {
   font-family: "Andale Mono";
 }
 
+.dark-mode {
+  background-color: black;
+  color: white;
+}
+
+.light-mode {
+  background-color: white;
+  color: black;
+}
+
 #visualize-button {
   color: white;
   border-color: white;
