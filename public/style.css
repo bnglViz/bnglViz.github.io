@@ -17,14 +17,6 @@ body {
   color: black;
 }
 
-#visualize-button {
-  color: white;
-  border-color: white;
-  border-width: 1px;
-  border-style: solid;
-  background-color: black;
-}
-
 .main-td {
   padding: 10px;
 }

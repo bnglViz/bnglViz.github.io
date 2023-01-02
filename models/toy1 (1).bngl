@@ -40,6 +40,7 @@ end reaction rules
 
 begin observables
 # Strong differences are seen for R_G_S in comparison with path model
+Molecules     Dimers		egfr.egfr
 end observables
 
 

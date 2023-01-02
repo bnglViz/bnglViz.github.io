@@ -13,7 +13,7 @@
   </tr>
 </table>
 <div id="canvas-container"></div>
-<table id="canvas-table"></table>
+<div id="table-container"></div>
 <script src="/model-graphics.js"></script>
 <script>
   //set bngl begin tokens
@@ -25,13 +25,15 @@
   //get major elements
   const testCanvas = document.getElementById("testCanvas");
   const canvContain = document.getElementById("canvas-container");
-  const canvTable = document.getElementById("canvas-table");
+  const tableContain = document.getElementById("table-container");
   const fileInput = document.getElementById("bngl-file-input");
   const body = document.body;
 
   //other global var declaration
   var oldFileInputValue = "";
   var allElms;
+  //map from molecule bngl string to molecule graphics class instance
+  var moleculeMap = {};
 
   //set mode to dark mode initially
   var darkMode = true;
@@ -80,10 +82,12 @@
   drawBNGL('Grb2(SH2,SH3!1).Sos(dom!1)', testCanvas);
 
   //draw bngl
-  function drawBNGL(bngl, canvas) {
+  function drawBNGL(bngl, canvas, type = "") {
+    //get parent for observables
+    let parent = ((type == "placeholder") ? moleculeMap[placeholder] : null)
     //set up drawing context. "willReadFrequently: true" puts processes in GPU
     let ctx = canvas.getContext("2d", { willReadFrequently: true });
-    var drawObj = new Graphic(bngl, "compact", darkMode);
+    var drawObj = new Graphic(bngl, "compact", darkMode, parent);
     drawObj.draw(ctx, 0, 0);
     //draw graphic
     drawObj.doDrawList();
@@ -93,6 +97,9 @@
     canvas.height = dims[1];
     //have to redraw
     drawObj.doDrawList();
+    if (type == "molecules") {
+      moleculeMap[bngl] = drawObj;
+    }
   }
 
   //remove item from array
@@ -163,31 +170,142 @@
     return ((backwards) ? -1: len);
   }
 
+  class BNGLExtractor {
+    constructor(numOutputs) {
+      //next free index in this.outputs
+      this.freeIndex = 0;
+      //list of objects, see addCheck()
+      this.checks = [];
+      //list of output strings
+      this.outputs = [];
+      //map of output indecies and wether they have been evaluated
+      this.outputEvaluations = {};
+      //map of identifier strings to this.output indexes
+      this.identifiers = {};
+      //initialize lists and objects
+      for (let i = 0; i < numOutputs; i++) {
+        this.outputs.push("");
+        this.outputEvaluations[i] = false;
+      }
+    }
+
+    getOutputIndex(id) {
+      return this.identifiers[id];
+    }
+
+    addIdentifier(id) {
+      if (this.identifiers[id]) {
+        throw new Error('identifier ' + id + ' already used');
+      } else {
+        this.identifiers[id] = this.freeIndex;
+      }
+      this.freeIndex++;
+    }
+
+    addCheck(boolExpr, id, startIndex, endIndex, nextIndex, loopType, evalIndexList) {
+      let outputIndex = this.getOutputIndex(id);
+      this.checks.push(
+        {
+          //function: see evaluateBoolExpr()
+          "boolExpr": boolExpr,
+          //string: unique id for this.outputs
+          "id": id,
+          //function: (string, stringIndex) => start of output within string
+          "startIndex": startIndex,
+          //function: (string, stringIndex) => end of output within string
+          "endIndex": endIndex,
+          //function: (string, stringIndex) => next value of string index
+          "nextIndex": nextIndex,
+          //string: ("break", "continue", or "none")
+          "loopType": loopType,
+          //list: list of [string: id, boolean]
+          "evalIndexList": evalIndexList,
+          //int: index for this.outputs
+          "outputIndex": outputIndex
+        }
+      );
+    }
+
+    addStartNumCheck() {
+      let f = (paramList)=> {
+        let c, char, evalIndexList, outputEvaluations, outputIndex;
+        [c, char, evalIndexList, outputEvaluations, outputIndex] = paramList;
+        if ((!outputEvaluations[outputIndex]) && (!isNaN(parseFloat(char)))) {
+          //return something
+        }
+      }
+      this.addCheck(
+        f,
+        -1,
+        -1,
+        -1,
+        (s, c) => nextOccur(s, c, isWhitespace),
+        "continue",
+        [["bngl", false]]
+      );
+    }
+
+    evaluateBoolExpr(boolExpr, c, char, evalIndexList, outputIndex) {
+      return boolExpr([
+        c,
+        char,
+        evalIndexList,
+        this.outputEvaluations,
+        outputIndex
+      ]);
+    }
+
+    process(s) {
+      //initialize vars
+      let c = 0;
+      let len = s.length;
+      let char = null;
+      let checks = this.checks;
+      let checksLen = checks.length;
+      //parse
+      while (c < len) {
+        char = s[c];
+        for (let i = 0; i < checksLen; i ++) {
+          let check = checks[i];
+          let boolExpr = check.boolExpr;
+          let id = check.id;
+          let startIndex = check.startIndex;
+          let endIndex = check.endIndex;
+          let nextIndex = check.nextIndex;
+          let loopType = check.loopType;
+          let evalIndexList = check.evalIndexList;
+          let outputIndex = check.outputIndex;
+          this.evaluateBoolExpr(
+            boolExpr,
+            c,
+            char,
+            evalIndexList,
+            outputIndex
+          );
+        }
+      }
+    }
+  }
+
   //might need to add case for when comment immdiatley follows conc
   //^ I do, see toy1 (1).bngl
   function extractSingleLineBNGL(s, type="") {
     //initialize vars
     let c = 0;
     let len = s.length;
-    let char = null;
-    let bnglStart = null;
-    let bnglEnd = null;
-    let concStart = null;
-    let concEnd = null;
-    let commStart = null;
-    let commEnd = null;
+    let char;
+    let bngl, conc, comm, observType;
     let readType = ((type == "observable") ? false : true);
     //parse
     while (c < len) {
       char = s[c];
       //is comment
       if (char == "#") {
-        commStart = c;
-        commEnd = len - 1;
+        comm = s.slice(c, len);
         break;
       }
       //starts with number
-      if ((bnglStart == null) && (!isNaN(parseFloat(char)))) {
+      if ((!bngl) && (!isNaN(parseFloat(char)))) {
         c = nextOccur(s, c, isWhitespace);
         continue;
       }
@@ -197,24 +315,25 @@
         continue;
       }
       //is observable type
-      if ((!readType) && (!bnglEnd) && isNotWhitespace(char) && (char != "#")) {
+      if ((!readType) && (!bngl) && isNotWhitespace(char) && (char != "#")) {
+        let n = nextOccur(s, c, isWhitespace);
+        observType = s.slice(c, n);
         readType = true;
-        c = nextOccur(s, c, isWhitespace);
+        c = n;
         continue;
       }
       //is non-whitespace and non-comment
-      if ((!bnglEnd) && isNotWhitespace(char) && (char != "#")) {
-        bnglStart = c;
-        c = nextOccur(s, c, isWhitespace, false, -1);
-        bnglEnd = c;
-        c++;
+      if ((!bngl) && isNotWhitespace(char) && (char != "#")) {
+        let n = nextOccur(s, c, isWhitespace, false, -1);
+        bngl = s.slice(c, n + 1);
+        c = n + 1;
         continue;
       }
       //start concentration
-      if (bnglEnd && isNotWhitespace(char) && (char != "#")) {
-        concStart = c;
-        c = nextOccur(s, c, isWhitespace, false, -1);
-        concEnd = c;
+      if (bngl && isNotWhitespace(char) && (char != "#")) {
+        let n = nextOccur(s, c, isWhitespace, false, -1);
+        conc = s.slice(c, n + 1);
+        c = n;
       }
       //if at end
       if (c == len - 1) {
@@ -222,14 +341,11 @@
       }
       c++;
     }
-    let bngl = s.slice(bnglStart, bnglEnd + 1);
-    let conc = s.slice(concStart, concEnd + 1);
-    let comment = s.slice(commStart, commEnd + 1);
-    console.log(comment);
     return [
-      ((bnglStart == null) ? "" : bngl),
-      ((concStart == null) ? "" : conc),
-      ((commStart == null) ? "" : comment),
+      ((bngl == null) ? "" : bngl),
+      ((conc == null) ? "" : conc),
+      ((comm == null) ? "" : comm),
+      ((observType == null) ? "" : observType),
     ];
   }
 
@@ -351,54 +467,88 @@
       return bngls;
   }
 
+  function addBNGLParenthesis(bngl) {
+    //split into each molecule
+    let molecules = bngl.split(".");
+    let output = "";
+    let len = molecules.length;
+    molecules.forEach((m, i) => {
+      //add paranthesis if there are none
+      if (m.indexOf("(") < 0) {
+        m = m + "()";
+      }
+      output += m;
+      if (i != len - 1) {
+        output += ".";
+      }
+    });
+    return output;
+  }
+
   //render one set (need to add compartments)
-  function prepareRow(bnglConcPair, title, includeConc=false) {
+  function prepareRow(bnglConcPair, type) {
     let bngl, conc, comment;
-    [bngl, conc, comment] = bnglConcPair;
+    [bngl, conc, comment, observType] = bnglConcPair;
+    comment = comment.trim();
     bngl = bngl.trim();
     conc = conc.trim();
-    comment = comment.trim();
-    //add paranthesis if there are none
-    if (bngl.indexOf("(") < 0) {
-      bngl = bngl + "()";
+    observType = observType.trim();
+    if (type == "observables") {
+      let temp;
+      temp = bngl;
+      bngl = conc;
+      conc = temp;
+      name = conc;
     }
+    //add paranthesis if there are none
+    bngl = addBNGLParenthesis(bngl);
     //get name (change this to only after parenthesis)
-    let name = bngl.split("(")[0];
+    if (type != "observables") {
+      let name = bngl.split("(")[0];
+    }
     //create new canvas
     const newCan = document.createElement("canvas");
-    newCan.id = title;
     //must have inital dimensions as large as largest possible visualization
     newCan.width = "500";
     newCan.height = "180";
     newCan.classList.add("bngl-canvas");
     //draw object on canvas
-    drawBNGL(bngl, newCan);
+    drawBNGL(bngl, newCan, type);
     //output as list
-    if (includeConc) {
+    if (type == "species") {
       return [name, newCan, bngl, conc, comment];
+    } else if (type == "observables") {
+      return [observType, name, newCan, bngl, comment];
     } else {
-      return [name, newCan, bngl, "", comment];
+      return [name, newCan, bngl, comment];
     }
   }
 
   //render 1 type (molecules, species, etc)
   function visualizeType(type, list) {
+    //add new table
+    let newTable = document.createElement("table");
+    addElmLast(newTable, tableContain);
     //render header
-    addToTable([[document.createElement("hr")]], canvTable, 5);
+    addToTable([[document.createElement("hr")]], newTable, 5);
     const newDivider = document.createElement("p");
     newDivider.innerHTML = capitalizeFirstLetter(type);
     newDivider.classList.add("table-divider");
-    addToTable([[newDivider]], canvTable, 5);
+    addToTable([[newDivider]], newTable, 5);
     if (type == "observables") {
       addToTable(
         [['Type', 'Name', 'Visualization', 'BNGL code', 'Comment']],
-        canvTable
+        newTable
       );
-
+    } else if (type == "molecules") {
+      addToTable(
+        [['Name', 'Visualization', 'BNGL code', 'Comment']],
+        newTable
+      );
     } else {
       addToTable(
         [['Name', 'Visualization', 'BNGL code', 'Concentration', 'Comment']],
-        canvTable
+        newTable
       );
     }
     //render rows
@@ -406,15 +556,18 @@
       let output = [];
       for (let i = 0; i < list.length; i++) {
         item = list[i];
+        //normal row
         if (typeof item == "object") {
-          output.push(prepareRow(item, type + i, true));
-        } else if (typeof item == "string") {
-          addToTable([[item]], canvTable, 5);
+          output.push(prepareRow(item, type));
+        }
+        //full line comment
+        else if (typeof item == "string") {
+          addToTable([[item]], newTable, 5);
         }
       }
-      addToTable(output, canvTable);
+      addToTable(output, newTable);
     } else {
-      addToTable([["None", "", "", ""]], canvTable);
+      addToTable([["None", "", "", ""]], newTable);
     }
   }
 
@@ -424,7 +577,7 @@
     let fileHasChanged = fileInput.value != oldFileInputValue;
     oldFileInputValue = fileInput.value;
     //remove everything in table
-    let oldElms = canvTable.children;
+    let oldElms = tableContain.children;
     let numOldElms = oldElms.length;
     for(let i = 0; i < numOldElms; i++) {
       oldElms[0].remove();

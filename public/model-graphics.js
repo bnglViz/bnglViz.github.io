@@ -454,7 +454,7 @@ window.Molecule = class Molecule {
 
 //each bionetgen should have own Graphic instance
 window.Graphic = class Graphic {
-  constructor(def, mode = 'normal', darkMode = false) {
+  constructor(def, mode = 'normal', darkMode = false, parent = null) {
     //list of {drawFunction, parameterList} objects
     this.drawList = [];
     try {
@@ -545,7 +545,6 @@ window.Graphic = class Graphic {
     }
   }
 
-  //only works for species with two molecules or less, fix this
   draw(ctx, initX, initY, scale = 1) {
     if (this.def) {
       let length = 0;
