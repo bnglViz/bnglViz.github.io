@@ -15,6 +15,7 @@
 <div id="canvas-container"></div>
 <div id="table-container"></div>
 <script src="/model-graphics.js"></script>
+<script src="/molecule-manager.js"></script>
 <script>
   //set bngl begin tokens
   const moleculeTokens = ["molecule types", "molecular types"];
@@ -32,8 +33,7 @@
   //other global var declaration
   var oldFileInputValue = "";
   var allElms;
-  //map from molecule bngl string to molecule graphics class instance
-  var moleculeMap = {};
+  var mm = new MoleculeManager();
 
   //set mode to dark mode initially
   var darkMode = true;
@@ -79,15 +79,18 @@
   }
 
   //draw test canvas
-  drawBNGL('Grb2(SH2,SH3!1).Sos(dom!1)', testCanvas);
+  drawBNGL('z(a,b,c)', testCanvas);
 
   //draw bngl
   function drawBNGL(bngl, canvas, type = "") {
-    //get parent for observables
-    let parent = ((type == "placeholder") ? moleculeMap[placeholder] : null)
     //set up drawing context. "willReadFrequently: true" puts processes in GPU
     let ctx = canvas.getContext("2d", { willReadFrequently: true });
-    var drawObj = new Graphic(bngl, "compact", darkMode, parent);
+    let drawObj;
+    if (type === "observables") {
+      drawObj = new Graphic(bngl, "compact", darkMode, mm);
+    } else {
+      drawObj = new Graphic(bngl, "compact", darkMode);
+    }
     drawObj.draw(ctx, 0, 0);
     //draw graphic
     drawObj.doDrawList();
@@ -98,7 +101,7 @@
     //have to redraw
     drawObj.doDrawList();
     if (type == "molecules") {
-      moleculeMap[bngl] = drawObj;
+      mm.addMolecule(drawObj);
     }
   }
 
@@ -487,7 +490,7 @@
 
   //render one set (need to add compartments)
   function prepareRow(bnglConcPair, type) {
-    let bngl, conc, comment;
+    let bngl, conc, comment, name;
     [bngl, conc, comment, observType] = bnglConcPair;
     comment = comment.trim();
     bngl = bngl.trim();
@@ -504,7 +507,7 @@
     bngl = addBNGLParenthesis(bngl);
     //get name (change this to only after parenthesis)
     if (type != "observables") {
-      let name = bngl.split("(")[0];
+      name = bngl.split("(")[0];
     }
     //create new canvas
     const newCan = document.createElement("canvas");

@@ -98,7 +98,12 @@ class Site {
     if (name.includes('!')) {
       var pair = splitString(name, '!');
       name = pair[0];
-      this.bondName = parseInt(pair[1]);
+      let bondName = pair[1];
+      if (this.specialBond(bondName)) {
+        this.bondName = bondName;
+      } else {
+        this.bondName = parseInt(bondName);
+      }
     }
     //init vars
     this.name = name;
@@ -107,6 +112,8 @@ class Site {
     //color from name
     if (color == null) {
       this.color = this.name.rgb();
+    } else if (this.bondName === "+" || this.bondName === "-") {
+      this.color = "ffffff";
     } else {
       this.color = color;
     }
@@ -120,12 +127,23 @@ class Site {
       return true;
     }
   }
+
+  //if bond is special case (+, -, ?)
+  specialBond(bondName) {
+    return ((bondName === "+" || bondName === "-" || bondName === "?") ? true : false);
+  }
+
+  getSpecialBondPair() {
+    return [this.position, null, this.bondName, "special"];
+  }
 }
 
 
 //class for molecules
 window.Molecule = class Molecule {
-  constructor(def, mode = 'normal') {
+  constructor(def, mode = 'normal', graphic = null) {
+    //parent graphic instance
+    this.graphic = graphic;
     //draw compact / normal
     this.mode = mode;
     //bionetgen definition
@@ -224,10 +242,25 @@ window.Molecule = class Molecule {
         siteList = null;
       }
     }
-    if (siteList == null) {
-      this.sites = [];
-    } else {
-      this.sites = siteList;
+    this.sites = ((siteList == null) ? [] : siteList);
+    //add observable parent sites
+    let graphic = this.graphic;
+    if (graphic && graphic.manager && graphic.manager.hasMolecules()) {
+      let parentSites = graphic.manager.getSites(this.name);
+      if (parentSites) {
+        parentSites.forEach((parent, i) => {
+          let alreadyHere = false;
+          this.sites.forEach((site, i) => {
+            //only add if parent site is not already represented in BNGL
+            if (site.name == parent.name) {
+              alreadyHere = true;
+            }
+          });
+          if (!alreadyHere) {
+            this.sites.push(parent);
+          }
+        });
+      }
     }
   }
 
@@ -275,19 +308,22 @@ window.Molecule = class Molecule {
   //draw bionetgen sites with states labeled
   drawSitesComplex(ctx, x, y, radius, scale = 1, initX = 0, visible = true) {
     const siteRadius = 8;
-    var siteLength = 0;
-    var stateLength = 0;
-    var longestState = 0;
-    var tallestState = 0;
-    var hasStates = false;
+    const spaceBetweenSites = 3;
+    let siteLength, stateLength, longestState, tallestState;
+    siteLength = stateLength = longestState = tallestState = 0;
+    let hasStates = false;
     //adding sites
     let dx = radius - 2 * siteRadius;
     for (var i = 0; i < this.sites.length; i++) {
       //bottom line of sites
       let dy = 2 * radius + 2;
-      dx = dx + 2 * siteRadius + siteLength;
+      dx += + 2 * siteRadius + siteLength;
+      //if site not first add spacing between sites
+      if (i != 0) {
+        dx += spaceBetweenSites;
+      }
       if (longestState > 2 * siteRadius + siteLength) {
-        dx = dx - siteLength + longestState - 2 * siteRadius;
+        dx += - siteLength + longestState - 2 * siteRadius;
       }
       //drawing sites
       siteLength = 4.9 * this.sites[i].name.length;
@@ -454,7 +490,9 @@ window.Molecule = class Molecule {
 
 //each bionetgen should have own Graphic instance
 window.Graphic = class Graphic {
-  constructor(def, mode = 'normal', darkMode = false, parent = null) {
+  constructor(def, mode = 'normal', darkMode = false, manager = null) {
+    //molecule manager class instance
+    this.manager = manager;
     //list of {drawFunction, parameterList} objects
     this.drawList = [];
     try {
@@ -475,23 +513,17 @@ window.Graphic = class Graphic {
       //initializing this.molecules
       this.process();
       //dimesntions, calcutlated later
-      this.x = 0;
-      this.y = 0;
+      this.x = this.y = 0;
     } catch(e) {
       console.log("model-graphics.js Graphic() constructor() error:\n" + e);
     }
   }
 
   process() {
-    var defs = splitString(this.def, '.');
-    if (this.mode == 'normal') {
-      for (var i = 0; i < defs.length; i++) {
-        this.molecules.push(new Molecule(defs[i]));
-      }
-    } else {
-      for (var i = 0; i < defs.length; i++) {
-        this.molecules.push(new Molecule(defs[i], 'compact'));
-      }
+    let defs = splitString(this.def, '.');
+    let mode = ((this.mode == 'normal') ? "" : 'compact');
+    for (var i = 0; i < defs.length; i++) {
+      this.molecules.push(new Molecule(defs[i], mode, this));
     }
   }
 
@@ -570,18 +602,25 @@ window.Graphic = class Graphic {
           let m1 = this.molecules[i].sites[y];
           //if unique bond m1 exists
           if (m1.bondName != null && !names.has(m1.bondName)) {
-            names.add(m1.bondName);
-            let newPair = [m1.position];
-            //check all sites in species for matching bond type
-            for (let u = 0; u < this.molecules.length; u++) {
-              for (let z = 0; z < this.molecules[u].sites.length; z++) {
-                //ensure a molecule doesnt bond to itself
-                if (z != y || u != i) {
-                  let m2 = this.molecules[u].sites[z];
-                  if (m2.bondName == m1.bondName) {
-                    newPair.push(m2.position);
-                    newPair.push(m2.bondName);
-                    pairs.push(newPair);
+            //add special bonds
+            if (m1.specialBond(m1.bondName)) {
+              pairs.push(m1.getSpecialBondPair());
+            } else {
+              //finish getting normal bonds
+              names.add(m1.bondName);
+              let newPair = [m1.position];
+              //check all sites in species for matching bond type
+              for (let u = 0; u < this.molecules.length; u++) {
+                for (let z = 0; z < this.molecules[u].sites.length; z++) {
+                  //ensure a molecule doesnt bond to itself
+                  if (z != y || u != i) {
+                    let m2 = this.molecules[u].sites[z];
+                    if (m2.bondName == m1.bondName) {
+                      newPair.push(m2.position);
+                      newPair.push(m2.bondName);
+                      newPair.push("normal");
+                      pairs.push(newPair);
+                    }
                   }
                 }
               }
@@ -592,32 +631,62 @@ window.Graphic = class Graphic {
       //drawing bonds
       var maxHeight = 0;
       for (let i = 0; i < pairs.length; i++) {
+        let isNormal = (pairs[i][3] === "normal");
         if (pairs[i][0][1] > maxHeight) {
           maxHeight = pairs[i][0][1];
         }
-        if (pairs[i][1][1] > maxHeight) {
+        if (isNormal && pairs[i][1][1] > maxHeight) {
           maxHeight = pairs[i][1][1];
         }
         let x1 = pairs[i][0][0] + initX;
-        let x2 = pairs[i][1][0] + initX;
+        let x2, y2;
+        if (isNormal) {
+          x2 = pairs[i][1][0] + initX;
+          y2 = pairs[i][1][1] + initY;
+        }
         let y0 = scale * pairs[i][0][1] + initY;
         let y1 = (pairs[i][0][1] + 5 * i + 5) + initY;
-        let y2 = pairs[i][1][1] + initY;
         let textParam = pairs[i][2];
         let textParamX = pairs[i][0][0] - 7 + initX;
         let textParamY = pairs[i][0][1] + 8.5 + initY;
-        this.drawList.push({func: (params) => {
-          ctx.strokeStyle = ((this.darkMode) ? "#FFFFFF" : "#000000");
-          ctx.font = "10px Arial";
-          ctx.beginPath();
-          ctx.moveTo(params[0], params[2]);
-          //functioning code for bond labels below, omitted for style
-          //ctx.fillText(params[5], params[6], params[7]);
-          ctx.lineTo(params[0], params[3]);
-          ctx.lineTo(params[1], params[3]);
-          ctx.lineTo(params[1], params[4]);
-          ctx.stroke();
-        }, params: [x1, x2, y0, y1, y2, textParam, textParamX, textParamY]});
+        if (isNormal) {
+          this.drawList.push({func: (params) => {
+            ctx.strokeStyle = ((this.darkMode) ? "#FFFFFF" : "#000000");
+            ctx.font = "10px Arial";
+            ctx.beginPath();
+            ctx.moveTo(params[0], params[2]);
+            //functioning code for bond labels below, omitted for style
+            //ctx.fillText(params[5], params[6], params[7]);
+            ctx.lineTo(params[0], params[3]);
+            ctx.lineTo(params[1], params[3]);
+            ctx.lineTo(params[1], params[4]);
+            ctx.stroke();
+          }, params: [x1, x2, y0, y1, y2, textParam, textParamX, textParamY]});
+        } else if (textParam === "+") {
+          this.drawList.push({func: (params) => {
+            ctx.strokeStyle = ((this.darkMode) ? "#FFFFFF" : "#000000");
+            ctx.font = "10px Arial";
+            ctx.beginPath();
+            ctx.moveTo(params[0], params[2]);
+            //functioning code for bond labels below, omitted for style
+            //ctx.fillText(params[5], params[6], params[7]);
+            ctx.lineTo(params[0], params[3]);
+            ctx.stroke();
+          }, params: [x1, x2, y0, y1, y2, textParam, textParamX, textParamY]});
+        } else if (textParam === "-") {
+          this.drawList.push({func: (params) => {
+            ctx.strokeStyle = ((this.darkMode) ? "#FFFFFF" : "#000000");
+            ctx.font = "10px Arial";
+            ctx.beginPath();
+            ctx.moveTo(params[0], params[2]);
+            //functioning code for bond labels below, omitted for style
+            //ctx.fillText(params[5], params[6], params[7]);
+            ctx.lineTo(params[0], params[3]);
+            ctx.moveTo(params[0] - 4, params[3] - 2);
+            ctx.lineTo(params[0] + 4, params[3] - 2);
+            ctx.stroke();
+          }, params: [x1, x2, y0, y1, y2, textParam, textParamX, textParamY]});
+        }
       }
       if (maxHeight + 10 > height + 5) {
         this.x += length + 5;
