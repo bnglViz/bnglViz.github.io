@@ -14,6 +14,7 @@ window.MoleculeManager = class MoleculeManager {
       item.color = "cfcfcf";
       item.bondName = null;
       item.states = [];
+      /* item.name = item.name.replace(new RegExp(/./g),'.') ;*/
     });
     let name = molecule.name;
     this.map[name] = sites;

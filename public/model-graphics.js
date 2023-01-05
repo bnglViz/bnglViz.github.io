@@ -645,13 +645,14 @@ window.Graphic = class Graphic {
           y2 = pairs[i][1][1] + initY;
         }
         let y0 = scale * pairs[i][0][1] + initY;
-        let y1 = (pairs[i][0][1] + 5 * i + 5) + initY;
+        let y1 = (pairs[i][0][1] + 5 * i + 20) + initY;
         let textParam = pairs[i][2];
         let textParamX = pairs[i][0][0] - 7 + initX;
         let textParamY = pairs[i][0][1] + 8.5 + initY;
         if (isNormal) {
           this.drawList.push({func: (params) => {
             ctx.strokeStyle = ((this.darkMode) ? "#FFFFFF" : "#000000");
+            ctx.lineWidth = 2;
             ctx.font = "10px Arial";
             ctx.beginPath();
             ctx.moveTo(params[0], params[2]);
@@ -665,6 +666,7 @@ window.Graphic = class Graphic {
         } else if (textParam === "+") {
           this.drawList.push({func: (params) => {
             ctx.strokeStyle = ((this.darkMode) ? "#FFFFFF" : "#000000");
+            ctx.lineWidth = 2;
             ctx.font = "10px Arial";
             ctx.beginPath();
             ctx.moveTo(params[0], params[2]);
@@ -676,6 +678,7 @@ window.Graphic = class Graphic {
         } else if (textParam === "-") {
           this.drawList.push({func: (params) => {
             ctx.strokeStyle = ((this.darkMode) ? "#FFFFFF" : "#000000");
+            ctx.lineWidth = 2;
             ctx.font = "10px Arial";
             ctx.beginPath();
             ctx.moveTo(params[0], params[2]);

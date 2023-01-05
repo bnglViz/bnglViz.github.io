@@ -62,8 +62,21 @@ begin reaction rules
 end reaction rules
 
 begin observables
+
   Molecules R_dim  R(d!+)      # All receptors in dimer
-  Molecules R_phos R(Y~P!?)    # Total of all phosphotyrosines
+
+  Molecules R_t1 R(Y~P!?)    # Total of all phosphotyrosines
+  Molecules R_t2 R(Y~P!+)    # Total of all phosphotyrosines
+  Molecules R_t3 R(Y~P!-)    # Total of all phosphotyrosines
+  Molecules R_t3a R(Y~P)    # Total of all phosphotyrosines
+
+  Molecules R_t1 R(Y!?)    # Total of all phosphotyrosines
+  Molecules R_t2 R(Y!+)    # Total of all phosphotyrosines
+  Molecules R_t3 R(Y!-)    # Total of all phosphotyrosines
+  Molecules R_t3a R(Y)    # Total of all phosphotyrosines
+  
+Molecules R_t3 R()    # Total of all phosphotyrosines
+
   Molecules A_R    A(SH2!1).R(Y~P!1) # Total of all A's associated with phosphotyrosines
   Molecules A_tot  A()     # Total of A. Should be a constant during simulation.
   Molecules R_tot  R()     # Total of R. Should be a constant during simulation.

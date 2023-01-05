@@ -66,15 +66,15 @@ km22         0.064 # diss. of ShcP-Grb2 and Sos in cytosol
 
 end parameters
 
-begin molecular types
+begin molecule types
 
 1 egf(r)                          
 Grb2(SH2,SH3)                   
-Shc(PTB,Y317~Y~P)                 
+Shc(PTB,Y317~Y~pY)                 
 Sos(dom)                         
-egfr(l,r,Y1068~Y~P,Y1148~Y~P)        
+egfr(l,r,Y1068~Y~pY,Y1148~Y~pY)        
 
-end molecular types
+end molecule types
 
 
 begin seed species
@@ -83,7 +83,7 @@ egf(r)                           egf_tot
 Grb2(SH2,SH3)                    Grb2_tot
 Shc(PTB,Y317~Y)                  Shc_tot
 Sos(dom)                         Sos_tot
-egfr(l,r,Y1068~Y,Y1148~Y)        egfr_tot
+egfr(l,r,Y1068~pY,Y1148~pY)        egfr_tot
 Grb2(SH2,SH3!1).Sos(dom!1)      Grb2_Sos_tot
 end seed species
 
@@ -147,7 +147,7 @@ egfr(l!1,r) + egfr(l!2,r) <-> egfr(l!1,r!3).egfr(l!2,r!3) kp2,km2
 end reaction rules
 
 begin observables
-Molecules     Dimers		egfr.egfr
+Molecules     Dimers		egfr().egfr()
 Molecules     Sos_act		Shc(PTB!1,Y317~pY!2).Grb2(SH2!2,SH3!3).Sos(dom!3) egfr(Y1068~pY!1).Grb2(SH2!1,SH3!2).Sos(dom!2)
 Molecules     RP		egfr(Y1068~pY!?) egfr(Y1148~pY!?)
 Molecules     Shc_Grb		Shc(Y317~pY!1).Grb2(SH2!1)
@@ -160,10 +160,7 @@ Molecules     R_G_S             egfr(Y1068~pY!1).Grb2(SH2!1,SH3!2).Sos(dom!2)
 # Strong differences are seen for R_G_S in comparison with path model
 Molecules     R_S_G_S           egfr(Y1148~pY!1).Shc(PTB!1,Y317~pY!2).Grb2(SH2!2,SH3!3).Sos(dom!3)
 
-Molecules     Efgr_tot    egfr
-Molecules     Shc_tot     Shc
-Molecules     Sos_tot     Sos
-Molecules     Grb2_tot    Grb2
+
 end observables
 
 

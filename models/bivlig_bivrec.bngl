@@ -14,6 +14,13 @@ begin species
   L(l,l) L0
 end species
 
+begin observables
+Molecules R R()
+Molecules L L()
+R(r!+)=must be connected at least once, or R(r!+,r!+)=middle of a chain, or R(r!-)=R(r)=end of a chain, R(r!-,r!-) - just a monomer.
+
+end observables
+
 begin reaction rules
 # Ligand addition
 R(r) + L(l,l) <-> R(r!1).L(l!1,l) kp1,km1
