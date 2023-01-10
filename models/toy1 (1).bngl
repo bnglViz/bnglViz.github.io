@@ -1,14 +1,3 @@
-# All text following the occurence of '#' character in a line is ignored.
-
-# The model consists of a monovalent extracellular ligand,
-# a monovalent cell-surface receptor kinase, and a cytosolic adapter
-# protein. The receptor dimerizes through a receptor-receptor
-# interaction that depends on ligand binding. When two receptors
-# are juxtaposed through dimerization one of the receptor kinases
-# can transphosphorylate the second receptor kinase.
-# Apapter protein A can bind to phosphorylated receptor tyrosine.
-
-
 begin parameters
   1 L0   1
   2 R0   1
@@ -24,12 +13,10 @@ begin parameters
 end parameters
 
 begin molecular types
-egfr(l,r,Y1068~Y~P,Y1148~Y~P)
+egfr(r,r)
 end molecular types
 
 begin species
-#a line that is only a comment
-  1  L(r) conc #Ligand has one site for binding to receptor.
 end species
 
 
@@ -43,8 +30,7 @@ begin reaction rules
 end reaction rules
 
 begin observables
-# Strong differences are seen for R_G_S in comparison with path model
-Molecules     Dimers		egfr(l).egfr
+Molecules     Dimers		egfr()
 end observables
 
 

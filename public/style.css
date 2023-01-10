@@ -7,6 +7,10 @@ body {
   font-family: "Andale Mono";
 }
 
+p {
+  margin: 3px;
+}
+
 .dark-mode {
   background-color: black;
   color: white;

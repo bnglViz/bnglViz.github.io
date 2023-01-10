@@ -16,6 +16,7 @@
 <div id="table-container"></div>
 <script src="/model-graphics.js"></script>
 <script src="/molecule-manager.js"></script>
+<script src="/bngl-extractor.js"></script>
 <script>
   //set bngl begin tokens
   const moleculeTokens = ["molecule types", "molecular types"];
@@ -34,6 +35,7 @@
   var oldFileInputValue = "";
   var allElms;
   var mm = new MoleculeManager();
+  var be = new BNGLExtractor();
 
   //set mode to dark mode initially
   var darkMode = true;
@@ -66,20 +68,16 @@
     body.classList.add(newClass);
   }
 
-  function isWhitespace(s) {
-    return /\s/.test(s);
-  }
-
-  function isNotWhitespace(s) {
-    return !isWhitespace(s);
-  }
-
   function capitalizeFirstLetter(s) {
-    return s[0].toUpperCase() + s.slice(1, s.length);
+    let words = s.split(" ");
+    words.forEach((word, i) => {
+      words[i] = word[0].toUpperCase() + word.slice(1, s.length);
+    });
+    return words.join(' ');
   }
 
   //draw test canvas
-  drawBNGL('z(a,b,c)', testCanvas);
+  drawBNGL('z(a)', testCanvas);
 
   //draw bngl
   function drawBNGL(bngl, canvas, type = "") {
@@ -100,7 +98,7 @@
     canvas.height = dims[1];
     //have to redraw
     drawObj.doDrawList();
-    if (type == "molecules") {
+    if ((type === "molecules" || type === "species") && !mm.has(drawObj)) {
       mm.addMolecule(drawObj);
     }
   }
@@ -153,321 +151,6 @@
         addElmLast(tempTD, tempRow);
       }
     }
-  }
-
-  //next occurance of char in string
-  function nextOccur(string, index, boolExpr, backwards = false, mod = 0) {
-    let len = string.length;
-    let direction;
-    if (backwards) {
-      direction = -1;
-    } else {
-      direction = 1;
-    }
-    while (index < len && index >= 0) {
-      if (boolExpr(string[index])) {
-        return index + mod;
-      }
-      index += direction;
-    }
-    return ((backwards) ? -1: len);
-  }
-
-  class BNGLExtractor {
-    constructor(numOutputs) {
-      //next free index in this.outputs
-      this.freeIndex = 0;
-      //list of objects, see addCheck()
-      this.checks = [];
-      //list of output strings
-      this.outputs = [];
-      //map of output indecies and wether they have been evaluated
-      this.outputEvaluations = {};
-      //map of identifier strings to this.output indexes
-      this.identifiers = {};
-      //initialize lists and objects
-      for (let i = 0; i < numOutputs; i++) {
-        this.outputs.push("");
-        this.outputEvaluations[i] = false;
-      }
-    }
-
-    getOutputIndex(id) {
-      return this.identifiers[id];
-    }
-
-    addIdentifier(id) {
-      if (this.identifiers[id]) {
-        throw new Error('identifier ' + id + ' already used');
-      } else {
-        this.identifiers[id] = this.freeIndex;
-      }
-      this.freeIndex++;
-    }
-
-    addCheck(boolExpr, id, startIndex, endIndex, nextIndex, loopType, evalIndexList) {
-      let outputIndex = this.getOutputIndex(id);
-      this.checks.push(
-        {
-          //function: see evaluateBoolExpr()
-          "boolExpr": boolExpr,
-          //string: unique id for this.outputs
-          "id": id,
-          //function: (string, stringIndex) => start of output within string
-          "startIndex": startIndex,
-          //function: (string, stringIndex) => end of output within string
-          "endIndex": endIndex,
-          //function: (string, stringIndex) => next value of string index
-          "nextIndex": nextIndex,
-          //string: ("break", "continue", or "none")
-          "loopType": loopType,
-          //list: list of [string: id, boolean]
-          "evalIndexList": evalIndexList,
-          //int: index for this.outputs
-          "outputIndex": outputIndex
-        }
-      );
-    }
-
-    addStartNumCheck() {
-      let f = (paramList)=> {
-        let c, char, evalIndexList, outputEvaluations, outputIndex;
-        [c, char, evalIndexList, outputEvaluations, outputIndex] = paramList;
-        if ((!outputEvaluations[outputIndex]) && (!isNaN(parseFloat(char)))) {
-          //return something
-        }
-      }
-      this.addCheck(
-        f,
-        -1,
-        -1,
-        -1,
-        (s, c) => nextOccur(s, c, isWhitespace),
-        "continue",
-        [["bngl", false]]
-      );
-    }
-
-    evaluateBoolExpr(boolExpr, c, char, evalIndexList, outputIndex) {
-      return boolExpr([
-        c,
-        char,
-        evalIndexList,
-        this.outputEvaluations,
-        outputIndex
-      ]);
-    }
-
-    process(s) {
-      //initialize vars
-      let c = 0;
-      let len = s.length;
-      let char = null;
-      let checks = this.checks;
-      let checksLen = checks.length;
-      //parse
-      while (c < len) {
-        char = s[c];
-        for (let i = 0; i < checksLen; i ++) {
-          let check = checks[i];
-          let boolExpr = check.boolExpr;
-          let id = check.id;
-          let startIndex = check.startIndex;
-          let endIndex = check.endIndex;
-          let nextIndex = check.nextIndex;
-          let loopType = check.loopType;
-          let evalIndexList = check.evalIndexList;
-          let outputIndex = check.outputIndex;
-          this.evaluateBoolExpr(
-            boolExpr,
-            c,
-            char,
-            evalIndexList,
-            outputIndex
-          );
-        }
-      }
-    }
-  }
-
-  //might need to add case for when comment immdiatley follows conc
-  //^ I do, see toy1 (1).bngl
-  function extractSingleLineBNGL(s, type="") {
-    //initialize vars
-    let c = 0;
-    let len = s.length;
-    let char;
-    let bngl, conc, comm, observType;
-    let readType = ((type == "observable") ? false : true);
-    //parse
-    while (c < len) {
-      char = s[c];
-      //is comment
-      if (char == "#") {
-        comm = s.slice(c, len);
-        break;
-      }
-      //starts with number
-      if ((!bngl) && (!isNaN(parseFloat(char)))) {
-        c = nextOccur(s, c, isWhitespace);
-        continue;
-      }
-      //is whitespace
-      if (isWhitespace(char)) {
-        c = nextOccur(s, c, isNotWhitespace);
-        continue;
-      }
-      //is observable type
-      if ((!readType) && (!bngl) && isNotWhitespace(char) && (char != "#")) {
-        let n = nextOccur(s, c, isWhitespace);
-        observType = s.slice(c, n);
-        readType = true;
-        c = n;
-        continue;
-      }
-      //is non-whitespace and non-comment
-      if ((!bngl) && isNotWhitespace(char) && (char != "#")) {
-        let n = nextOccur(s, c, isWhitespace, false, -1);
-        bngl = s.slice(c, n + 1);
-        c = n + 1;
-        continue;
-      }
-      //start concentration
-      if (bngl && isNotWhitespace(char) && (char != "#")) {
-        let n = nextOccur(s, c, isWhitespace, false, -1);
-        conc = s.slice(c, n + 1);
-        c = n;
-      }
-      //if at end
-      if (c == len - 1) {
-        break;
-      }
-      c++;
-    }
-    return [
-      ((bngl == null) ? "" : bngl),
-      ((conc == null) ? "" : conc),
-      ((comm == null) ? "" : comm),
-      ((observType == null) ? "" : observType),
-    ];
-  }
-
-  function extractSingleLineReaction(s) {
-    //initialize vars
-    let c = 0;
-    let len = s.length;
-    let char;
-    let bngls = [];
-    let concs = [];
-    let comment = "";
-    //parse
-    while (c < len) {
-      char = s[c];
-      //is comment
-      if (char == "#") {
-        comment = s.slice(c + 1, len);
-        break;
-      }
-      //starts with number
-      if ((bngls.length == 0) && (!isNaN(parseFloat(char)))) {
-        c = nextOccur(s, c, isWhitespace);
-        continue;
-      }
-      //is whitespace
-      if (isWhitespace(char)) {
-        c = nextOccur(s, c, isNotWhitespace);
-        continue;
-      }
-      //is non-whitespace and non-comment
-      if ((bngls.length == 0) && isNotWhitespace(char) && (char != "#")) {
-        let n = nextOccur(s, c, isWhitespace, false, -1);
-        bngls.push(s.slice(c, n + 1));
-        c = n + 1;
-        continue;
-      }
-      //start concentration
-      if ((bngls.length != 0) && isNotWhitespace(char) && (char != "#")) {
-        let n = nextOccur(s, c, isWhitespace, false, -1);
-        concs.push(s.slice(c, n + 1));
-        c = n;
-      }
-      //if at end
-      if (c == len - 1) {
-        break;
-      }
-      c++;
-    }
-    return [
-      bngls.toString(),
-      concs.toString(),
-      comment
-    ];
-  }
-
-  //extract bngl element
-  function extractBNGL(bnglStr, elmStrList, type="") {
-    let bngls = [];
-    let toDelete = [];
-    for (let i = 0; i < elmStrList.length; i++) {
-      let elmStr = elmStrList[i];
-      let beginToken = "begin " + elmStr;
-      let startIndex = bnglStr.indexOf(beginToken);
-      if (startIndex >= 0) {
-        //find first new line
-        let nlDist = 0;
-        while (bnglStr[startIndex + beginToken.length + nlDist] != "\n") {
-          nlDist += 1;
-        }
-        //split by line
-        let endIndex = bnglStr.indexOf("\n" + "end " + elmStr);
-        let sliced = bnglStr.slice(
-          startIndex + nlDist + beginToken.length + 1,
-          endIndex
-        );
-        bngls = bngls.concat(sliced.split("\n"));
-        //do actual extraction for each line
-        for (let u = 0; u < bngls.length; u++) {
-          let bnglConcPair;
-          if (type == "reaction") {
-            bnglConcPair = extractSingleLineReaction(bngls[u]);
-          } else {
-            bnglConcPair = extractSingleLineBNGL(bngls[u], type);
-          }
-          bngls[u] = bnglConcPair;
-          //mark empty strings for deletion
-          let isEmpty = true;
-          let onlyComment = false;
-          for (let y = 0; y < bnglConcPair.length; y++) {
-            //if string has content
-            if (bnglConcPair[y].trim()) {
-              //if comment is only content
-              if (y == 2) {
-                isEmpty = false;
-                onlyComment = true;
-              } else {
-                //if there is non comment content
-                isEmpty = false;
-              }
-              break;
-            }
-          };
-          if (isEmpty) {
-            toDelete.push(bngls[u]);
-          }
-          if (onlyComment) {
-            bngls[u] = bngls[u][2];
-          }
-        }
-        //if begin token not found
-        } else {
-          continue;
-        }
-      }
-      //delete empty strings
-      for (let u = 0; u < toDelete.length; u++) {
-        arrayRemove(bngls, toDelete[u]);
-      }
-      return bngls;
   }
 
   function addBNGLParenthesis(bngl) {
@@ -533,44 +216,45 @@
     let newTable = document.createElement("table");
     addElmLast(newTable, tableContain);
     //render header
-    addToTable([[document.createElement("hr")]], newTable, 5);
-    const newDivider = document.createElement("p");
-    newDivider.innerHTML = capitalizeFirstLetter(type);
-    newDivider.classList.add("table-divider");
-    addToTable([[newDivider]], newTable, 5);
-    if (type == "observables") {
-      addToTable(
-        [['Type', 'Name', 'Visualization', 'BNGL code', 'Comment']],
-        newTable
-      );
-    } else if (type == "molecules") {
-      addToTable(
-        [['Name', 'Visualization', 'BNGL code', 'Comment']],
-        newTable
-      );
-    } else {
-      addToTable(
-        [['Name', 'Visualization', 'BNGL code', 'Concentration', 'Comment']],
-        newTable
-      );
-    }
-    //render rows
-    if (list.length > 0) {
-      let output = [];
-      for (let i = 0; i < list.length; i++) {
-        item = list[i];
-        //normal row
-        if (typeof item == "object") {
-          output.push(prepareRow(item, type));
-        }
-        //full line comment
-        else if (typeof item == "string") {
-          addToTable([[item]], newTable, 5);
-        }
+    if (type != "header comments" || list.length > 0) {
+      addToTable([[document.createElement("hr")]], newTable, 5);
+      const newDivider = document.createElement("p");
+      newDivider.innerHTML = capitalizeFirstLetter(type);
+      newDivider.classList.add("table-divider");
+      addToTable([[newDivider]], newTable, 5);
+      if (type == "observables") {
+        addToTable(
+          [['Type', 'Name', 'Visualization', 'BNGL code', 'Comment']],
+          newTable
+        );
+      } else if (type == "molecules") {
+        addToTable(
+          [['Name', 'Visualization', 'BNGL code', 'Comment']],
+          newTable
+        );
+      } else if (type != "header comments") {
+        addToTable(
+          [['Name', 'Visualization', 'BNGL code', 'Concentration', 'Comment']],
+          newTable
+        );
       }
-      addToTable(output, newTable);
-    } else {
-      addToTable([["None", "", "", ""]], newTable);
+      //render rows
+      if (list.length > 0) {
+        let output = [];
+        for (let i = 0; i < list.length; i++) {
+          item = list[i];
+          //normal row
+          if (typeof item == "object") {
+            addToTable([prepareRow(item, type)], newTable);
+          }
+          //full line comment
+          else if (typeof item == "string") {
+            addToTable([[item]], newTable, 5);
+          }
+        }
+      } else {
+        addToTable([["None", "", "", ""]], newTable);
+      }
     }
   }
 
@@ -591,17 +275,22 @@
     for(let i = 0; i < numOldElms; i++) {
       oldElms[0].remove();
     }
+    //reset molecule manager
+    mm.reset();
+    //render new file
     var bnglFile = fileInput.files[0];
     reader = new FileReader();
     reader.onload = () => {
       let bngl = reader.result;
       //process all things of intrest
-      molecules = extractBNGL(bngl, moleculeTokens);
-      species = extractBNGL(bngl, speciesTokens);
-      observables = extractBNGL(bngl, observablesTokens, "observable");
-      //reactions = extractBNGL(bngl, reactionTokens, "reaction");
+      comments = be.extractComments(bngl);
+      molecules = be.extractBNGL(bngl, moleculeTokens);
+      species = be.extractBNGL(bngl, speciesTokens);
+      observables = be.extractBNGL(bngl, observablesTokens, "observable");
+      //reactions = be.extractBNGL(bngl, reactionTokens, "reaction");
       reactions = [];
       //visualize everything
+      visualizeType("header comments", comments);
       visualizeType("molecules", molecules);
       visualizeType("species", species);
       visualizeType("observables", observables);

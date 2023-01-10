@@ -2,16 +2,22 @@
 
 //note all scale params in draw functions do not work, fix or delete
 
+//define string hash
+function hashString(s) {
+  var hash = 0, i, chr;
+  for (var i = 0; i < s.length; i++) {
+    chr   = s.charCodeAt(i);
+    hash = (chr << (6 * i)) + hash;
+    hash |= 0; // Convert to 32bit integer
+  }
+  return hash;
+}
+
 //defining string rgb values by hashing them
 Object.defineProperty(String.prototype, 'rgb', {
   //hashing string
   value: function() {
-    var hash = 0, i, chr;
-    for (var i = 0; i < this.length; i++) {
-      chr   = this.charCodeAt(i);
-      hash = (chr << (6 * i)) + hash;
-      hash |= 0; // Convert to 32bit integer
-    }
+    hash = hashString(this);
     //changing hash into rgb format:
     hash *= ((hash < 0) ? -1: 1);
     if (hash < 65280) {
@@ -84,26 +90,24 @@ function compactString(s, numChars = 10) {
 
 //simple class to hold data from molecule's sites
 class Site {
-  constructor(name, states, color = null) {
+  constructor(name, states, molecule, color = null) {
+    this.inheritType = false;
+    this.molecule = molecule;
+    this.textColor = "000000";
     this.bondName = null;
     //get bond name from states
     for (var i = 0; i < states.length; i++) {
       if (states[i].includes('!')) {
         var pair = splitString(states[i], '!');
         states[i] = pair[0];
-        this.bondName = parseInt(pair[1]);
+        this.setBondName(pair[1]);
       }
     }
     //get bond name from site name
     if (name.includes('!')) {
       var pair = splitString(name, '!');
       name = pair[0];
-      let bondName = pair[1];
-      if (this.specialBond(bondName)) {
-        this.bondName = bondName;
-      } else {
-        this.bondName = parseInt(bondName);
-      }
+      this.setBondName(pair[1]);
     }
     //init vars
     this.name = name;
@@ -117,6 +121,21 @@ class Site {
     } else {
       this.color = color;
     }
+    //set unique id
+    this.setId();
+    return this;
+  }
+
+  setId() {
+    let name = this.name;
+    let identifyingNumber = 0;
+    let idSet = this.molecule.ids;
+    while (idSet.has(name + identifyingNumber)) {
+      identifyingNumber++;
+    }
+    let id = name + identifyingNumber;
+    this.id = id;
+    this.molecule.ids.add(id);
   }
 
   //if any site has a bond
@@ -136,12 +155,24 @@ class Site {
   getSpecialBondPair() {
     return [this.position, null, this.bondName, "special"];
   }
+
+  setBondName(bondName) {
+    if (this.specialBond(bondName)) {
+      this.bondName = bondName;
+    } else {
+      this.bondName = parseInt(bondName);
+    }
+  }
 }
 
 
 //class for molecules
 window.Molecule = class Molecule {
   constructor(def, mode = 'normal', graphic = null) {
+    //set of site id's
+    this.ids = new Set();
+    //map of site ids to site instance
+    this.siteMap = {};
     //parent graphic instance
     this.graphic = graphic;
     //draw compact / normal
@@ -165,17 +196,26 @@ window.Molecule = class Molecule {
     this.y = 0;
   }
 
+  addSite(site, list) {
+    list.push(site);
+    this.siteMap[site.id] = site;
+  }
+
+  getSite(id) {
+    return this.siteMap[id];
+  }
+
   //initialize this.color, sites, name from bionetgen def
   process() {
     //notice bond info is kept in this.sites and removed later
-    var temp = splitString(this.def, '(');
+    let temp = splitString(this.def, '(');
     this.name = ((this.mode == "normal") ? temp[0] : compactString(temp[0]));
     this.color = temp[0].rgb();
-    var sites = temp[1].slice(0, -1);
+    let sites = temp[1].slice(0, -1);
     //sites = sites.slice(sites.length - 2);
     sites = splitString(sites, ',');
-    var siteList = [];
-    var temp = '';
+    let siteList = [];
+    temp = '';
     for (var i = 0; i < sites.length; i++) {
       if (sites[i].includes(')')) {
         sites[i] = sites[i].replace(')', '');
@@ -183,9 +223,9 @@ window.Molecule = class Molecule {
       if (sites[i].includes('~')) {
         //if sites have states
         temp = splitString(sites[i], '~');
-        var states = temp.slice(1);
+        let states = temp.slice(1);
         if (this.mode == 'normal') {
-          siteList.push(new Site(temp[0], states));
+          this.addSite(new Site(temp[0], states, this), siteList);
         } else {
           //if compact mode slice restrict number of characters
           for (let u = 0; u < states.length; u++) {
@@ -204,17 +244,16 @@ window.Molecule = class Molecule {
           }
           let originalName = temp[0];
           let sliced = compactString(originalName);
-          siteList.push(new Site(
-            sliced,
-            states,
-            originalName.rgb())
+          this.addSite(
+            new Site(sliced, states, this, originalName.rgb()),
+            siteList
           );
         }
         //if there are sites but no states
       } else if (sites[i].length != 0) {
         //if normal
         if (this.mode == 'normal') {
-          siteList.push(new Site(sites[i], []));
+          this.addSite(new Site(sites[i], [], this), siteList);
         } else {
           //if compact
           let site = sites[i];
@@ -226,14 +265,11 @@ window.Molecule = class Molecule {
             let bond = temp[1];
             siteName = compactString(siteName);
             sites[i] = siteName + '!' + bond;
-            siteList.push(new Site(sites[i], [], siteName.rgb()));
+            this.addSite(new Site(sites[i], [], this, siteName.rgb()), siteList);
           } else {
-            siteList.push(
-              new Site(
-                compactString(site),
-                [],
-                originalName.rgb()
-              )
+            this.addSite(
+              new Site(compactString(site), [], this, originalName.rgb()),
+              siteList
             );
           }
         }
@@ -245,21 +281,30 @@ window.Molecule = class Molecule {
     this.sites = ((siteList == null) ? [] : siteList);
     //add observable parent sites
     let graphic = this.graphic;
+    let indexSiteMap = {};
     if (graphic && graphic.manager && graphic.manager.hasMolecules()) {
       let parentSites = graphic.manager.getSites(this.name);
-      if (parentSites) {
-        parentSites.forEach((parent, i) => {
-          let alreadyHere = false;
-          this.sites.forEach((site, i) => {
+      if (parentSites && this.sites && this.sites.length > 0) {
+        parentSites.forEach((parent, p) => {
+          this.sites.forEach((site, s) => {
             //only add if parent site is not already represented in BNGL
-            if (site.name == parent.name) {
-              alreadyHere = true;
+            if ((site.id === parent.id)) {
+              indexSiteMap[p] = site;
+              p++;
+            } else {
+              indexSiteMap[p] = parent;
             }
           });
-          if (!alreadyHere) {
-            this.sites.push(parent);
-          }
         });
+        //correct site order
+        let l = [];
+        for (let i = 0; i < parentSites.length; i++) {
+          l.push(indexSiteMap[i]);
+        }
+        this.sites = l;
+      } else {
+        //if no non parent sites
+        this.sites = parentSites;
       }
     }
   }
@@ -290,6 +335,7 @@ window.Molecule = class Molecule {
   //draw rounded rect
   drawRoundRect(ctx, x, y, radius, length, rgb) {
     ctx.fillStyle = '#' + rgb;
+    ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.arc(x + radius, y + radius, radius, Math.PI / 2, Math.PI * (3/2));
     ctx.arc(
@@ -344,18 +390,19 @@ window.Molecule = class Molecule {
       }
       //drawing site names
       let nameParam = this.sites[i].name;
+      colorParam = this.sites[i].textColor;
       xParam = x + dx - siteRadius / 2;
       yParam = y + dy + siteRadius / 2 + 1;
       if (visible) {
         this.drawList.push({func: (params) => {
-          ctx.fillStyle = '#000000';
+          ctx.fillStyle = "#" + params[3];
           ctx.font = "12px Arial";
           ctx.fillText(
             params[2],
             params[0],
             params[1]
           );
-        }, params: [xParam, yParam, nameParam]});
+        }, params: [xParam, yParam, nameParam, colorParam]});
       }
       //drawing states of sites
       var states = this.sites[i].states;
@@ -384,14 +431,14 @@ window.Molecule = class Molecule {
           this.sites[i].position = [sx + stateLength / 2 - initX, sy + 13];
         }
         //draw states
-        var colorIndex = u;
+        //var colorIndex = u;
         let stateParam = this.sites[i].states[u];
         xParam = sx;
         yParam = sy;
-        if (colorIndex > 3) {colorIndex = colorIndex % 3;}
+        //if (colorIndex > 3) {colorIndex = colorIndex % 3;}
         if (visible) {
           this.drawList.push({func: (params) => {
-            ctx.fillStyle = params[3];
+            ctx.fillStyle = "#" + params[3];
             ctx.beginPath();
             ctx.rect(params[0], params[1], params[4], 13);
             ctx.fill();
@@ -405,7 +452,7 @@ window.Molecule = class Molecule {
             xParam,
             yParam,
             stateParam,
-            this.stateColors[colorIndex],
+            stateParam.rgb(),
             stateLength
           ]});
         }
@@ -499,7 +546,7 @@ window.Graphic = class Graphic {
       //draw normal / compact
       this.mode = mode;
       //bionetgen definition
-      this.def = def;
+      this.def = def.replaceAll(" ", "");
       //dark mode boolean
       this.darkMode = darkMode;
       //compartment name
@@ -645,10 +692,10 @@ window.Graphic = class Graphic {
           y2 = pairs[i][1][1] + initY;
         }
         let y0 = scale * pairs[i][0][1] + initY;
-        let y1 = (pairs[i][0][1] + 5 * i + 20) + initY;
+        let y1 = (pairs[i][0][1] + 5 * i + 10) + initY;
         let textParam = pairs[i][2];
-        let textParamX = pairs[i][0][0] - 7 + initX;
-        let textParamY = pairs[i][0][1] + 8.5 + initY;
+        let textParamX = x1 - 4;
+        let textParamY = pairs[i][0][1] + 11 + initY;
         if (isNormal) {
           this.drawList.push({func: (params) => {
             ctx.strokeStyle = ((this.darkMode) ? "#FFFFFF" : "#000000");
@@ -656,8 +703,6 @@ window.Graphic = class Graphic {
             ctx.font = "10px Arial";
             ctx.beginPath();
             ctx.moveTo(params[0], params[2]);
-            //functioning code for bond labels below, omitted for style
-            //ctx.fillText(params[5], params[6], params[7]);
             ctx.lineTo(params[0], params[3]);
             ctx.lineTo(params[1], params[3]);
             ctx.lineTo(params[1], params[4]);
@@ -670,8 +715,6 @@ window.Graphic = class Graphic {
             ctx.font = "10px Arial";
             ctx.beginPath();
             ctx.moveTo(params[0], params[2]);
-            //functioning code for bond labels below, omitted for style
-            //ctx.fillText(params[5], params[6], params[7]);
             ctx.lineTo(params[0], params[3]);
             ctx.stroke();
           }, params: [x1, x2, y0, y1, y2, textParam, textParamX, textParamY]});
@@ -682,12 +725,16 @@ window.Graphic = class Graphic {
             ctx.font = "10px Arial";
             ctx.beginPath();
             ctx.moveTo(params[0], params[2]);
-            //functioning code for bond labels below, omitted for style
-            //ctx.fillText(params[5], params[6], params[7]);
             ctx.lineTo(params[0], params[3]);
             ctx.moveTo(params[0] - 4, params[3] - 2);
             ctx.lineTo(params[0] + 4, params[3] - 2);
             ctx.stroke();
+          }, params: [x1, x2, y0, y1, y2, textParam, textParamX, textParamY]});
+        } else if (textParam === "?") {
+          this.drawList.push({func: (params) => {
+            ctx.fillStyle = ((this.darkMode) ? "#FFFFFF" : "#000000");
+            ctx.font = "13px Arial";
+            ctx.fillText(params[5], params[6], params[7]);
           }, params: [x1, x2, y0, y1, y2, textParam, textParamX, textParamY]});
         }
       }
