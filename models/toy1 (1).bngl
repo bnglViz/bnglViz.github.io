@@ -13,7 +13,7 @@ begin parameters
 end parameters
 
 begin molecular types
-egfr(r,r)
+egfr(r,r)#comment
 end molecular types
 
 begin species
@@ -30,7 +30,6 @@ begin reaction rules
 end reaction rules
 
 begin observables
-Molecules     Dimers		egfr()
 end observables
 
 

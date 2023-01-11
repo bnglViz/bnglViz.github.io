@@ -1,11 +1,26 @@
 window.BNGLExtractor = class BNGLExtractor {
 
+  //name is misleading, returns index of first whitespace OR # character
   isWhitespace(s) {
-    return /\s/.test(s);
+    return (/\s/.test(s) || s === "#");
   }
 
+  //doen't include special case for comments like isWhitespace
   isNotWhitespace(s) {
     return !/\s/.test(s);
+  }
+
+  isCommaOrWhitespace(s) {
+    return (/\s/.test(s) || s === ",");
+  }
+
+  wordHasParenthesis(s, index) {
+    if (this.isWhitespace(s[index])) {
+      return false;
+    }
+    let end = this.nextOccur(s, index, this.isWhitespace);
+    let word = s.slice(index, end);
+    return word.includes(")");
   }
 
   //next occurance of char in string
@@ -54,7 +69,7 @@ window.BNGLExtractor = class BNGLExtractor {
         continue;
       }
       //is observable type
-      if ((!readType) && (!bngl) && this.isNotWhitespace(char) && (char != "#")) {
+      if ((!readType) && (!bngl) && this.isNotWhitespace(char)) {
         let n = this.nextOccur(s, c, this.isWhitespace);
         observType = s.slice(c, n);
         readType = true;
@@ -62,14 +77,14 @@ window.BNGLExtractor = class BNGLExtractor {
         continue;
       }
       //is non-whitespace and non-comment
-      if ((!bngl) && this.isNotWhitespace(char) && (char != "#")) {
+      if ((!bngl) && this.isNotWhitespace(char)) {
         let n = this.nextOccur(s, c, this.isWhitespace, false, -1);
         bngl = s.slice(c, n + 1);
         c = n + 1;
         continue;
       }
       //start concentration
-      if (bngl && this.isNotWhitespace(char) && (char != "#")) {
+      if (bngl && this.isNotWhitespace(char)) {
         let n = this.nextOccur(s, c, this.isWhitespace, false, -1);
         conc = s.slice(c, n + 1);
         c = n;
@@ -89,11 +104,17 @@ window.BNGLExtractor = class BNGLExtractor {
   }
 
   extractSingleLineReaction(s) {
+    //assumes:
+    //nothing starts with a number except first non whitespace char used for listing
+    //all species definitions have parenthesis
+    //concentrations do not have parenthesis
+    //concentrations are separated with either a comma or whitespace
     //initialize vars
     let c = 0;
     let len = s.length;
-    let char;
-    let bngls = [];
+    let char, sign;
+    let products = [];
+    let reactants = [];
     let concs = [];
     let comment = "";
     //parse
@@ -105,7 +126,12 @@ window.BNGLExtractor = class BNGLExtractor {
         break;
       }
       //starts with number
-      if ((bngls.length == 0) && (!isNaN(parseFloat(char)))) {
+      if (!isNaN(parseFloat(char))) {
+        c = this.nextOccur(s, c, this.isWhitespace);
+        continue;
+      }
+      //is plus
+      if (char === "+") {
         c = this.nextOccur(s, c, this.isWhitespace);
         continue;
       }
@@ -114,18 +140,29 @@ window.BNGLExtractor = class BNGLExtractor {
         c = this.nextOccur(s, c, this.isNotWhitespace);
         continue;
       }
-      //is non-whitespace and non-comment
-      if ((bngls.length == 0) && this.isNotWhitespace(char) && (char != "#")) {
+      //is product or reactant
+      if (this.isNotWhitespace(char) && this.wordHasParenthesis(s, c)) {
         let n = this.nextOccur(s, c, this.isWhitespace, false, -1);
-        bngls.push(s.slice(c, n + 1));
+        if (!sign) {
+          reactants.push(s.slice(c, n + 1));
+        } else {
+          products.push(s.slice(c, n + 1));
+        }
         c = n + 1;
         continue;
       }
-      //start concentration
-      if ((bngls.length != 0) && this.isNotWhitespace(char) && (char != "#")) {
-        let n = this.nextOccur(s, c, this.isWhitespace, false, -1);
-        concs.push(s.slice(c, n + 1));
+      //is sign
+      if ((char === "-" || char === "<") && !this.wordHasParenthesis(s, c)) {
+        let n = this.nextOccur(s, c, this.isWhitespace);
+        sign = s.slice(c, n);
         c = n;
+        continue;
+      }
+      //start concentration
+      if (this.isNotWhitespace(char) && !this.wordHasParenthesis(s, c)) {
+        let n = this.nextOccur(s, c, this.isCommaOrWhitespace);
+        concs.push(s.slice(c, n));
+        c = n + 1;
       }
       //if at end
       if (c == len - 1) {
@@ -134,9 +171,11 @@ window.BNGLExtractor = class BNGLExtractor {
       c++;
     }
     return [
-      bngls.toString(),
-      concs.toString(),
-      comment
+      reactants,
+      products,
+      sign,
+      concs,
+      ((comment.trim()) ? [comment] : [])
     ];
   }
 
@@ -196,11 +235,18 @@ window.BNGLExtractor = class BNGLExtractor {
           //mark empty strings for deletion
           let isEmpty = true;
           let onlyComment = false;
-          for (let y = 0; y < bnglConcPair.length; y++) {
+          let len = bnglConcPair.length;
+          let hasContent;
+          if (type == "reaction") {
+            hasContent = (elm)=>{return (elm.length > 0);};
+          } else {
+            hasContent = (elm)=>{return (!!elm.trim());};
+          }
+          for (let y = 0; y < len; y++) {
             //if string has content
-            if (bnglConcPair[y].trim()) {
+            if (bnglConcPair[y] && hasContent(bnglConcPair[y])) {
               //if comment is only content
-              if (y == 2) {
+              if (y == len - 1) {
                 isEmpty = false;
                 onlyComment = true;
               } else {
@@ -209,12 +255,12 @@ window.BNGLExtractor = class BNGLExtractor {
               }
               break;
             }
-          };
+          }
           if (isEmpty) {
             toDelete.push(bngls[u]);
           }
           if (onlyComment) {
-            bngls[u] = bngls[u][2];
+            bngls[u] = bngls[u][len - 1];
           }
         }
         //if begin token not found
