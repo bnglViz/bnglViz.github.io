@@ -175,7 +175,7 @@ window.BNGLExtractor = class BNGLExtractor {
       products,
       sign,
       concs,
-      ((comment.trim()) ? [comment] : [])
+      ((comment.trim()) ? comment : "")
     ];
   }
 
@@ -238,7 +238,10 @@ window.BNGLExtractor = class BNGLExtractor {
           let len = bnglConcPair.length;
           let hasContent;
           if (type == "reaction") {
-            hasContent = (elm)=>{return (elm.length > 0);};
+            hasContent = (elm)=> {
+              //if not empty string, or not empty list
+              return ((typeof elm === "string" && elm != "") || elm.length > 0);
+            };
           } else {
             hasContent = (elm)=>{return (!!elm.trim());};
           }
@@ -272,6 +275,16 @@ window.BNGLExtractor = class BNGLExtractor {
     for (let u = 0; u < toDelete.length; u++) {
       arrayRemove(bngls, toDelete[u]);
     }
+    if (type == "observable") {
+      console.log(bngls);
+    }
     return bngls;
+  }
+
+  //compile reaction extraction output into bngl string
+  compileBNGL(reactionList) {
+    let reactants, products, sign;
+    [reactants, products, sign] = reactionList;
+    return reactants.join(" + ") + " " + sign + " " + products.join(" + ");
   }
 }

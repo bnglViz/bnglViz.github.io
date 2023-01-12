@@ -534,6 +534,51 @@ window.Molecule = class Molecule {
   }
 }
 
+//basically a map from molecule definitions to sites
+window.MoleculeManager = class MoleculeManager {
+  constructor() {
+    this.map = {};
+  }
+
+  addMolecule(graphic) {
+    if (this.validDefinition(graphic)) {
+      let molecule = graphic.molecules[0];
+      let sites = molecule.sites;
+      //change parameters of sites to show its from parent
+      sites.forEach((item, i) => {
+        this.inheritType = true;
+        item.color = "cfcfcf";
+        item.bondName = null;
+        item.states = [];
+        item.textColor = "cfcfcf";
+      });
+      let name = molecule.name;
+      this.map[name] = sites;
+    }
+  }
+
+  validDefinition(graphic) {
+    return (graphic && graphic.molecules && graphic.molecules.length === 1);
+  }
+
+  getSites(name) {
+    return this.map[name];
+  }
+
+  hasMolecules() {
+    return ((Object.keys(this.map).length > 0) ? true : false);
+  }
+
+  has(graphic) {
+    let molecule = graphic.molecules[0];
+    return (this.validDefinition(graphic) && this.hasOwnProperty(molecule.name));
+  }
+
+  reset() {
+    this.map = {};
+  }
+}
+
 
 //each bionetgen should have own Graphic instance
 window.Graphic = class Graphic {
@@ -751,57 +796,182 @@ window.Graphic = class Graphic {
   }
 }
 
-//drawing graphics in html
-window.drawGraphics = function drawGraphics(tableID, BngColumn, ctxColumn, drawType) {
-    //get table html elements
-    var speciesTable = document.getElementById(tableID);
-    const rowsLen = speciesTable.rows.length;
 
-    //loop over each ctx
-    for (y = 1; y < rowsLen; y++) {
-        //get ctx and bionetgen html elements
-        var ctxElm = speciesTable.rows.item(y).cells.item(ctxColumn).children[0];
-        if (ctxElm) {
-            let compartment = ctxElm.innerHTML;
-            const ctxID = ctxElm.id;
-            var bioNetGen = speciesTable.rows.item(y).cells.item(BngColumn).innerHTML;
+class Reaction {
 
-            //remove bng trailing syntax leftover from mustache templating
-            bioNetGen = bioNetGen.replace(/,\)/g, ')');
-            bioNetGen = bioNetGen.replace(/-\)/g, ')');
-            bioNetGen = bioNetGen.replace(/!\)/g, ')');
-            if (bioNetGen[bioNetGen.length - 1] == '.') {
-              bioNetGen = bioNetGen.slice(0, bioNetGen.length - 1);
-            }
-            speciesTable.rows.item(y).cells.item(BngColumn).innerHTML = bioNetGen;
+  constructor(reactants, products, sign, ctx, darkMode = false) {
+    //list of reactant bngl definition strings
+    this.reactants = reactants;
+    //list of product bngl definition strings
+    this.products = products;
+    //either "->", "<->", or "<-"
+    this.sign = sign;
+    //canvas 2d context instance
+    this.ctx = ctx;
+    //dark mode boolean
+    this.darkMode = darkMode;
+    //list of draw functions
+    this.drawList = [];
+    //numbers tracking canvas dimensions as drawing is produced
+    this.totalLength = 0;
+    this.totalHeight = 0;
+  }
 
-            //get ctx dimensions based on draw type
-            if (drawType == 'g') {
-                var drawObj = new Graphic(bioNetGen, compartment);
-                drawObj.draw(ctxElm, 0, 0);
-                dims = [drawObj.x, drawObj.y];
+  drawPlus(x, totalHeight, ctx) {
+    let plusLen = 30;
+    ctx.beginPath();
+    ctx.moveTo(x, totalHeight / 2);
+    ctx.lineTo(x + plusLen, totalHeight / 2);
+    ctx.moveTo(x + plusLen / 2, (plusLen + totalHeight) / 2);
+    ctx.lineTo(x + plusLen / 2, (-plusLen + totalHeight) / 2);
+    ctx.strokeStyle = ((this.darkMode) ? "#FFFFFF" : "#000000");;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.closePath();
+    ctx.lineWidth = 1;
+  }
 
-                //resize ctx
-                ctxElm.width = dims[0];
-                ctxElm.height = dims[1];
-
-                //draw graphic
-                drawObj.doDrawList();
-            } else if (drawType == 'm') {
-                var drawObj = new Molecule(bioNetGen);
-                dims = drawObj.initDrawList(ctxElm, 0.5, 0.5);
-
-                //resize ctx
-                ctxElm.width = dims[0] + 5;
-                ctxElm.height = dims[1] + 5;
-
-                //draw graphic
-                drawObj.doDrawList();
-            } else {
-                throw 'drawType ' + drawType + ' is not valid, use only m or g';
-            }
-        }
+  drawArrow(x, totalHeight, ctx) {
+    let arrowLen = 30;
+    ctx.beginPath();
+    //draw arrow shaft
+    ctx.moveTo(x, totalHeight / 2);
+    ctx.lineTo(x + arrowLen, totalHeight / 2);
+    //draw right facing arrow tip
+    if (this.sign != "<-") {
+      ctx.moveTo(x + arrowLen, totalHeight / 2);
+      ctx.lineTo(x + arrowLen * (2/3), totalHeight / 2 + 7.5);
+      ctx.moveTo(x + arrowLen, totalHeight / 2);
+      ctx.lineTo(x + arrowLen * (2/3), totalHeight / 2 - 7.5);
     }
+    //draw left facing arrow tip
+    if (this.sign != "->") {
+      ctx.moveTo(x, totalHeight / 2);
+      ctx.lineTo(x + arrowLen / 3, totalHeight / 2 + 7.5);
+      ctx.moveTo(x, totalHeight / 2);
+      ctx.lineTo(x + arrowLen / 3, totalHeight / 2 - 7.5);
+    }
+    ctx.strokeStyle = ((this.darkMode) ? "#FFFFFF" : "#000000");
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.closePath();
+    ctx.lineWidth = 1;
+  }
+
+  draw() {
+    //get html elements
+    let drawMap = {};
+    let scale = 1;
+    let reactants = this.reactants;
+    let products = this.products;
+
+    //reactants
+    for (let u = 0; u < reactants.length; u++) {
+      //init obj
+      let bngl = reactants[u];
+      let drawObj = new Graphic(bngl, 'compact', this.darkMode);
+
+      //initial draw to get size
+      var dims = drawObj.draw(this.ctx, this.totalLength, 0);
+      if (dims) {
+        this.totalLength += dims[0];
+      }
+
+      //add draw function
+      this.drawList.push(
+        {
+          func: (ctx, totalLength, totalHeight) => {
+            drawObj.doDrawList();
+          },
+          x: this.totalLength
+        }
+      );
+
+      //add plus if not last reactant
+      if (u < reactants.length - 1) {
+        this.drawList.push(
+          {
+            func: (ctx, totalLength, totalHeight) => {
+              this.drawPlus(totalLength, totalHeight, this.ctx);
+            },
+            x: this.totalLength
+          }
+        );
+        this.totalLength += 30;
+      }
+
+      //add height
+      if (dims && dims[1] > this.totalHeight) {
+        this.totalHeight = dims[1];
+      }
+    }
+
+    //add arrow between reactants, products
+    this.drawList.push(
+      {
+        func: (ctx, totalLength, totalHeight) => {
+          this.drawArrow(totalLength, totalHeight, this.ctx);
+        },
+        x: this.totalLength
+      }
+    );
+    this.totalLength += 30;
+
+    //products
+    for (let u = 0; u < products.length; u++) {
+      //init obj
+      let bngl = products[u];
+      let drawObj = new Graphic(bngl, 'compact', this.darkMode);
+
+      //initial draw to get size
+      var dims = drawObj.draw(this.ctx, this.totalLength, 0, scale);
+      if (dims) {
+        this.totalLength += dims[0];
+      }
+
+      //add product draw function
+      this.drawList.push(
+        {
+          func: (ctx, totalLength, totalHeight) => {
+            drawObj.doDrawList();
+          },
+          x: this.totalLength
+        }
+      );
+
+      //add plus if not last reactant
+      if (u < products.length - 1) {
+        this.drawList.push(
+          {
+            func: (ctx, totalLength, totalHeight) => {
+              this.drawPlus(totalLength, totalHeight, this.ctx);
+            },
+            x: this.totalLength
+          }
+        );
+        this.totalLength += 30;
+      }
+
+      //add height
+      if (dims && dims[1] > this.totalHeight) {
+        this.totalHeight = dims[1];
+      }
+    }
+
+    //return dimensions for resizing canvas
+    return [this.totalLength, this.totalHeight];
+  }
+
+  //execute all functions in draw list
+  doDrawList() {
+    let ctx = this.ctx;
+    let drawList = this.drawList;
+    let len = drawList.length;
+    for (let u = 0; u < len; u++) {
+      let elm = drawList[u];
+      elm.func(ctx, elm.x, this.totalHeight);
+    }
+  }
 }
 
 //get color of single pixle on ctx

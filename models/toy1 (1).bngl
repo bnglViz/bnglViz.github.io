@@ -13,7 +13,7 @@ begin parameters
 end parameters
 
 begin molecular types
-egfr(r,r)#comment
+egfr(r,r)
 end molecular types
 
 begin species
@@ -21,15 +21,10 @@ end species
 
 
 begin reaction rules
-
-# Ligand binding (L+R)
-# Note: specifying r in R here means that the r component must not
-#       be bound.  This prevents dissociation of ligand from R
-#       when R is in a dimer.
-  1  L(r) + R(l,d) <-> L(r!1).R(l!1,d) kp1, km1
 end reaction rules
 
 begin observables
+Total         R RA R2 RP R_G  R_G_S  R_Sh  R_ShP  R_Sh_G  R_Sh_G_S R2 RP R_G  R_G_S  R_Sh  R_ShP  R_Sh_G  R_Sh_G_S
 end observables
 
 
