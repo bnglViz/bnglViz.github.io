@@ -196,7 +196,7 @@
         name = bngl.split("(")[0];
       }
     } else if (type === "reactions"){
-      [reactants, products, sign, concentrations, comment] = bnglConcPair;
+      [reactants, products, sign, rate, comment] = bnglConcPair;
       bngl =[reactants, products, sign];
       //add paranthesis if there are none
       reactants.forEach((item, i) => {
@@ -223,7 +223,7 @@
       return [
         be.compileBNGL(bnglConcPair),
         newCan,
-        concentrations.toString(),
+        rate,
         comment
       ];
     } else {
@@ -255,7 +255,7 @@
         );
       } else if (type === "reactions") {
         addToTable(
-          [['BNGL code', 'Visualization', "Concentrations", 'Comment']],
+          [['BNGL code', 'Visualization', 'Rate', 'Comment']],
           newTable
         );
       } else if (type != "header comments") {

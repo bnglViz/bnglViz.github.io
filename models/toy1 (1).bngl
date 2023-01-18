@@ -21,10 +21,10 @@ end species
 
 
 begin reaction rules
+A + B -> trash rate,rate2
 end reaction rules
 
 begin observables
-Total         R RA R2 RP R_G  R_G_S  R_Sh  R_ShP  R_Sh_G  R_Sh_G_S R2 RP R_G  R_G_S  R_Sh  R_ShP  R_Sh_G  R_Sh_G_S
 end observables
 
 

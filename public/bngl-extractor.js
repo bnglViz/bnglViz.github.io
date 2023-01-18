@@ -103,20 +103,17 @@ window.BNGLExtractor = class BNGLExtractor {
     ];
   }
 
+  //assumes nothing starts with a number
   extractSingleLineReaction(s) {
-    //assumes:
-    //nothing starts with a number except first non whitespace char used for listing
-    //all species definitions have parenthesis
-    //concentrations do not have parenthesis
-    //concentrations are separated with either a comma or whitespace
     //initialize vars
     let c = 0;
     let len = s.length;
     let char, sign;
     let products = [];
     let reactants = [];
-    let concs = [];
+    let rate = "";
     let comment = "";
+    let wasPlus = true;
     //parse
     while (c < len) {
       char = s[c];
@@ -128,11 +125,13 @@ window.BNGLExtractor = class BNGLExtractor {
       //starts with number
       if (!isNaN(parseFloat(char))) {
         c = this.nextOccur(s, c, this.isWhitespace);
+        wasPlus = false;
         continue;
       }
       //is plus
       if (char === "+") {
         c = this.nextOccur(s, c, this.isWhitespace);
+        wasPlus = true;
         continue;
       }
       //is whitespace
@@ -141,7 +140,8 @@ window.BNGLExtractor = class BNGLExtractor {
         continue;
       }
       //is product or reactant
-      if (this.isNotWhitespace(char) && this.wordHasParenthesis(s, c)) {
+      if (this.isNotWhitespace(char) && wasPlus) {
+        wasPlus = false;
         let n = this.nextOccur(s, c, this.isWhitespace, false, -1);
         if (!sign) {
           reactants.push(s.slice(c, n + 1));
@@ -156,13 +156,13 @@ window.BNGLExtractor = class BNGLExtractor {
         let n = this.nextOccur(s, c, this.isWhitespace);
         sign = s.slice(c, n);
         c = n;
+        wasPlus = true;
         continue;
       }
-      //start concentration
-      if (this.isNotWhitespace(char) && !this.wordHasParenthesis(s, c)) {
-        let n = this.nextOccur(s, c, this.isCommaOrWhitespace);
-        concs.push(s.slice(c, n));
-        c = n + 1;
+      //is rate
+      if (this.isNotWhitespace(char) && !wasPlus) {
+        rate = s.slice(c, len).trim();
+        break;
       }
       //if at end
       if (c == len - 1) {
@@ -171,11 +171,11 @@ window.BNGLExtractor = class BNGLExtractor {
       c++;
     }
     return [
-      reactants,
-      products,
-      sign,
-      concs,
-      ((comment.trim()) ? comment : "")
+      ((reactants) ? reactants : []),
+      ((products) ? products : []),
+      ((sign) ? sign : ""),
+      ((rate) ? rate : ""),
+      ((comment.trim()) ? comment.trim() : "")
     ];
   }
 
@@ -274,9 +274,6 @@ window.BNGLExtractor = class BNGLExtractor {
     //delete empty strings
     for (let u = 0; u < toDelete.length; u++) {
       arrayRemove(bngls, toDelete[u]);
-    }
-    if (type == "observable") {
-      console.log(bngls);
     }
     return bngls;
   }
