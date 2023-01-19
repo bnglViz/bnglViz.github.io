@@ -13,7 +13,6 @@ begin parameters
 end parameters
 
 begin molecular types
-egfr(r,r)
 end molecular types
 
 begin species
@@ -21,7 +20,8 @@ end species
 
 
 begin reaction rules
-A + B -> trash rate,rate2
+Shc(PTB!1,Y317~pY!2).Grb2(SH2!2,SH3) + Sos(dom)   <-> \
+       Shc(PTB!1,Y317~pY!2).Grb2(SH2!2,SH3!3).Sos(dom!3)  kp19,km19
 end reaction rules
 
 begin observables

@@ -105,15 +105,6 @@
     }
   }
 
-  //remove item from array
-  function arrayRemove(arr, value) {
-    var index = arr.indexOf(value);
-    if (index > -1) {
-      arr.splice(index, 1);
-    }
-    return arr;
-  }
-
   function standardizeElm(elm) {
     //create new html element for string inputs
     if (typeof elm == "string") {

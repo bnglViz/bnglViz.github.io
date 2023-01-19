@@ -1,3 +1,6 @@
+//assumes:
+//nothing starts with a number except first term
+//"\" is only used to denote multi line definitions
 window.BNGLExtractor = class BNGLExtractor {
 
   //name is misleading, returns index of first whitespace OR # character
@@ -103,7 +106,6 @@ window.BNGLExtractor = class BNGLExtractor {
     ];
   }
 
-  //assumes nothing starts with a number
   extractSingleLineReaction(s) {
     //initialize vars
     let c = 0;
@@ -223,6 +225,19 @@ window.BNGLExtractor = class BNGLExtractor {
           endIndex
         );
         bngls = bngls.concat(sliced.split("\n"));
+        //manage multi line definitions
+        let newArr = [];
+        for (let u = 0; u < bngls.length; u++) {
+          let bngl = bngls[u];
+          let cutIndex = bngl.indexOf("\\");
+          if (cutIndex >= 0) {
+            newArr.push(bngl.slice(0, cutIndex) + bngls[u + 1]);
+            u++;
+          } else {
+            newArr.push(bngl);
+          }
+        }
+        bngls = newArr;
         //do actual extraction for each line
         for (let u = 0; u < bngls.length; u++) {
           let bnglConcPair;
@@ -272,10 +287,24 @@ window.BNGLExtractor = class BNGLExtractor {
         }
       }
     //delete empty strings
-    for (let u = 0; u < toDelete.length; u++) {
-      arrayRemove(bngls, toDelete[u]);
-    }
+    this.arrayRemoveAll(bngls, toDelete);
     return bngls;
+  }
+
+  //remove item from array
+  arrayRemove(arr, value) {
+    var index = arr.indexOf(value);
+    if (index > -1) {
+      arr.splice(index, 1);
+    }
+    return arr;
+  }
+
+  //remove list of items from array
+  arrayRemoveAll(arr, toDelete) {
+    for (let u = 0; u < toDelete.length; u++) {
+      this.arrayRemove(arr, toDelete[u]);
+    }
   }
 
   //compile reaction extraction output into bngl string
