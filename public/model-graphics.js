@@ -2,6 +2,11 @@
 
 //note all scale params in draw functions do not work, fix or delete
 
+//logical exclusive or
+function xor(a, b) {
+  return (a && !b) || (!a && b);
+}
+
 //define string hash
 function hashString(s) {
   var hash = 0, i, chr;
@@ -799,7 +804,7 @@ window.Graphic = class Graphic {
 
 class Reaction {
 
-  constructor(reactants, products, sign, ctx, darkMode = false) {
+  constructor(reactants, products, sign, ctx, drawExtraPlus = false, darkMode = false) {
     //list of reactant bngl definition strings
     this.reactants = reactants;
     //list of product bngl definition strings
@@ -815,6 +820,8 @@ class Reaction {
     //numbers tracking canvas dimensions as drawing is produced
     this.totalLength = 0;
     this.totalHeight = 0;
+    //boolean
+    this.drawExtraPlus = drawExtraPlus;
   }
 
   drawPlus(x, totalHeight, ctx) {
@@ -887,8 +894,8 @@ class Reaction {
         }
       );
 
-      //add plus if not last reactant
-      if (u < reactants.length - 1) {
+      //add plus under specific conditions
+      if (u < reactants.length - 1 || this.drawExtraPlus && products.length == 0 && sign == null) {
         this.drawList.push(
           {
             func: (ctx, totalLength, totalHeight) => {
@@ -907,15 +914,17 @@ class Reaction {
     }
 
     //add arrow between reactants, products
-    this.drawList.push(
-      {
-        func: (ctx, totalLength, totalHeight) => {
-          this.drawArrow(totalLength, totalHeight, this.ctx);
-        },
-        x: this.totalLength
-      }
-    );
-    this.totalLength += 30;
+    if (this.sign) {
+      this.drawList.push(
+        {
+          func: (ctx, totalLength, totalHeight) => {
+            this.drawArrow(totalLength, totalHeight, this.ctx);
+          },
+          x: this.totalLength
+        }
+      );
+      this.totalLength += 30;
+    }
 
     //products
     for (let u = 0; u < products.length; u++) {
@@ -939,8 +948,8 @@ class Reaction {
         }
       );
 
-      //add plus if not last reactant
-      if (u < products.length - 1) {
+      //add plus under specific conditions
+      if (u < products.length - 1 || this.drawExtraPlus) {
         this.drawList.push(
           {
             func: (ctx, totalLength, totalHeight) => {

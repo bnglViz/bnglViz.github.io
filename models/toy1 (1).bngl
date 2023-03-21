@@ -20,8 +20,8 @@ end species
 
 
 begin reaction rules
-Shc(PTB!1,Y317~pY!2).Grb2(SH2!2,SH3) + Sos(dom)   <-> \
-       Shc(PTB!1,Y317~pY!2).Grb2(SH2!2,SH3!3).Sos(dom!3)  kp19,km19
+A + B   <-> \
+       C  kp18,km18
 end reaction rules
 
 begin observables

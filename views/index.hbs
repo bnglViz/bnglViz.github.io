@@ -79,7 +79,7 @@
   drawBNGL('z(a)', testCanvas);
 
   //draw bngl
-  function drawBNGL(bngl, canvas, type = "") {
+  function drawBNGL(bngl, canvas, type = "", drawExtraPlus = false) {
     //set up drawing context. "willReadFrequently: true" puts processes in GPU
     let ctx = canvas.getContext("2d", { willReadFrequently: true });
     let drawObj;
@@ -87,14 +87,20 @@
       drawObj = new Graphic(bngl, "compact", darkMode, mm);
     } else if (type === "reactions") {
       [reactants, products, sign] = bngl;
-      drawObj = new Reaction(reactants, products, sign, ctx, darkMode);
+      drawObj = new Reaction(reactants, products, sign, ctx, drawExtraPlus, darkMode);
     } else {
       drawObj = new Graphic(bngl, "compact", darkMode);
     }
-    drawObj.draw(ctx, 0, 0);
+    let reactionDims = drawObj.draw(ctx, 0, 0);
     //draw graphic
     drawObj.doDrawList();
-    let dims = getCanvasDimentions(ctx);
+    //get dimensions
+    let dims;
+    if (type === "reactions") {
+      dims = reactionDims;
+    } else {
+      dims = getCanvasDimentions(ctx);
+    }
     //resize canvas
     canvas.width = dims[0];
     canvas.height = dims[1];
@@ -130,7 +136,8 @@
       //iterate though elements in row
       for (let elmNum = 0; elmNum < row.length; elmNum++) {
         let elm = standardizeElm(row[elmNum]);
-        //insert elm into row
+        //if elm is list, there may be multiple elms to add
+        let arrayMode = elm.length != undefined;
         let tempTD = document.createElement("td");
         if (colSpan) {
           tempTD.colSpan = colSpan;
@@ -140,8 +147,17 @@
         } else {
           tempTD.classList.add("main-td");
         }
-        addElmLast(elm, tempTD);
-        addElmLast(tempTD, tempRow);
+        if (!arrayMode) {
+          //insert single element into td
+          addElmLast(elm, tempTD);
+          addElmLast(tempTD, tempRow);
+        } else {
+          for (let i = 0; i < elm.length; i++) {
+            //insert multiple elements into td
+            addElmLast(elm[i], tempTD);
+            addElmLast(tempTD, tempRow);
+          }
+        }
       }
     }
   }
@@ -164,6 +180,58 @@
     return output;
   }
 
+  function separateBNGLNewLines(reactants, products, sign, newLines) {
+    let signProcessed = false;
+    function reformat(list) {
+      if (!signProcessed) {
+        if (list.length == 0) {
+          return [[],[],null];
+        }
+        let i = 0;
+        let elm = list[i];
+        let noSign = true;
+        while (true) {
+          if (i >= list.length) {
+            break;
+          }
+          if (elm == null || elm.includes("-")) {
+            noSign = false;
+            signProcessed = true;
+            break;
+          }
+          i++;
+          elm = list[i];
+        }
+        return [
+          list.slice(0, i),
+          list.slice(i + 1, list.legnth),
+          ((noSign) ? null : list[i])
+        ];
+      } else {
+        return [[], list, null];
+      }
+    }
+    function sliceNewLine(output, startIndex, index) {
+      //combine reactants, sign, and product into 1 list to match newline index format
+      let sliced = condensedList.slice(startIndex, index);
+      //reformat() expands condensed list back into reactants, sign, and product
+      output.push(reformat(sliced));
+    }
+    let condensedList = reactants.concat([sign]).concat(products);
+    let output = [];
+    let startIndex;
+    let index = 0;
+    for (let i = 0; i < newLines.length; i++) {
+      startIndex = index;
+      index = newLines[i].index;
+      sliceNewLine(output, startIndex, index);
+    }
+    sliceNewLine(output, index, condensedList.length);
+    //console.log("inputs:", reactants, products, sign, newLines)
+    //console.log(output);
+    return output;
+  }
+
   //render one set (need to add compartments)
   function prepareRow(bnglConcPair, type) {
     let bngl, conc, comment, name;
@@ -173,6 +241,8 @@
       bngl = bngl.trim();
       conc = conc.trim();
       observType = observType.trim();
+      var bngls = [bngl];
+      console.log(bngls);
       if (type == "observables") {
         let temp;
         temp = bngl;
@@ -186,9 +256,8 @@
       if (type != "observables") {
         name = bngl.split("(")[0];
       }
-    } else if (type === "reactions"){
-      [reactants, products, sign, rate, comment] = bnglConcPair;
-      bngl =[reactants, products, sign];
+    } else if (type === "reactions") {
+      [reactants, products, sign, rate, comment, newLines] = bnglConcPair;
       //add paranthesis if there are none
       reactants.forEach((item, i) => {
         reactants[i] = addBNGLParenthesis(item);
@@ -196,29 +265,40 @@
       products.forEach((item, i) => {
         products[i] = addBNGLParenthesis(item);
       });
+      var bngls = separateBNGLNewLines(reactants, products, sign, newLines);
     }
-    //create new canvas
-    const newCan = document.createElement("canvas");
-    //must have inital dimensions as large as largest possible visualization
-    newCan.width = "500";
-    newCan.height = "180";
-    newCan.classList.add("bngl-canvas");
-    //draw object on canvas
-    drawBNGL(bngl, newCan, type);
+    //handle new line special case
+    let hasNewLines = ((bngls.length > 1) ? true : false);
+
+    //make canvases
+    let newCans = [];
+    for(let i = 0; i < bngls.length; i++) {
+      bngl = bngls[i];
+      //create new canvas
+      let newCan = document.createElement("canvas");
+      newCans.push(newCan);
+      //must have inital dimensions as large as largest possible visualization
+      newCan.width = "500";
+      newCan.height = "180";
+      newCan.classList.add("bngl-canvas");
+      //draw object on canvas
+      drawBNGL(bngl, newCan, type, hasNewLines && i < bngls.length - 1);
+    }
     //output as list
     if (type == "species") {
-      return [name, newCan, bngl, conc, comment];
+      return [name, newCans, bngl, conc, comment];
     } else if (type == "observables") {
-      return [observType, name, newCan, bngl, comment];
+      return [observType, name, newCans, bngl, comment];
     } else if (type == "reactions") {
       return [
+        //CHANGE compileBNGL BELOW FOR NEWLINES
         be.compileBNGL(bnglConcPair),
-        newCan,
+        newCans,
         rate,
         comment
       ];
     } else {
-      return [name, newCan, bngl, comment];
+      return [name, newCans, bngl, comment];
     }
   }
 

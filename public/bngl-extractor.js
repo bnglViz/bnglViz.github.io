@@ -1,6 +1,18 @@
+class BNGLNewLineIndex {
+  constructor(index, afterSymbol, stringLength) {
+    //this.index = number of elemnts before new line - 1
+    this.index = index;
+    this.afterSymbol = afterSymbol;
+    this.stringLength = stringLength;
+  }
+}
+
 //assumes:
 //nothing starts with a number except first term
 //"\" is only used to denote multi line definitions
+//there is some whitespace before all "\" newline declarations
+//there is only 1 "\" newline declaration per BNGL definition
+//no molecule definitions include "-" or "<"
 window.BNGLExtractor = class BNGLExtractor {
 
   //name is misleading, returns index of first whitespace OR # character
@@ -24,6 +36,10 @@ window.BNGLExtractor = class BNGLExtractor {
     let end = this.nextOccur(s, index, this.isWhitespace);
     let word = s.slice(index, end);
     return word.includes(")");
+  }
+
+  getNewLineIndex(reactants, products, sign) {
+    return  ((sign != undefined) ? 1: 0) + reactants.length + products.length;
   }
 
   //next occurance of char in string
@@ -115,6 +131,7 @@ window.BNGLExtractor = class BNGLExtractor {
     let reactants = [];
     let rate = "";
     let comment = "";
+    let newLines = [];
     let wasPlus = true;
     //parse
     while (c < len) {
@@ -134,6 +151,18 @@ window.BNGLExtractor = class BNGLExtractor {
       if (char === "+") {
         c = this.nextOccur(s, c, this.isWhitespace);
         wasPlus = true;
+        continue;
+      }
+      //is new line
+      if (char === "\\") {
+        c++;
+        newLines.push(
+          new BNGLNewLineIndex(
+            this.getNewLineIndex(reactants, products, sign),
+            wasPlus,
+            len
+          )
+        );
         continue;
       }
       //is whitespace
@@ -177,7 +206,8 @@ window.BNGLExtractor = class BNGLExtractor {
       ((products) ? products : []),
       ((sign) ? sign : ""),
       ((rate) ? rate : ""),
-      ((comment.trim()) ? comment.trim() : "")
+      ((comment.trim()) ? comment.trim() : ""),
+      ((newLines) ? newLines : [])
     ];
   }
 
@@ -204,8 +234,38 @@ window.BNGLExtractor = class BNGLExtractor {
     return output;
   }
 
+  //combine separated mutiline defintions
+  combineArrays(array) {
+    function evaluateCombinations(index, list, indexMod = 0) {
+      let elm = list[index];
+      let str = elm.str;
+      let toAppend = elm.toAppend;
+      if (!toAppend) {
+        return {
+          str: str,
+          indexMod: indexMod
+        };
+      } else {
+        let cutIndex = elm.cutIndex;
+        indexMod++;
+        let recursiveResult = evaluateCombinations(index + 1, list, indexMod);
+        return {
+          str: str.slice(0, cutIndex + 1) + recursiveResult.str,
+          indexMod: recursiveResult.indexMod
+        };
+      }
+    }
+    let output = [];
+    for (let i = 0; i < array.length; i++) {
+      let result = evaluateCombinations(i, array);
+      output.push(result.str);
+      i += result.indexMod;
+    }
+    return output;
+  }
+
   //extract bngl element
-  extractBNGL(bnglStr, elmStrList, type="") {
+  extractBNGL(bnglStr, elmStrList, type = "") {
     let bngls = [];
     let toDelete = [];
     for (let i = 0; i < elmStrList.length; i++) {
@@ -231,13 +291,14 @@ window.BNGLExtractor = class BNGLExtractor {
           let bngl = bngls[u];
           let cutIndex = bngl.indexOf("\\");
           if (cutIndex >= 0) {
-            newArr.push(bngl.slice(0, cutIndex) + bngls[u + 1]);
-            u++;
-          } else {
-            newArr.push(bngl);
+            newArr.push(
+              {str: bngl, toAppend: true, cutIndex: cutIndex}
+            );
+            continue;
           }
+          newArr.push({str: bngl, toAppend: false});
         }
-        bngls = newArr;
+        bngls = this.combineArrays(newArr);
         //do actual extraction for each line
         for (let u = 0; u < bngls.length; u++) {
           let bnglConcPair;
@@ -309,8 +370,32 @@ window.BNGLExtractor = class BNGLExtractor {
 
   //compile reaction extraction output into bngl string
   compileBNGL(reactionList) {
-    let reactants, products, sign;
+    let reactants, products, sign, newLines;
     [reactants, products, sign] = reactionList;
-    return reactants.join(" + ") + " " + sign + " " + products.join(" + ");
+    newLines = reactionList[5];
+    let condensedList = reactants.concat([sign]).concat(products);
+    //add new lines
+    for (let i = 0; i < newLines.length; i++) {
+      condensedList.splice(newLines[i].index + i, 0, "\\\n");
+    }
+    //add "+" signs
+    let len = condensedList.length;
+    for (let i = 0; i < len; i++) {
+      let elm = condensedList[i];
+      if (!(elm.includes("-") || elm === "\\\n")) {
+        condensedList.splice(i + 1, 0, "+");
+        i++;
+      }
+      //remove trailing "+" signs
+      if (elm.includes("-")) {
+        condensedList.splice(i - 1, 1);
+        i--;
+      }
+    }
+    //remove last "+" sign
+    if (condensedList[condensedList.length - 1] == "+") {
+      condensedList.pop();
+    }
+    return condensedList.join("");
   }
 }
