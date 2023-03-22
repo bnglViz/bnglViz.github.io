@@ -2,11 +2,6 @@
 
 //note all scale params in draw functions do not work, fix or delete
 
-//logical exclusive or
-function xor(a, b) {
-  return (a && !b) || (!a && b);
-}
-
 //define string hash
 function hashString(s) {
   var hash = 0, i, chr;
@@ -170,6 +165,24 @@ class Site {
   }
 }
 
+//add parenthesis to any bngl definition string
+window.addBNGLParenthesis = function addBNGLParenthesis(bngl) {
+  //split into each molecule
+  let molecules = bngl.split(".");
+  let output = "";
+  let len = molecules.length;
+  molecules.forEach((m, i) => {
+    //add paranthesis if there are none
+    if (m.indexOf("(") < 0) {
+      m = m + "()";
+    }
+    output += m;
+    if (i != len - 1) {
+      output += ".";
+    }
+  });
+  return output;
+}
 
 //class for molecules
 window.Molecule = class Molecule {
@@ -596,7 +609,7 @@ window.Graphic = class Graphic {
       //draw normal / compact
       this.mode = mode;
       //bionetgen definition
-      this.def = def.replaceAll(" ", "");
+      this.def = addBNGLParenthesis(def.replaceAll(" ", ""));
       //dark mode boolean
       this.darkMode = darkMode;
       //compartment name

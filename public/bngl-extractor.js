@@ -1,6 +1,5 @@
 class BNGLNewLineIndex {
   constructor(index, afterSymbol, stringLength) {
-    //this.index = number of elemnts before new line - 1
     this.index = index;
     this.afterSymbol = afterSymbol;
     this.stringLength = stringLength;
@@ -60,15 +59,15 @@ window.BNGLExtractor = class BNGLExtractor {
     return ((backwards) ? -1: len);
   }
 
-  //might need to add case for when comment immdiatley follows conc
+  //used for all cases except reactions and observables
+  //might need to add case for when comment immediately follows conc
   //^ I do, see toy1 (1).bngl
-  extractSingleLineBNGL(s, type="") {
+  extractSingleLineBNGL(s) {
     //initialize vars
     let c = 0;
     let len = s.length;
     let char;
-    let bngl, conc, comm, observType;
-    let readType = ((type == "observable") ? false : true);
+    let bngl, conc, comm;
     //parse
     while (c < len) {
       char = s[c];
@@ -85,14 +84,6 @@ window.BNGLExtractor = class BNGLExtractor {
       //is whitespace
       if (this.isWhitespace(char)) {
         c = this.nextOccur(s, c, this.isNotWhitespace);
-        continue;
-      }
-      //is observable type
-      if ((!readType) && (!bngl) && this.isNotWhitespace(char)) {
-        let n = this.nextOccur(s, c, this.isWhitespace);
-        observType = s.slice(c, n);
-        readType = true;
-        c = n;
         continue;
       }
       //is non-whitespace and non-comment
@@ -117,12 +108,12 @@ window.BNGLExtractor = class BNGLExtractor {
     return [
       ((bngl == null) ? "" : bngl),
       ((conc == null) ? "" : conc),
-      ((comm == null) ? "" : comm),
-      ((observType == null) ? "" : observType),
+      ((comm == null) ? "" : comm)
     ];
   }
 
-  extractSingleLineReaction(s) {
+  //used for both reactions and observables
+  extractSingleLineReaction(s, type = "") {
     //initialize vars
     let c = 0;
     let len = s.length;
@@ -131,8 +122,11 @@ window.BNGLExtractor = class BNGLExtractor {
     let reactants = [];
     let rate = "";
     let comment = "";
+    let observType = "";
     let newLines = [];
     let wasPlus = true;
+    let isObservable = type == "observable";
+    let hasReadType = !isObservable;
     //parse
     while (c < len) {
       char = s[c];
@@ -170,9 +164,27 @@ window.BNGLExtractor = class BNGLExtractor {
         c = this.nextOccur(s, c, this.isNotWhitespace);
         continue;
       }
+      //is observable type
+      if (!hasReadType && reactants.length == 0 && sign == undefined && this.isNotWhitespace(char)) {
+        let n = this.nextOccur(s, c, this.isWhitespace);
+        observType = s.slice(c, n);
+        hasReadType = true;
+        c = n;
+        continue;
+      }
       //is product or reactant
-      if (this.isNotWhitespace(char) && wasPlus) {
-        wasPlus = false;
+      if (this.isNotWhitespace(char) && wasPlus || isObservable) {
+        if (isObservable && reactants.length > 1) {
+          newLines.push(
+            new BNGLNewLineIndex(
+              this.getNewLineIndex(reactants, products, sign) - 1,
+              wasPlus,
+              len
+            )
+          );
+        } else {
+          wasPlus = false;
+        }
         let n = this.nextOccur(s, c, this.isWhitespace, false, -1);
         if (!sign) {
           reactants.push(s.slice(c, n + 1));
@@ -201,11 +213,19 @@ window.BNGLExtractor = class BNGLExtractor {
       }
       c++;
     }
+    //handle observables special cases
+    if (isObservable) {
+      //use rate to hold observable unique data
+      let name = reactants.splice(0, 1)[0];
+      rate = {type: observType, name: name};
+    } else if (!rate) {
+      rate = "";
+    }
     return [
       ((reactants) ? reactants : []),
       ((products) ? products : []),
       ((sign) ? sign : ""),
-      ((rate) ? rate : ""),
+      rate,
       ((comment.trim()) ? comment.trim() : ""),
       ((newLines) ? newLines : [])
     ];
@@ -268,6 +288,7 @@ window.BNGLExtractor = class BNGLExtractor {
   extractBNGL(bnglStr, elmStrList, type = "") {
     let bngls = [];
     let toDelete = [];
+    let specialType = type == "reaction" || type == "observable";
     for (let i = 0; i < elmStrList.length; i++) {
       let elmStr = elmStrList[i];
       let beginToken = "begin " + elmStr;
@@ -302,10 +323,10 @@ window.BNGLExtractor = class BNGLExtractor {
         //do actual extraction for each line
         for (let u = 0; u < bngls.length; u++) {
           let bnglConcPair;
-          if (type == "reaction") {
-            bnglConcPair = this.extractSingleLineReaction(bngls[u]);
+          if (specialType) {
+            bnglConcPair = this.extractSingleLineReaction(bngls[u], type);
           } else {
-            bnglConcPair = this.extractSingleLineBNGL(bngls[u], type);
+            bnglConcPair = this.extractSingleLineBNGL(bngls[u]);
           }
           bngls[u] = bnglConcPair;
           //mark empty strings for deletion
@@ -313,19 +334,20 @@ window.BNGLExtractor = class BNGLExtractor {
           let onlyComment = false;
           let len = bnglConcPair.length;
           let hasContent;
-          if (type == "reaction") {
+          if (specialType) {
             hasContent = (elm)=> {
               //if not empty string, or not empty list
-              return ((typeof elm === "string" && elm != "") || elm.length > 0);
+              return ((typeof elm === "string" && elm.trim() != "") || elm.length > 0);
             };
           } else {
             hasContent = (elm)=>{return (!!elm.trim());};
           }
           for (let y = 0; y < len; y++) {
+            let elm = bnglConcPair[y];
             //if string has content
-            if (bnglConcPair[y] && hasContent(bnglConcPair[y])) {
+            if (elm && hasContent(elm)) {
               //if comment is only content
-              if (y == len - 1) {
+              if ((!specialType && y == len - 1) || (specialType && y == len - 2)) {
                 isEmpty = false;
                 onlyComment = true;
               } else {
@@ -339,7 +361,11 @@ window.BNGLExtractor = class BNGLExtractor {
             toDelete.push(bngls[u]);
           }
           if (onlyComment) {
-            bngls[u] = bngls[u][len - 1];
+            if (type == "reaction" || type == "observable") {
+              bngls[u] = bngls[u][4];
+            } else {
+              bngls[u] = bngls[u][len - 1];
+            }
           }
         }
         //if begin token not found
@@ -349,6 +375,7 @@ window.BNGLExtractor = class BNGLExtractor {
       }
     //delete empty strings
     this.arrayRemoveAll(bngls, toDelete);
+    console.log(bngls);
     return bngls;
   }
 
@@ -369,9 +396,12 @@ window.BNGLExtractor = class BNGLExtractor {
   }
 
   //compile reaction extraction output into bngl string
-  compileBNGL(reactionList) {
+  compileBNGL(reactionList, type = "", observType = "") {
     let reactants, products, sign, newLines;
     [reactants, products, sign] = reactionList;
+    if (type == "observables") {
+      return reactionList[0].join(" ");
+    }
     newLines = reactionList[5];
     let condensedList = reactants.concat([sign]).concat(products);
     //add new lines

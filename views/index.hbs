@@ -84,7 +84,7 @@
     let ctx = canvas.getContext("2d", { willReadFrequently: true });
     let drawObj;
     if (type === "observables") {
-      drawObj = new Graphic(bngl, "compact", darkMode, mm);
+      drawObj = new Graphic(bngl[0][0], "compact", darkMode, mm);
     } else if (type === "reactions") {
       [reactants, products, sign] = bngl;
       drawObj = new Reaction(reactants, products, sign, ctx, drawExtraPlus, darkMode);
@@ -162,24 +162,6 @@
     }
   }
 
-  function addBNGLParenthesis(bngl) {
-    //split into each molecule
-    let molecules = bngl.split(".");
-    let output = "";
-    let len = molecules.length;
-    molecules.forEach((m, i) => {
-      //add paranthesis if there are none
-      if (m.indexOf("(") < 0) {
-        m = m + "()";
-      }
-      output += m;
-      if (i != len - 1) {
-        output += ".";
-      }
-    });
-    return output;
-  }
-
   function separateBNGLNewLines(reactants, products, sign, newLines) {
     let signProcessed = false;
     function reformat(list) {
@@ -217,7 +199,12 @@
       //reformat() expands condensed list back into reactants, sign, and product
       output.push(reformat(sliced));
     }
-    let condensedList = reactants.concat([sign]).concat(products);
+    let condensedList;
+    if (sign) {
+      condensedList = reactants.concat([sign]).concat(products);
+    } else {
+      condensedList = reactants.concat(products);
+    }
     let output = [];
     let startIndex;
     let index = 0;
@@ -227,35 +214,31 @@
       sliceNewLine(output, startIndex, index);
     }
     sliceNewLine(output, index, condensedList.length);
-    //console.log("inputs:", reactants, products, sign, newLines)
-    //console.log(output);
     return output;
   }
 
   //render one set (need to add compartments)
   function prepareRow(bnglConcPair, type) {
     let bngl, conc, comment, name;
-    if (type != "reactions") {
+    if (type != "reactions" && type != "observables") {
       [bngl, conc, comment, observType] = bnglConcPair;
       comment = comment.trim();
       bngl = bngl.trim();
       conc = conc.trim();
-      observType = observType.trim();
       var bngls = [bngl];
-      console.log(bngls);
-      if (type == "observables") {
-        let temp;
-        temp = bngl;
-        bngl = conc;
-        conc = temp;
-        name = conc;
-      }
       //add paranthesis if there are none
       bngl = addBNGLParenthesis(bngl);
       //get name (change this to only after parenthesis)
       if (type != "observables") {
         name = bngl.split("(")[0];
       }
+    } else if (type == "observables") {
+      [reactants, products, sign, observData, comment, newLines] = bnglConcPair;
+      //add paranthesis if there are none
+      reactants.forEach((item, i) => {
+        reactants[i] = addBNGLParenthesis(item);
+      });
+      var bngls = separateBNGLNewLines(reactants, products, sign, newLines);
     } else if (type === "reactions") {
       [reactants, products, sign, rate, comment, newLines] = bnglConcPair;
       //add paranthesis if there are none
@@ -288,10 +271,16 @@
     if (type == "species") {
       return [name, newCans, bngl, conc, comment];
     } else if (type == "observables") {
-      return [observType, name, newCans, bngl, comment];
+      //return [observType, name, newCans, bngl, comment];
+      return [
+        observData.type,
+        observData.name,
+        newCans,
+        be.compileBNGL(bnglConcPair, type, observData.type),
+        comment
+      ];
     } else if (type == "reactions") {
       return [
-        //CHANGE compileBNGL BELOW FOR NEWLINES
         be.compileBNGL(bnglConcPair),
         newCans,
         rate,
@@ -346,7 +335,7 @@
           }
           //full line comment
           else if (typeof item == "string") {
-            addToTable([[item]], newTable, 5);
+            addToTable([["#" + item]], newTable, 5);
           }
         }
       } else {
