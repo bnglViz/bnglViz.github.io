@@ -16,6 +16,7 @@ begin molecular types
 end molecular types
 
 begin species
+egf(r)                           egf_tot#comment
 end species
 
 
@@ -23,8 +24,6 @@ begin reaction rules
 end reaction rules
 
 begin observables
-#comment
-Molecules R_S_G_S egfr(Y1148~pY!1).Shc(PTB!1,Y317~pY!2).Grb2(SH2!2,SH3!3).Sos(dom!3)
 end observables
 
 

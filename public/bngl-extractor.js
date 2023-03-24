@@ -324,6 +324,7 @@ window.BNGLExtractor = class BNGLExtractor {
         for (let u = 0; u < bngls.length; u++) {
           let bnglConcPair;
           if (specialType) {
+            bngls[u] = ((type == "observable") ? bngls[u].replace(/\n/g, "").replace(/\\/g, ""): bngls[u]);
             bnglConcPair = this.extractSingleLineReaction(bngls[u], type);
           } else {
             bnglConcPair = this.extractSingleLineBNGL(bngls[u]);
@@ -375,7 +376,6 @@ window.BNGLExtractor = class BNGLExtractor {
       }
     //delete empty strings
     this.arrayRemoveAll(bngls, toDelete);
-    console.log(bngls);
     return bngls;
   }
 
