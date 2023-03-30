@@ -5,7 +5,7 @@
       <input id="bngl-file-input" type="file" onchange="visualize()">
     </td>
     <td id="canvas-cell">
-      <canvas id="testCanvas" width="500" height="180"></canvas>
+      <canvas id="testCanvas" width="4000" height="180"></canvas>
     </td>
     <td id="canvas-text">
       Molecule is shown as an oval ...
@@ -21,7 +21,7 @@
   const moleculeTokens = ["molecule types", "molecular types"];
   const speciesTokens = ["species", "seed species"];
   const observablesTokens = ["observables"];
-  const reactionTokens = ["reaction rules"];
+  const reactionTokens = ["reaction rules", "reaction_rules"];
 
   //get major elements
   const testCanvas = document.getElementById("testCanvas");
@@ -87,7 +87,7 @@
       drawObj = new Graphic(bngl[0][0], "compact", darkMode, mm);
     } else if (type === "reactions") {
       [reactants, products, sign] = bngl;
-      drawObj = new Reaction(reactants, products, sign, ctx, drawExtraPlus, darkMode);
+      drawObj = new Reaction(reactants, products, sign, ctx, drawExtraPlus, darkMode, mm);
     } else {
       drawObj = new Graphic(bngl, "compact", darkMode);
     }
@@ -97,7 +97,8 @@
     //get dimensions
     let dims;
     if (type === "reactions") {
-      dims = reactionDims;
+      //dims = reactionDims;
+      dims = getCanvasDimentions(ctx);
     } else {
       dims = getCanvasDimentions(ctx);
     }
@@ -261,7 +262,7 @@
       let newCan = document.createElement("canvas");
       newCans.push(newCan);
       //must have inital dimensions as large as largest possible visualization
-      newCan.width = "500";
+      newCan.width = "4000";
       newCan.height = "180";
       newCan.classList.add("bngl-canvas");
       //draw object on canvas
@@ -335,7 +336,7 @@
           }
           //full line comment
           else if (typeof item == "string") {
-            addToTable([["#" + item]], newTable, 5);
+            addToTable([[item]], newTable, 5);
           }
         }
       } else {

@@ -817,7 +817,7 @@ window.Graphic = class Graphic {
 
 class Reaction {
 
-  constructor(reactants, products, sign, ctx, drawExtraPlus = false, darkMode = false) {
+  constructor(reactants, products, sign, ctx, drawExtraPlus = false, darkMode = false, moleculeManager = null) {
     //list of reactant bngl definition strings
     this.reactants = reactants;
     //list of product bngl definition strings
@@ -835,6 +835,8 @@ class Reaction {
     this.totalHeight = 0;
     //boolean
     this.drawExtraPlus = drawExtraPlus;
+    //MoleculeManager instance
+    this.mm = moleculeManager;
   }
 
   drawPlus(x, totalHeight, ctx) {
@@ -889,7 +891,7 @@ class Reaction {
     for (let u = 0; u < reactants.length; u++) {
       //init obj
       let bngl = reactants[u];
-      let drawObj = new Graphic(bngl, 'compact', this.darkMode);
+      let drawObj = new Graphic(bngl, 'compact', this.darkMode, this.mm);
 
       //initial draw to get size
       var dims = drawObj.draw(this.ctx, this.totalLength, 0);
@@ -943,7 +945,7 @@ class Reaction {
     for (let u = 0; u < products.length; u++) {
       //init obj
       let bngl = products[u];
-      let drawObj = new Graphic(bngl, 'compact', this.darkMode);
+      let drawObj = new Graphic(bngl, 'compact', this.darkMode, this.mm);
 
       //initial draw to get size
       var dims = drawObj.draw(this.ctx, this.totalLength, 0, scale);
@@ -1005,7 +1007,7 @@ window.pixleAlpha = function pixleAlpha(ctx, x, y) {
 window.getCanvasDimentions = function getCanvasDimentions(ctx) {
   let dims = [null, null];
   //find initial furthest visible pixle right
-  let x = 500;
+  let x = 4000;
   let y = 1;
   let a = 0;
   while (a == 0 && x >= 0) {

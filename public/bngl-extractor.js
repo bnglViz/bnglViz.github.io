@@ -71,6 +71,7 @@ window.BNGLExtractor = class BNGLExtractor {
     //parse
     while (c < len) {
       char = s[c];
+      console.log(c, char);
       //is comment
       if (char == "#") {
         comm = s.slice(c, len);
@@ -100,7 +101,7 @@ window.BNGLExtractor = class BNGLExtractor {
         c = n;
       }
       //if at end
-      if (c == len - 1) {
+      if (c >= len - 1) {
         break;
       }
       c++;
@@ -132,13 +133,12 @@ window.BNGLExtractor = class BNGLExtractor {
       char = s[c];
       //is comment
       if (char == "#") {
-        comment = s.slice(c + 1, len);
+        comment = s.slice(c, len);
         break;
       }
       //starts with number
       if (!isNaN(parseFloat(char))) {
         c = this.nextOccur(s, c, this.isWhitespace);
-        wasPlus = false;
         continue;
       }
       //is plus
@@ -204,20 +204,25 @@ window.BNGLExtractor = class BNGLExtractor {
       }
       //is rate
       if (this.isNotWhitespace(char) && !wasPlus) {
-        rate = s.slice(c, len).trim();
-        break;
+        let n = this.nextOccur(s, c, this.isWhitespace, false, -1);
+        rate = s.slice(c, n + 1);
+        c = n;
       }
       //if at end
-      if (c == len - 1) {
+      if (c >= len - 1) {
         break;
       }
       c++;
     }
     //handle observables special cases
     if (isObservable) {
-      //use rate to hold observable unique data
-      let name = reactants.splice(0, 1)[0];
-      rate = {type: observType, name: name};
+      if (reactants.length > 1) {
+        //use rate to hold observable unique data
+        let name = reactants.splice(0, 1)[0];
+        rate = {type: observType, name: name};
+      } else {
+        rate = {type: "", name: observType};
+      }
     } else if (!rate) {
       rate = "";
     }
@@ -306,6 +311,13 @@ window.BNGLExtractor = class BNGLExtractor {
           endIndex
         );
         bngls = bngls.concat(sliced.split("\n"));
+        //manage weird ":\" tokens
+        for (let u = 0; u < bngls.length; u++) {
+          let bngl = bngls[u];
+          if (bngl.includes(":\\")) {
+            bngls[u] = "#" + bngl.replace(":\\", "");
+          }
+        }
         //manage multi line definitions
         let newArr = [];
         for (let u = 0; u < bngls.length; u++) {
