@@ -105,11 +105,11 @@ window.BNGLExtractor = class BNGLExtractor {
       }
       c++;
     }
-    return [
-      ((bngl == null) ? "" : bngl),
-      ((conc == null) ? "" : conc),
-      ((comm == null) ? "" : comm)
-    ];
+    return {
+      bngl: (bngl == null) ? "" : bngl,
+      conc: (conc == null) ? "" : conc,
+      comment: (comm == null) ? "" : comm
+    };
   }
 
   //used for both reactions and observables
@@ -225,14 +225,14 @@ window.BNGLExtractor = class BNGLExtractor {
     } else if (!rate) {
       rate = "";
     }
-    return [
-      ((reactants) ? reactants : []),
-      ((products) ? products : []),
-      ((sign) ? sign : ""),
-      rate,
-      ((comment.trim()) ? comment.trim() : ""),
-      ((newLines) ? newLines : [])
-    ];
+    return {
+      reactants: (reactants) ? reactants : [],
+      products: (products) ? products : [],
+      sign: (sign) ? sign : "",
+      rate: rate,
+      comment: (comment.trim()) ? comment.trim() : "",
+      newLines: (newLines) ? newLines : []
+    };
   }
 
   extractCompartments(s) {
@@ -278,12 +278,12 @@ window.BNGLExtractor = class BNGLExtractor {
       }
       c++;
     }
-    return [
-      ((name == null) ? "" : name),
-      ((dimension == null) ? "" : dimension),
-      ((size == null) ? "" : size),
-      ((comment == null) ? "" : comment),
-    ];
+    return {
+      name: (name == null) ? "" : name,
+      dimension: (dimension == null) ? "" : dimension,
+      size: (size == null) ? "" : size,
+      comment: (comment == null) ? "" : comment,
+    };
   }
 
   //extract comments
@@ -385,20 +385,21 @@ window.BNGLExtractor = class BNGLExtractor {
         bngls = this.combineArrays(newArr);
         //do actual extraction for each line
         for (let u = 0; u < bngls.length; u++) {
-          let bnglConcPair;
+          let data;
           if (specialType) {
             bngls[u] = ((type == "observable") ? bngls[u].replace(/\n/g, "").replace(/\\/g, ""): bngls[u]);
-            bnglConcPair = this.extractSingleLineReaction(bngls[u], type);
+            data = this.extractSingleLineReaction(bngls[u], type);
           } else if (isCompartment) {
-            bnglConcPair = this.extractCompartments(bngls[u]);
+            data = this.extractCompartments(bngls[u]);
           } else {
-            bnglConcPair = this.extractSingleLineBNGL(bngls[u]);
+            data = this.extractSingleLineBNGL(bngls[u]);
           }
-          bngls[u] = bnglConcPair;
+          bngls[u] = data;
           //mark empty strings for deletion
           let isEmpty = true;
           let onlyComment = false;
-          let len = bnglConcPair.length;
+          let dataAsList = Object.entries(data);
+          let len = dataAsList.length;
           let hasContent;
           if (specialType) {
             hasContent = (elm)=> {
@@ -409,11 +410,13 @@ window.BNGLExtractor = class BNGLExtractor {
             hasContent = (elm)=>{return (!!elm.trim());};
           }
           for (let y = 0; y < len; y++) {
-            let elm = bnglConcPair[y];
+            let pair = dataAsList[y];
+            let key, elm;
+            [key, elm] = pair;
             //if string has content
             if (elm && hasContent(elm)) {
               //if comment is only content
-              if ((!specialType && y == len - 1) || (specialType && y == len - 2)) {
+              if (key == "comment") {
                 isEmpty = false;
                 onlyComment = true;
               } else {
@@ -461,13 +464,14 @@ window.BNGLExtractor = class BNGLExtractor {
   }
 
   //compile reaction extraction output into bngl string
-  compileBNGL(reactionList, type = "", observType = "") {
+  compileBNGL(data, type = "", observType = "") {
     let reactants, products, sign, newLines;
-    [reactants, products, sign] = reactionList;
+    let list = Object.values(data);
+    [reactants, products, sign] = list;
     if (type == "observables") {
-      return reactionList[0].join(" ");
+      return list[0].join(" ");
     }
-    newLines = reactionList[5];
+    newLines = data.newLines;
     let condensedList = reactants.concat([sign]).concat(products);
     //add new lines
     for (let i = 0; i < newLines.length; i++) {
