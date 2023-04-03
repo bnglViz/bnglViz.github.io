@@ -18,8 +18,18 @@
 <script src="/bngl-extractor.js"></script>
 <script>
   //set bngl begin tokens
-  const moleculeTokens = ["molecule types", "molecular types"];
-  const speciesTokens = ["species", "seed species"];
+  const compartmentTokens = ["compartments"];
+  const moleculeTokens = [
+    "molecule types",
+    "molecular types",
+    "molecule_types",
+    "molecular_types"
+  ];
+  const speciesTokens = [
+    "species",
+    "seed species",
+    "seed_species"
+  ];
   const observablesTokens = ["observables"];
   const reactionTokens = ["reaction rules", "reaction_rules"];
 
@@ -221,7 +231,7 @@
   //render one set (need to add compartments)
   function prepareRow(bnglConcPair, type) {
     let bngl, conc, comment, name;
-    if (type != "reactions" && type != "observables") {
+    if (type != "reactions" && type != "observables" && type != "compartments") {
       [bngl, conc, comment, observType] = bnglConcPair;
       comment = comment.trim();
       bngl = bngl.trim();
@@ -233,6 +243,8 @@
       if (type != "observables") {
         name = bngl.split("(")[0];
       }
+    } else if (type == "compartments") {
+      return bnglConcPair;
     } else if (type == "observables") {
       [reactants, products, sign, observData, comment, newLines] = bnglConcPair;
       //add paranthesis if there are none
@@ -314,9 +326,14 @@
           [['Name', 'Visualization', 'BNGL code', 'Comment']],
           newTable
         );
-      } else if (type === "reactions") {
+      } else if (type == "reactions") {
         addToTable(
           [['BNGL code', 'Visualization', 'Rate', 'Comment']],
+          newTable
+        );
+      } else if (type == "compartments") {
+        addToTable(
+          [['Name', 'Dimension', 'Size', 'Comment']],
           newTable
         );
       } else if (type != "header comments") {
@@ -371,12 +388,14 @@
       let bngl = reader.result;
       //process all things of intrest
       comments = be.extractComments(bngl);
+      compartments = be.extractBNGL(bngl, compartmentTokens, "compartments");
       molecules = be.extractBNGL(bngl, moleculeTokens);
       species = be.extractBNGL(bngl, speciesTokens);
       observables = be.extractBNGL(bngl, observablesTokens, "observable");
       reactions = be.extractBNGL(bngl, reactionTokens, "reaction");
       //visualize everything
       visualizeType("header comments", comments);
+      visualizeType("compartments", compartments);
       visualizeType("molecules", molecules);
       visualizeType("species", species);
       visualizeType("observables", observables);

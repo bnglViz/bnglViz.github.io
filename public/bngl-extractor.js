@@ -71,7 +71,6 @@ window.BNGLExtractor = class BNGLExtractor {
     //parse
     while (c < len) {
       char = s[c];
-      console.log(c, char);
       //is comment
       if (char == "#") {
         comm = s.slice(c, len);
@@ -236,6 +235,57 @@ window.BNGLExtractor = class BNGLExtractor {
     ];
   }
 
+  extractCompartments(s) {
+    //initialize vars
+    let c = 0;
+    let len = s.length;
+    let char;
+    let name, dimension, size, comment;
+    //parse
+    while (c < len) {
+      char = s[c];
+      //is comment
+      if (char == "#") {
+        comment = s.slice(c, len);
+        break;
+      }
+      //starts with number
+      if ((!name) && (!isNaN(parseFloat(char)))) {
+        c = this.nextOccur(s, c, this.isWhitespace);
+        continue;
+      }
+      //is whitespace
+      if (this.isWhitespace(char)) {
+        c = this.nextOccur(s, c, this.isNotWhitespace);
+        continue;
+      }
+      //is non-whitespace and non-comment
+      if (this.isNotWhitespace(char)) {
+        let n = this.nextOccur(s, c, this.isWhitespace, false, -1);
+        if (!name) {
+          name = s.slice(c, n + 1);
+        } else if(!dimension) {
+          dimension = s.slice(c, n + 1);
+        } else if(!size) {
+          size = s.slice(c, n + 1);
+        }
+        c = n + 1;
+        continue;
+      }
+      //if at end
+      if (c >= len - 1) {
+        break;
+      }
+      c++;
+    }
+    return [
+      ((name == null) ? "" : name),
+      ((dimension == null) ? "" : dimension),
+      ((size == null) ? "" : size),
+      ((comment == null) ? "" : comment),
+    ];
+  }
+
   //extract comments
   extractComment(s) {
     let c = this.nextOccur(s, 0, (s)=>{return (s === "#")});
@@ -294,6 +344,7 @@ window.BNGLExtractor = class BNGLExtractor {
     let bngls = [];
     let toDelete = [];
     let specialType = type == "reaction" || type == "observable";
+    let isCompartment = type == "compartments";
     for (let i = 0; i < elmStrList.length; i++) {
       let elmStr = elmStrList[i];
       let beginToken = "begin " + elmStr;
@@ -338,6 +389,8 @@ window.BNGLExtractor = class BNGLExtractor {
           if (specialType) {
             bngls[u] = ((type == "observable") ? bngls[u].replace(/\n/g, "").replace(/\\/g, ""): bngls[u]);
             bnglConcPair = this.extractSingleLineReaction(bngls[u], type);
+          } else if (isCompartment) {
+            bnglConcPair = this.extractCompartments(bngls[u]);
           } else {
             bnglConcPair = this.extractSingleLineBNGL(bngls[u]);
           }

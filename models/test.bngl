@@ -12,6 +12,9 @@ begin parameters
  11 kmA  0.02
 end parameters
 
+begin compartments
+end compartments
+
 begin molecular types
 end molecular types
 
@@ -20,7 +23,6 @@ end species
 
 
 begin reaction rules
-egfr(l,r)   + egf(r) <-> egfr(l!1,r).egf(r!1)   kp1, km1   #ligand-monomer
 end reaction rules
 
 begin observables
