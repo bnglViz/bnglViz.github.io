@@ -186,7 +186,9 @@ window.addBNGLParenthesis = function addBNGLParenthesis(bngl) {
 
 //class for molecules
 window.Molecule = class Molecule {
-  constructor(def, mode = 'normal', graphic = null) {
+  constructor(def, graphic, parameters) {
+    //old constructor(def, mode = 'normal', graphic = null)
+    this.parameters = parameters;
     //set of site id's
     this.ids = new Set();
     //map of site ids to site instance
@@ -194,7 +196,7 @@ window.Molecule = class Molecule {
     //parent graphic instance
     this.graphic = graphic;
     //draw compact / normal
-    this.mode = mode;
+    this.mode = parameters.mode;
     //bionetgen definition
     this.def = def;
     //6 digit rgb hex
@@ -555,7 +557,43 @@ window.Molecule = class Molecule {
 //basically a map from molecule definitions to sites
 window.MoleculeManager = class MoleculeManager {
   constructor() {
-    this.map = {};
+    //map from molecule name to list of sites
+    this.molcMap = {};
+    //map from compartment name to dimension
+    this.compMap = {};
+    //map from molecule name to compartment name
+    this.molcCompMap = {};
+  }
+
+  processMoleculeCompartment(moleculeName) {
+    console.log(moleculeName);
+    let scopeMolName = moleculeName;
+    if (scopeMolName.includes("@")) {
+      //if the string doesn't have exactly 1 colon its invalid
+      console.log(scopeMolName);
+      let colonCount = scopeMolName.split(":").length - 1;
+      if (colonCount != 1) {
+        throw new Error("Invalid compartment definition!");
+        return scopeMolName;
+      }
+      let pair = scopeMolName.split(":");
+      let compartmentName = pair[0].slice(1, pair[0].length);
+      let scopeMolName = pair[1];
+      this.molcCompMap[scopeMolName] = compartmentName;
+    }
+    return scopeMolName;
+  }
+
+  addCompartment(compartment, dimension) {
+    this.compMap[compartment] = dimension;
+  }
+
+  hasCompartment(compartment) {
+    return (this.compMap.hasOwnProperty(compartment));
+  }
+
+  getDimension(compartment) {
+    return ((this.hasCompartment(compartment)) ? this.compMap[compartment]:-1);
   }
 
   addMolecule(graphic) {
@@ -571,7 +609,7 @@ window.MoleculeManager = class MoleculeManager {
         item.textColor = "cfcfcf";
       });
       let name = molecule.name;
-      this.map[name] = sites;
+      this.molcMap[name] = sites;
     }
   }
 
@@ -580,40 +618,43 @@ window.MoleculeManager = class MoleculeManager {
   }
 
   getSites(name) {
-    return this.map[name];
+    return this.molcMap[name];
   }
 
   hasMolecules() {
-    return ((Object.keys(this.map).length > 0) ? true : false);
+    return ((Object.keys(this.molcMap).length > 0) ? true : false);
   }
 
   has(graphic) {
     let molecule = graphic.molecules[0];
-    return (this.validDefinition(graphic) && this.hasOwnProperty(molecule.name));
+    return (this.validDefinition(graphic) && this.molcMap.hasOwnProperty(molecule.name));
   }
 
   reset() {
-    this.map = {};
+    this.molcMap = {};
+    this.compMap = {};
   }
 }
 
 
 //each bionetgen should have own Graphic instance
 window.Graphic = class Graphic {
-  constructor(def, mode = 'normal', darkMode = false, manager = null) {
+  constructor(def, parameters) {
+    //old constructor def, mode = 'normal', darkMode = false, manager = null
+    this.parameters = parameters;
     //molecule manager class instance
-    this.manager = manager;
+    this.manager = parameters.manager;
     //list of {drawFunction, parameterList} objects
     this.drawList = [];
     try {
       //draw normal / compact
-      this.mode = mode;
+      this.mode = parameters.mode;
       //bionetgen definition
       this.def = addBNGLParenthesis(def.replaceAll(" ", ""));
       //dark mode boolean
-      this.darkMode = darkMode;
+      this.darkMode = parameters.darkMode;
       //compartment name
-      if (mode && mode != 'normal' && mode != 'compact') {
+      if (this.mode && this.mode != 'normal' && this.mode != 'compact') {
         this.comp = this.mode;
         //abreviate compratment name
         this.comp = this.comp.slice(0, 3) + '...';
@@ -633,7 +674,7 @@ window.Graphic = class Graphic {
     let defs = splitString(this.def, '.');
     let mode = ((this.mode == 'normal') ? "" : 'compact');
     for (var i = 0; i < defs.length; i++) {
-      this.molecules.push(new Molecule(defs[i], mode, this));
+      this.molecules.push(new Molecule(defs[i], {mode: mode}, this));
     }
   }
 
@@ -748,7 +789,6 @@ window.Graphic = class Graphic {
           if (m1.bondName != null) {
             //add special bonds
             if ((!m1.specialBond(m1.bondName)) && (!completedBonds.has(m1.bondName))) {
-              //console.log(m1);
               m1.bondName = "+";
               pairs.push(m1.getSpecialBondPair());
             }
@@ -833,8 +873,9 @@ window.Graphic = class Graphic {
 
 
 class Reaction {
-
-  constructor(reactants, products, sign, ctx, drawExtraPlus = false, darkMode = false, moleculeManager = null) {
+  constructor(reactants, products, sign, ctx, parameters) {
+    //drawExtraPlus = false, darkMode = false, moleculeManager = null
+    this.parametes = parameters;
     //list of reactant bngl definition strings
     this.reactants = reactants;
     //list of product bngl definition strings
@@ -844,16 +885,16 @@ class Reaction {
     //canvas 2d context instance
     this.ctx = ctx;
     //dark mode boolean
-    this.darkMode = darkMode;
+    this.darkMode = parameters.darkMode;
     //list of draw functions
     this.drawList = [];
     //numbers tracking canvas dimensions as drawing is produced
     this.totalLength = 0;
     this.totalHeight = 0;
     //boolean
-    this.drawExtraPlus = drawExtraPlus;
+    this.drawExtraPlus = parameters.drawExtraPlus;
     //MoleculeManager instance
-    this.mm = moleculeManager;
+    this.mm = parameters.manager;
   }
 
   drawPlus(x, totalHeight, ctx) {
@@ -908,7 +949,12 @@ class Reaction {
     for (let u = 0; u < reactants.length; u++) {
       //init obj
       let bngl = reactants[u];
-      let drawObj = new Graphic(bngl, 'compact', this.darkMode, this.mm);
+      let parameters = {
+        mode: 'compact',
+        darkMode: this.darkMode,
+        manager: this.mm
+      };
+      let drawObj = new Graphic(bngl, parameters);
 
       //initial draw to get size
       var dims = drawObj.draw(this.ctx, this.totalLength, 0);
@@ -962,7 +1008,12 @@ class Reaction {
     for (let u = 0; u < products.length; u++) {
       //init obj
       let bngl = products[u];
-      let drawObj = new Graphic(bngl, 'compact', this.darkMode, this.mm);
+      let parameters = {
+        mode: 'compact',
+        darkMode: this.darkMode,
+        manager: this.mm
+      };
+      let drawObj = new Graphic(bngl, parameters);
 
       //initial draw to get size
       var dims = drawObj.draw(this.ctx, this.totalLength, 0, scale);

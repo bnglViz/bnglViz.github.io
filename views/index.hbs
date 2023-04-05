@@ -94,12 +94,26 @@
     let ctx = canvas.getContext("2d", { willReadFrequently: true });
     let drawObj;
     if (type === "observables") {
-      drawObj = new Graphic(bngl[0][0], "compact", darkMode, mm);
+      let parameters = {
+        mode: 'compact',
+        darkMode: this.darkMode,
+        manager: mm
+      };
+      drawObj = new Graphic(bngl[0][0], parameters);
     } else if (type === "reactions") {
       [reactants, products, sign] = bngl;
-      drawObj = new Reaction(reactants, products, sign, ctx, drawExtraPlus, darkMode, mm);
+      let parameters = {
+        drawExtraPlus: drawExtraPlus,
+        darkMode: this.darkMode,
+        manager: mm
+      };
+      drawObj = new Reaction(reactants, products, sign, ctx, parameters);
     } else {
-      drawObj = new Graphic(bngl, "compact", darkMode);
+      let parameters = {
+        mode: 'compact',
+        darkMode: this.darkMode
+      };
+      drawObj = new Graphic(bngl, parameters);
     }
     let reactionDims = drawObj.draw(ctx, 0, 0);
     //draw graphic
@@ -234,7 +248,7 @@
     if (type != "reactions" && type != "observables" && type != "compartments") {
       [bngl, conc, comment, observType] = Object.values(data);
       comment = comment.trim();
-      bngl = bngl.trim();
+      bngl = mm.processMoleculeCompartment(bngl.trim());
       conc = conc.trim();
       var bngls = [bngl];
       //add paranthesis if there are none
@@ -244,22 +258,24 @@
         name = bngl.split("(")[0];
       }
     } else if (type == "compartments") {
+      //add compartments to molecule manager
+      mm.addCompartment(data.name, data.dimension);
       return Object.values(data);
     } else if (type == "observables") {
       [reactants, products, sign, observData, comment, newLines] = Object.values(data);
       //add paranthesis if there are none
       reactants.forEach((item, i) => {
-        reactants[i] = addBNGLParenthesis(item);
+        reactants[i] = addBNGLParenthesis(mm.processMoleculeCompartment(item));
       });
       var bngls = separateBNGLNewLines(reactants, products, sign, newLines);
     } else if (type === "reactions") {
       [reactants, products, sign, rate, comment, newLines] = Object.values(data);
       //add paranthesis if there are none
       reactants.forEach((item, i) => {
-        reactants[i] = addBNGLParenthesis(item);
+        reactants[i] = addBNGLParenthesis(mm.processMoleculeCompartment(item));
       });
       products.forEach((item, i) => {
-        products[i] = addBNGLParenthesis(item);
+        products[i] = addBNGLParenthesis(mm.processMoleculeCompartment(item));
       });
       var bngls = separateBNGLNewLines(reactants, products, sign, newLines);
     }
@@ -400,11 +416,11 @@
       visualizeType("species", species);
       visualizeType("observables", observables);
       visualizeType("reactions", reactions);
+      console.log(mm);
       //make arrows bigger
       let pElms = document.querySelectorAll("p");
       for (let i = 0; i < pElms.length; i++) {
         let elm = pElms[i];
-        console.log(elm.innerHTML);
         elm.innerHTML = elm.innerHTML.replace("&lt;-&gt;", ' <span class="big-arrow">&#8596;</span> ');
         elm.innerHTML = elm.innerHTML.replace("-&gt;", ' <span class="big-arrow">&#8594;</span> ');
         elm.innerHTML = elm.innerHTML.replace("&lt;-", ' <span class="big-arrow">&#8592;</span> ');
