@@ -495,6 +495,10 @@ window.BNGLExtractor = class BNGLExtractor {
     if (condensedList[condensedList.length - 1] == "+") {
       condensedList.pop();
     }
-    return condensedList.join("");
+    let output = condensedList.join("");
+    //remove reaction trailing "+" sign
+    output = output.replace("+<", "<");
+    output = output.replace("+-", "-");
+    return output;
   }
 }

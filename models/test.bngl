@@ -23,6 +23,7 @@ end species
 
 
 begin reaction rules
+1  E(ac) + A(e) -> E(ac!1).A(e!1) kp  #s1,s4,s13
 end reaction rules
 
 begin observables

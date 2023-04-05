@@ -691,11 +691,12 @@ window.Graphic = class Graphic {
     if (this.def) {
       let length = 0;
       let height = 0;
-      let names = new Set();
+      let checkedBonds = new Set();
+      let completedBonds = new Set();
       let pairs = [];//list of pairs of xy coords for each bond
       //draw membrane
       this.drawMembrane(ctx);
-      //extracting bonds
+      //set up dimension vars
       for (let i = 0; i < this.molecules.length; i++) {
         let thisX = scale * (2 + length + initX);
         let thisY = scale * (2 + initY);
@@ -705,19 +706,20 @@ window.Graphic = class Graphic {
           height = dims[1];
         }
       }
+      //extracting bonds
       //each molecule
       for (let i = 0; i < this.molecules.length; i++) {
         //each site
         for (let y = 0; y < this.molecules[i].sites.length; y++) {
           let m1 = this.molecules[i].sites[y];
           //if unique bond m1 exists
-          if (m1.bondName != null && !names.has(m1.bondName)) {
+          if (m1.bondName != null && !checkedBonds.has(m1.bondName)) {
             //add special bonds
             if (m1.specialBond(m1.bondName)) {
               pairs.push(m1.getSpecialBondPair());
             } else {
               //finish getting normal bonds
-              names.add(m1.bondName);
+              checkedBonds.add(m1.bondName);
               let newPair = [m1.position];
               //check all sites in species for matching bond type
               for (let u = 0; u < this.molecules.length; u++) {
@@ -730,10 +732,25 @@ window.Graphic = class Graphic {
                       newPair.push(m2.bondName);
                       newPair.push("normal");
                       pairs.push(newPair);
+                      completedBonds.add(m1.bondName);
                     }
                   }
                 }
               }
+            }
+          }
+        }
+      }
+      //finding unmatched bonds to mark as special bonds
+      for (let i = 0; i < this.molecules.length; i++) {
+        for (let y = 0; y < this.molecules[i].sites.length; y++) {
+          let m1 = this.molecules[i].sites[y];
+          if (m1.bondName != null) {
+            //add special bonds
+            if ((!m1.specialBond(m1.bondName)) && (!completedBonds.has(m1.bondName))) {
+              //console.log(m1);
+              m1.bondName = "+";
+              pairs.push(m1.getSpecialBondPair());
             }
           }
         }

@@ -400,6 +400,16 @@
       visualizeType("species", species);
       visualizeType("observables", observables);
       visualizeType("reactions", reactions);
+      //make arrows bigger
+      let pElms = document.querySelectorAll("p");
+      for (let i = 0; i < pElms.length; i++) {
+        let elm = pElms[i];
+        console.log(elm.innerHTML);
+        elm.innerHTML = elm.innerHTML.replace("&lt;-&gt;", ' <span class="big-arrow">&#8596;</span> ');
+        elm.innerHTML = elm.innerHTML.replace("-&gt;", ' <span class="big-arrow">&#8594;</span> ');
+        elm.innerHTML = elm.innerHTML.replace("&lt;-", ' <span class="big-arrow">&#8592;</span> ');
+      };
+
     }
     //read if file present
     if (fileInput.value) {

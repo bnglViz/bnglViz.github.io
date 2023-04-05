@@ -25,6 +25,10 @@ canvas {
   color: black;
 }
 
+.big-arrow {
+  font-size: 35px;
+}
+
 .main-td {
   padding: 10px;
 }
