@@ -563,29 +563,41 @@ window.MoleculeManager = class MoleculeManager {
     this.compMap = {};
     //map from molecule name to compartment name
     this.molcCompMap = {};
+    //most recent compartment name added
+    this.latestComp = null;
   }
 
   processMoleculeCompartment(moleculeName) {
-    console.log(moleculeName);
-    let scopeMolName = moleculeName;
-    if (scopeMolName.includes("@")) {
+    //for some reason I need to redefine the function parameter as follows
+    //I have no idea why I need to do this, it is a cursed error
+    this.moleculeName = moleculeName;
+    let compartmentName;
+    if (this.moleculeName.includes("@")) {
       //if the string doesn't have exactly 1 colon its invalid
-      console.log(scopeMolName);
-      let colonCount = scopeMolName.split(":").length - 1;
+      let colonCount = this.moleculeName.split(":").length - 1;
       if (colonCount != 1) {
         throw new Error("Invalid compartment definition!");
-        return scopeMolName;
+        return this.moleculeName;
       }
-      let pair = scopeMolName.split(":");
-      let compartmentName = pair[0].slice(1, pair[0].length);
-      let scopeMolName = pair[1];
-      this.molcCompMap[scopeMolName] = compartmentName;
+      let pair = this.moleculeName.split(":");
+      compartmentName = pair[0].slice(1, pair[0].length);
+      this.moleculeName = pair[1];
+      this.molcCompMap[this.moleculeName] = compartmentName;
+      this.latestComp = compartmentName;
     }
-    return scopeMolName;
+    return [this.moleculeName, compartmentName];
   }
 
   addCompartment(compartment, dimension) {
     this.compMap[compartment] = dimension;
+  }
+
+  getCompartment(name) {
+    return this.molcCompMap[name];
+  }
+
+  getDimension(compartment) {
+    return this.compMap[compartment];
   }
 
   hasCompartment(compartment) {
@@ -654,11 +666,14 @@ window.Graphic = class Graphic {
       //dark mode boolean
       this.darkMode = parameters.darkMode;
       //compartment name
-      if (this.mode && this.mode != 'normal' && this.mode != 'compact') {
+      /*if (this.mode && this.mode != 'normal' && this.mode != 'compact') {
         this.comp = this.mode;
         //abreviate compratment name
         this.comp = this.comp.slice(0, 3) + '...';
-      }
+      }*/
+      this.comp = parameters.compartment;
+      //compartment dimension number
+      this.compDimension = parameters.compDimension;
       //list of instances of molecule classes
       this.molecules = [];
       //initializing this.molecules
@@ -704,10 +719,13 @@ window.Graphic = class Graphic {
       let membraneHeight = 12;
       this.y += membraneHeight;
 
+      //compartment color from dimension
+      let color = ((this.compDimension == 3) ? '#eee': '#aaa');
+
       //add to draw list
       this.drawList.push({func: (params) => {
         //draw membrane at top right corner, filling ctx
-        ctx.fillStyle = '#eee';
+        ctx.fillStyle = color;
         ctx.fillRect(0, 0, params[0] + 9, this.y);
         ctx.fillStyle = '#000000';
         ctx.font = "11px Arial";

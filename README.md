@@ -1,4 +1,4 @@
-# BNGL Visualizer
+# BioNetGen Language (BNGL) Visualizer
 To install-
 ```
 git clone https://github.com/noahlb123/bngl-visualizer

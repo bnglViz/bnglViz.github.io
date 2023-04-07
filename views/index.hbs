@@ -89,30 +89,31 @@
   drawBNGL('z(a)', testCanvas);
 
   //draw bngl
-  function drawBNGL(bngl, canvas, type = "", drawExtraPlus = false) {
+  function drawBNGL(bngl, canvas, data = {type: "molecules", drawExtraPlus: false}) {
+    let drawExtraPlus = data.drawExtraPlus;
+    let type = data.type;
+    let compartmentMap = data.compartmentMap;
     //set up drawing context. "willReadFrequently: true" puts processes in GPU
     let ctx = canvas.getContext("2d", { willReadFrequently: true });
-    let drawObj;
+    let drawObj, compartment;
+    let parameters = {
+      mode: 'compact',
+      darkMode: this.darkMode,
+      compartmentMap: compartmentMap
+    };
+    if (compartmentMap) {
+      compartment = compartmentMap[bngl[0][0]];
+      parameters["compDimension"] = mm.getDimension(compartment);
+      parameters["compartment"] = compartment;
+    }
     if (type === "observables") {
-      let parameters = {
-        mode: 'compact',
-        darkMode: this.darkMode,
-        manager: mm
-      };
+      parameters["manager"] = mm;
       drawObj = new Graphic(bngl[0][0], parameters);
     } else if (type === "reactions") {
       [reactants, products, sign] = bngl;
-      let parameters = {
-        drawExtraPlus: drawExtraPlus,
-        darkMode: this.darkMode,
-        manager: mm
-      };
+      parameters["manager"] = mm;
       drawObj = new Reaction(reactants, products, sign, ctx, parameters);
     } else {
-      let parameters = {
-        mode: 'compact',
-        darkMode: this.darkMode
-      };
       drawObj = new Graphic(bngl, parameters);
     }
     let reactionDims = drawObj.draw(ctx, 0, 0);
@@ -244,19 +245,18 @@
 
   //render one set (need to add compartments)
   function prepareRow(data, type) {
-    let bngl, conc, comment, name;
+    let molcCompMap = {};
+    let bngl, conc, comment, name, compartment;
     if (type != "reactions" && type != "observables" && type != "compartments") {
       [bngl, conc, comment, observType] = Object.values(data);
       comment = comment.trim();
-      bngl = mm.processMoleculeCompartment(bngl.trim());
-      conc = conc.trim();
       var bngls = [bngl];
-      //add paranthesis if there are none
+      [bngl, compartment] = mm.processMoleculeCompartment(bngl.trim());
       bngl = addBNGLParenthesis(bngl);
+      molcCompMap[bngl] = compartment;
+      conc = conc.trim();
       //get name (change this to only after parenthesis)
-      if (type != "observables") {
-        name = bngl.split("(")[0];
-      }
+      name = bngl.split("(")[0];
     } else if (type == "compartments") {
       //add compartments to molecule manager
       mm.addCompartment(data.name, data.dimension);
@@ -264,18 +264,26 @@
     } else if (type == "observables") {
       [reactants, products, sign, observData, comment, newLines] = Object.values(data);
       //add paranthesis if there are none
+      let bngl, compartment;
       reactants.forEach((item, i) => {
-        reactants[i] = addBNGLParenthesis(mm.processMoleculeCompartment(item));
+        [bngl, compartment] = mm.processMoleculeCompartment(item)
+        reactants[i] = addBNGLParenthesis(bngl);
+        molcCompMap[bngl] = compartment;
       });
       var bngls = separateBNGLNewLines(reactants, products, sign, newLines);
     } else if (type === "reactions") {
       [reactants, products, sign, rate, comment, newLines] = Object.values(data);
       //add paranthesis if there are none
+      let bngl, compartment;
       reactants.forEach((item, i) => {
-        reactants[i] = addBNGLParenthesis(mm.processMoleculeCompartment(item));
+        [bngl, compartment] = mm.processMoleculeCompartment(item)
+        reactants[i] = addBNGLParenthesis(bngl);
+        molcCompMap[bngl] = compartment;
       });
       products.forEach((item, i) => {
-        products[i] = addBNGLParenthesis(mm.processMoleculeCompartment(item));
+        [bngl, compartment] = mm.processMoleculeCompartment(item)
+        products[i] = addBNGLParenthesis(bngl);
+        molcCompMap[bngl] = compartment;
       });
       var bngls = separateBNGLNewLines(reactants, products, sign, newLines);
     }
@@ -286,6 +294,7 @@
     let newCans = [];
     for(let i = 0; i < bngls.length; i++) {
       bngl = bngls[i];
+      bngl = bngl;
       //create new canvas
       let newCan = document.createElement("canvas");
       newCans.push(newCan);
@@ -294,7 +303,15 @@
       newCan.height = "180";
       newCan.classList.add("bngl-canvas");
       //draw object on canvas
-      drawBNGL(bngl, newCan, type, hasNewLines && i < bngls.length - 1);
+      drawBNGL(
+        bngl,
+        newCan,
+        {
+          type: type,
+          compartmentMap: molcCompMap,
+          drawExtraPlus: hasNewLines && i < bngls.length - 1
+        }
+      );
     }
     //output as list
     if (type == "species") {
@@ -416,7 +433,6 @@
       visualizeType("species", species);
       visualizeType("observables", observables);
       visualizeType("reactions", reactions);
-      console.log(mm);
       //make arrows bigger
       let pElms = document.querySelectorAll("p");
       for (let i = 0; i < pElms.length; i++) {

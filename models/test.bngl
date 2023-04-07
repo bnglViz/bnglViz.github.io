@@ -17,7 +17,7 @@ begin reaction rules
 end reaction rules
 
 begin observables
-Molecules Total_phosp @M:EGFR(y1068~p!?) @M:EGFR(y1173~p!?)
+Molecules EGFR_tot @M:EGFR()
 end observables
 
 
