@@ -17,7 +17,11 @@ end species
 begin observables
 Molecules R R()
 Molecules L L()
-R(r!+)=must be connected at least once, or R(r!+,r!+)=middle of a chain, or R(r!-)=R(r)=end of a chain, R(r!-,r!-) - just a monomer.
+Molecules R_once R(r!+)         # must be connected at least once
+Molecules R_middle R(r!+,r!+)  # middle of a chain, 
+Molecules R_end_1 R(r!-)   # end of a chain
+Molecules R_end_2 R(r)    # end of a chain
+Molecules Monomer R(r!-,r!-) #just a monomer
 
 end observables
 
