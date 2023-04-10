@@ -101,12 +101,12 @@
       darkMode: this.darkMode,
       compartmentMap: compartmentMap
     };
-    if (compartmentMap) {
-      compartment = compartmentMap[bngl[0][0]];
-      parameters["compDimension"] = mm.getDimension(compartment);
-      parameters["compartment"] = compartment;
-    }
     if (type === "observables") {
+      if (compartmentMap) {
+        compartment = compartmentMap[bngl[0][0]];
+        parameters["compDimension"] = mm.getDimension(compartment);
+        parameters["compartment"] = compartment;
+      }
       parameters["manager"] = mm;
       drawObj = new Graphic(bngl[0][0], parameters);
     } else if (type === "reactions") {
@@ -114,6 +114,11 @@
       parameters["manager"] = mm;
       drawObj = new Reaction(reactants, products, sign, ctx, parameters);
     } else {
+      if (compartmentMap) {
+        compartment = compartmentMap[bngl];
+        parameters["compDimension"] = mm.getDimension(compartment);
+        parameters["compartment"] = compartment;
+      }
       drawObj = new Graphic(bngl, parameters);
     }
     let reactionDims = drawObj.draw(ctx, 0, 0);
@@ -250,13 +255,13 @@
     if (type != "reactions" && type != "observables" && type != "compartments") {
       [bngl, conc, comment, observType] = Object.values(data);
       comment = comment.trim();
-      var bngls = [bngl];
       [bngl, compartment] = mm.processMoleculeCompartment(bngl.trim());
       bngl = addBNGLParenthesis(bngl);
       molcCompMap[bngl] = compartment;
       conc = conc.trim();
       //get name (change this to only after parenthesis)
       name = bngl.split("(")[0];
+      var bngls = [bngl];
     } else if (type == "compartments") {
       //add compartments to molecule manager
       mm.addCompartment(data.name, data.dimension);

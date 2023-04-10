@@ -3,6 +3,7 @@ end parameters
 
 begin compartments
 Cyt	3	1
+EC	3	1
 M	2	1
 end compartments
 
@@ -10,6 +11,7 @@ begin molecular types
 end molecular types
 
 begin species
+1 @EC:EGF(rb) 680.0
 end species
 
 
@@ -17,7 +19,6 @@ begin reaction rules
 end reaction rules
 
 begin observables
-Molecules EGFR_tot @M:EGFR()
 end observables
 
 
