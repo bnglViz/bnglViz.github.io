@@ -431,9 +431,9 @@ window.BNGLExtractor = class BNGLExtractor {
           }
           if (onlyComment) {
             if (type == "reaction" || type == "observable") {
-              bngls[u] = bngls[u][4];
+              bngls[u] = bngls[u].comment;
             } else {
-              bngls[u] = bngls[u][len - 1];
+              bngls[u] = bngls[u].comment;
             }
           }
         }

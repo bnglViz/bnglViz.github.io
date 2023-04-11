@@ -113,6 +113,14 @@
       [reactants, products, sign] = bngl;
       parameters["manager"] = mm;
       drawObj = new Reaction(reactants, products, sign, ctx, parameters);
+    } else if (type === "species") {
+      if (compartmentMap) {
+        compartment = compartmentMap[bngl];
+        parameters["compDimension"] = mm.getDimension(compartment);
+        parameters["compartment"] = compartment;
+      }
+      parameters["manager"] = mm;
+      drawObj = new Graphic(bngl, parameters);
     } else {
       if (compartmentMap) {
         compartment = compartmentMap[bngl];
@@ -351,7 +359,9 @@
     if (type != "header comments" || list.length > 0) {
       addToTable([[document.createElement("hr")]], newTable, 5);
       const newDivider = document.createElement("p");
-      newDivider.innerHTML = capitalizeFirstLetter(type);
+      if (type != "header comments") {
+        newDivider.innerHTML = capitalizeFirstLetter(type);
+      }
       newDivider.classList.add("table-divider");
       addToTable([[newDivider]], newTable, 5);
       if (type == "observables") {

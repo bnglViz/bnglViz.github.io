@@ -324,7 +324,7 @@ window.Molecule = class Molecule {
         this.sites = l;
       } else {
         //if no non parent sites
-        this.sites = parentSites;
+        this.sites = ((parentSites) ? parentSites: this.sites);
       }
     }
   }
@@ -689,7 +689,13 @@ window.Graphic = class Graphic {
     let defs = splitString(this.def, '.');
     let mode = ((this.mode == 'normal') ? "" : 'compact');
     for (var i = 0; i < defs.length; i++) {
-      this.molecules.push(new Molecule(defs[i], {mode: mode}, this));
+      this.molecules.push(
+        new Molecule(
+          defs[i],
+          this,
+          {mode: mode}
+        )
+      );
     }
   }
 
@@ -892,7 +898,6 @@ window.Graphic = class Graphic {
 
 class Reaction {
   constructor(reactants, products, sign, ctx, parameters) {
-    //drawExtraPlus = false, darkMode = false, moleculeManager = null
     this.parametes = parameters;
     //list of reactant bngl definition strings
     this.reactants = reactants;
