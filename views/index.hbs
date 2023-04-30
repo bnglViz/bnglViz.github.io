@@ -108,6 +108,7 @@
         parameters["compartment"] = compartment;
       }
       parameters["manager"] = mm;
+      //should be [reactants, products, sign] but observables with - bond are in sign
       drawObj = new Graphic(bngl[0][0], parameters);
     } else if (type === "reactions") {
       [reactants, products, sign] = bngl;
@@ -215,7 +216,7 @@
           if (i >= list.length) {
             break;
           }
-          if (elm == null || elm.includes("-")) {
+          if (elm == null || elm.includes("<") || elm.includes(">")) {
             noSign = false;
             signProcessed = true;
             break;

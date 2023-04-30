@@ -12,10 +12,10 @@ end species
 
 
 begin reaction rules
+r00_lig_bind:	@EC:a <-> @M:b		0.003, 0.06
 end reaction rules
 
 begin observables
-Molecules R_end_1 R(r!-)
 end observables
 
 

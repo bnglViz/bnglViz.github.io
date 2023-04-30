@@ -28,13 +28,23 @@ window.BNGLExtractor = class BNGLExtractor {
     return (/\s/.test(s) || s === ",");
   }
 
-  wordHasParenthesis(s, index) {
+  wordHasChar(s, index, char) {
     if (this.isWhitespace(s[index])) {
       return false;
     }
     let end = this.nextOccur(s, index, this.isWhitespace);
     let word = s.slice(index, end);
-    return word.includes(")");
+    return word.includes(char);
+  }
+
+  wordHasParenthesis(s, index) {
+    return this.wordHasChar(s, index, ")");
+  }
+
+  isReactionTitle(s, index) {
+    let hasAt = this.wordHasChar(s, index, "@");
+    let hasColon = this.wordHasChar(s, index, ":");
+    return !hasAt && hasColon;
   }
 
   getNewLineIndex(reactants, products, sign) {
@@ -130,13 +140,14 @@ window.BNGLExtractor = class BNGLExtractor {
     //parse
     while (c < len) {
       char = s[c];
+      console.log(char);
       //is comment
       if (char == "#") {
         comment = s.slice(c, len);
         break;
       }
       //starts with number
-      if (!isNaN(parseFloat(char))) {
+      if ((!isNaN(parseFloat(char))) && c <= this.nextOccur(s, 0, this.isNotWhitespace)) {
         c = this.nextOccur(s, c, this.isWhitespace);
         continue;
       }
@@ -158,6 +169,11 @@ window.BNGLExtractor = class BNGLExtractor {
         );
         continue;
       }
+      //is title
+      if (this.isReactionTitle(s, c)) {
+        c = this.nextOccur(s, c, this.isWhitespace);
+        continue;
+      }
       //is whitespace
       if (this.isWhitespace(char)) {
         c = this.nextOccur(s, c, this.isNotWhitespace);
@@ -169,6 +185,14 @@ window.BNGLExtractor = class BNGLExtractor {
         observType = s.slice(c, n);
         hasReadType = true;
         c = n;
+        continue;
+      }
+      //is sign
+      if ((char === "-" || char === "<") && !this.wordHasParenthesis(s, c)) {
+        let n = this.nextOccur(s, c, this.isWhitespace);
+        sign = s.slice(c, n);
+        c = n;
+        wasPlus = true;
         continue;
       }
       //is product or reactant
@@ -193,18 +217,10 @@ window.BNGLExtractor = class BNGLExtractor {
         c = n + 1;
         continue;
       }
-      //is sign
-      if ((char === "-" || char === "<") && !this.wordHasParenthesis(s, c)) {
-        let n = this.nextOccur(s, c, this.isWhitespace);
-        sign = s.slice(c, n);
-        c = n;
-        wasPlus = true;
-        continue;
-      }
       //is rate
       if (this.isNotWhitespace(char) && !wasPlus) {
         let n = this.nextOccur(s, c, this.isWhitespace, false, -1);
-        rate = s.slice(c, n + 1);
+        rate += s.slice(c, n + 1);
         c = n;
       }
       //if at end
@@ -362,6 +378,7 @@ window.BNGLExtractor = class BNGLExtractor {
           endIndex
         );
         bngls = bngls.concat(sliced.split("\n"));
+        //this needs to be fixed because :\ are not actually tokens, they are a combination of \n and :
         //manage weird ":\" tokens
         for (let u = 0; u < bngls.length; u++) {
           let bngl = bngls[u];

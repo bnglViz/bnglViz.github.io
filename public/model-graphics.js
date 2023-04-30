@@ -168,20 +168,24 @@ class Site {
 //add parenthesis to any bngl definition string
 window.addBNGLParenthesis = function addBNGLParenthesis(bngl) {
   //split into each molecule
-  let molecules = bngl.split(".");
-  let output = "";
-  let len = molecules.length;
-  molecules.forEach((m, i) => {
-    //add paranthesis if there are none
-    if (m.indexOf("(") < 0) {
-      m = m + "()";
-    }
-    output += m;
-    if (i != len - 1) {
-      output += ".";
-    }
-  });
-  return output;
+  if ((!bngl.includes("<")) && (!bngl.includes(">"))) {
+    let molecules = bngl.split(".");
+    let output = "";
+    let len = molecules.length;
+    molecules.forEach((m, i) => {
+      //add paranthesis if there are none
+      if (m.indexOf("(") < 0) {
+        m = m + "()";
+      }
+      output += m;
+      if (i != len - 1) {
+        output += ".";
+      }
+    });
+    return output;
+  } else {
+    return bngl;
+  }
 }
 
 //class for molecules
