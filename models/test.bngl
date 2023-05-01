@@ -12,7 +12,8 @@ end species
 
 
 begin reaction rules
-r00_lig_bind:	@EC:a <-> @M:b		0.003, 0.06
+1  Fucosylation and translocation from ER to Golgi (G):\
+A -> B kp1
 end reaction rules
 
 begin observables

@@ -28,6 +28,14 @@ window.BNGLExtractor = class BNGLExtractor {
     return (/\s/.test(s) || s === ",");
   }
 
+  isNewLine(s, c) {
+    if (c == s.length - 1) {
+      return false;
+    } else {
+      return (s[c] == "\\" && /\s/.test(s[c + 1]));
+    }
+  }
+
   wordHasChar(s, index, char) {
     if (this.isWhitespace(s[index])) {
       return false;
@@ -124,6 +132,7 @@ window.BNGLExtractor = class BNGLExtractor {
 
   //used for both reactions and observables
   extractSingleLineReaction(s, type = "") {
+    //console.log(s);
     //initialize vars
     let c = 0;
     let len = s.length;
@@ -140,7 +149,6 @@ window.BNGLExtractor = class BNGLExtractor {
     //parse
     while (c < len) {
       char = s[c];
-      console.log(char);
       //is comment
       if (char == "#") {
         comment = s.slice(c, len);
@@ -366,6 +374,18 @@ window.BNGLExtractor = class BNGLExtractor {
       let beginToken = "begin " + elmStr;
       let startIndex = bnglStr.indexOf(beginToken);
       if (startIndex >= 0) {
+        //standerdize new lines
+        let c = 0;
+        let newLineIndexes = [];
+        while (c < bnglStr.length - 2) {
+          if (this.isNewLine(bnglStr, c)) {
+            newLineIndexes.push(c);
+          }
+          c++;
+        }
+        for (let n = 0; n < newLineIndexes.length; n++) {
+          bnglStr = bnglStr.slice(0, n) + "\\\n" + bnglStr.slice(n + 1);
+        }
         //find first new line
         let nlDist = 0;
         while (bnglStr[startIndex + beginToken.length + nlDist] != "\n") {
@@ -378,13 +398,14 @@ window.BNGLExtractor = class BNGLExtractor {
           endIndex
         );
         bngls = bngls.concat(sliced.split("\n"));
-        //this needs to be fixed because :\ are not actually tokens, they are a combination of \n and :
-        //manage weird ":\" tokens
+        //manage reaction titles
         for (let u = 0; u < bngls.length; u++) {
           let bngl = bngls[u];
-          if (bngl.includes(":\\")) {
-            bngls[u] = "#" + bngl.replace(":\\", "");
+          let title;
+          if (bngl.includes(":")) {
+            [title, bngl] = bngl.split(":");
           }
+          bngls[u] = bngl;
         }
         //manage multi line definitions
         let newArr = [];
