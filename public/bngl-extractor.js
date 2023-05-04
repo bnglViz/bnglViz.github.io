@@ -131,8 +131,7 @@ window.BNGLExtractor = class BNGLExtractor {
   }
 
   //used for both reactions and observables
-  extractSingleLineReaction(s, type = "") {
-    //console.log(s);
+  extractSingleLineReaction(s, line, type = "") {
     //initialize vars
     let c = 0;
     let len = s.length;
@@ -191,6 +190,9 @@ window.BNGLExtractor = class BNGLExtractor {
       if (!hasReadType && reactants.length == 0 && sign == undefined && this.isNotWhitespace(char)) {
         let n = this.nextOccur(s, c, this.isWhitespace);
         observType = s.slice(c, n);
+        if (observType.toLowerCase() != "molecules" && observType.toLowerCase() != "species") {
+          return {comment: "Error in line " + line + ". Observable has no type."}
+        }
         hasReadType = true;
         c = n;
         continue;
@@ -374,6 +376,9 @@ window.BNGLExtractor = class BNGLExtractor {
       let beginToken = "begin " + elmStr;
       let startIndex = bnglStr.indexOf(beginToken);
       if (startIndex >= 0) {
+        //get line number
+        let cutBNGLStr = bnglStr.slice(0, startIndex);
+        let startingLine = cutBNGLStr.split("\n").length;
         //standerdize new lines
         let c = 0;
         let newLineIndexes = [];
@@ -426,13 +431,12 @@ window.BNGLExtractor = class BNGLExtractor {
           let data;
           if (specialType) {
             bngls[u] = ((type == "observable") ? bngls[u].replace(/\n/g, "").replace(/\\/g, ""): bngls[u]);
-            data = this.extractSingleLineReaction(bngls[u], type);
+            data = this.extractSingleLineReaction(bngls[u], startingLine + u + 1, type);
           } else if (isCompartment) {
             data = this.extractCompartments(bngls[u]);
           } else {
             data = this.extractSingleLineBNGL(bngls[u]);
           }
-          console.log(data);
           bngls[u] = data;
           //mark empty strings for deletion
           let isEmpty = true;
