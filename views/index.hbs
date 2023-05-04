@@ -46,6 +46,19 @@
   var mm = new MoleculeManager();
   var be = new BNGLExtractor();
 
+  //manage ids
+  class IDManager {
+    constructor() {
+      this.nextID = -1;
+    }
+
+    getID() {
+      this.nextID++;
+      return this.nextID;
+    }
+  }
+  var idManager = new IDManager();
+
   //set mode to dark mode initially
   var darkMode = true;
   switchDarkMode(false);
@@ -246,14 +259,25 @@
       condensedList = reactants.concat(products);
     }
     let output = [];
+    let rowNewLineIndexMap = {};
     let startIndex;
     let index = 0;
     for (let i = 0; i < newLines.length; i++) {
       startIndex = index;
       index = newLines[i].index;
       sliceNewLine(output, startIndex, index);
+      rowNewLineIndexMap[output.length - 1] = i;
     }
     sliceNewLine(output, index, condensedList.length);
+    //remove empty lists
+    for (let i = 0; i < output.length; i++) {
+      let row = output[i];
+      if (row[0].length == 0 && row[1].length == 0 && !row[2]) {
+        output.splice(i, 1);
+        newLines.splice(rowNewLineIndexMap[i], 1);
+      }
+    }
+    console.log(newLines);
     return output;
   }
 

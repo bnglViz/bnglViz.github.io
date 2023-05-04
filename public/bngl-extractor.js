@@ -228,7 +228,7 @@ window.BNGLExtractor = class BNGLExtractor {
       //is rate
       if (this.isNotWhitespace(char) && !wasPlus) {
         let n = this.nextOccur(s, c, this.isWhitespace, false, -1);
-        rate += s.slice(c, n + 1);
+        rate += " " + s.slice(c, n + 1);
         c = n;
       }
       //if at end
@@ -432,6 +432,7 @@ window.BNGLExtractor = class BNGLExtractor {
           } else {
             data = this.extractSingleLineBNGL(bngls[u]);
           }
+          console.log(data);
           bngls[u] = data;
           //mark empty strings for deletion
           let isEmpty = true;

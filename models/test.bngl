@@ -2,6 +2,7 @@ begin parameters
 end parameters
 
 begin compartments
+c0	3	1
 end compartments
 
 begin molecular types
@@ -10,13 +11,11 @@ end molecular types
 begin species
 end species
 
-
 begin reaction rules
-1  Fucosylation and translocation from ER to Golgi (G):\
-A -> B kp1
 end reaction rules
 
 begin observables
+Molecules O0 @c0:A(b1!+,b2!+,c!+)
 end observables
 
 
