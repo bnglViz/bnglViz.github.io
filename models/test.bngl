@@ -15,7 +15,7 @@ begin reaction rules
 end reaction rules
 
 begin observables
-Total         R RA R2 RP R_G  R_G_S  R_Sh  R_ShP  R_Sh_G  R_Sh_G_S R2 RP R_G  R_G_S  R_Sh  R_ShP  R_Sh_G  R_Sh_G_S
+Species Agreaterthan10 @c0:A()>10
 end observables
 
 

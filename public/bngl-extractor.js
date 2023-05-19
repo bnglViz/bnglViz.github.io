@@ -50,9 +50,13 @@ window.BNGLExtractor = class BNGLExtractor {
   }
 
   isReactionTitle(s, index) {
-    let hasAt = this.wordHasChar(s, index, "@");
-    let hasColon = this.wordHasChar(s, index, ":");
-    return !hasAt && hasColon;
+    if (index === undefined) {
+      return s.includes(":") && !s.includes("@");
+    } else {
+      let hasAt = this.wordHasChar(s, index, "@");
+      let hasColon = this.wordHasChar(s, index, ":");
+      return !hasAt && hasColon;
+    }
   }
 
   getNewLineIndex(reactants, products, sign) {
@@ -407,8 +411,13 @@ window.BNGLExtractor = class BNGLExtractor {
         for (let u = 0; u < bngls.length; u++) {
           let bngl = bngls[u];
           let title;
-          if (bngl.includes(":")) {
+          if (this.isReactionTitle(bngl)) {
             [title, bngl] = bngl.split(":");
+          }
+          //manage polymer lengths
+          if (type == "observable") {
+            bngl = bngl.replace(/</g, "#<");
+            bngl = bngl.replace(/>/g, "#>");
           }
           bngls[u] = bngl;
         }
