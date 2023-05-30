@@ -5,7 +5,7 @@
       <input id="bngl-file-input" type="file" onchange="visualize()">
     </td>
     <td id="canvas-cell">
-      <canvas id="testCanvas" width="4000" height="180"></canvas>
+      <canvas id="testCanvas"></canvas>
     </td>
     <td id="canvas-text">
       Molecule is shown as an oval ...
@@ -17,6 +17,9 @@
 <script src="/model-graphics.js"></script>
 <script src="/bngl-extractor.js"></script>
 <script>
+  //set max dimensions for canvases (normally 4000, 180)
+  window.maxWidth = 10000;
+  window.maxHeight = 250;
   //set bngl begin tokens
   const compartmentTokens = ["compartments"];
   const moleculeTokens = [
@@ -99,7 +102,9 @@
   }
 
   //draw test canvas
-  drawBNGL('z(a)', testCanvas);
+  testCanvas.width = window.maxWidth;
+  testCanvas.height = window.maxHeight;
+  drawBNGL('z', testCanvas);
 
   //draw bngl
   function drawBNGL(bngl, canvas, data = {type: "molecules", drawExtraPlus: false}) {
@@ -148,12 +153,7 @@
     drawObj.doDrawList();
     //get dimensions
     let dims;
-    if (type === "reactions") {
-      //dims = reactionDims;
-      dims = getCanvasDimentions(ctx);
-    } else {
-      dims = getCanvasDimentions(ctx);
-    }
+    dims = getCanvasDimentions(ctx);
     //resize canvas
     canvas.width = dims[0];
     canvas.height = dims[1];
@@ -336,8 +336,8 @@
       let newCan = document.createElement("canvas");
       newCans.push(newCan);
       //must have inital dimensions as large as largest possible visualization
-      newCan.width = "4000";
-      newCan.height = "180";
+      newCan.width = window.maxWidth;
+      newCan.height = window.maxHeight;
       newCan.classList.add("bngl-canvas");
       //draw object on canvas
       drawBNGL(

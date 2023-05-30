@@ -1093,6 +1093,35 @@ class Reaction {
   }
 }
 
+//to see contents of matrix
+function prettyPrintMatrix(mat) {
+  function helper(x) {
+    return ((x === 0) ? 0: 1);
+  }
+  for (let i = 0; i < mat.length; i++) {
+    mat[i] = mat[i].map(helper);
+  }
+  let output = "";
+  for (let i = 0; i < mat.length; i++) {
+    output += mat[i].toString() + "\n";
+  }
+  return output;
+}
+
+//convert Uint8ClampedArray to matrix of pixle alpha values
+function RGBAtoImageMat(arr, width) {
+  let output = [];
+  //filter every fourth element because only interested in alpha
+  let alphaOnly = arr.filter((element, index) => {
+    return (index + 1) % 4 === 0;
+  });
+  //correct array dimensions
+  for (let i = 0; i + width <= alphaOnly.length; i += width) {
+    output.push(alphaOnly.slice(i, i + width));
+  }
+  return output;
+}
+
 //get color of single pixle on ctx
 window.pixleAlpha = function pixleAlpha(ctx, x, y) {
   return ctx.getImageData(x, y, 1, 1).data[3];
@@ -1101,17 +1130,28 @@ window.pixleAlpha = function pixleAlpha(ctx, x, y) {
 //find the size of drawing in ctx
 window.getCanvasDimentions = function getCanvasDimentions(ctx) {
   let dims = [null, null];
-  //find initial furthest visible pixle right
-  let x = 4000;
+  //find initial furthest visible pixle right with binary search
+  let x = window.maxWidth;
   let y = 1;
   let a = 0;
-  while (a == 0 && x >= 0) {
-    x--;
-    a = pixleAlpha(ctx, x, 1);
+  let l = 23;
+  let r = window.maxWidth - 1;
+  let mid, centerA, lastA;
+  while (r >= l) {
+    mid = l + Math.floor((r - l) / 2);
+    centerA = pixleAlpha(ctx, mid, 1);
+    lastA = pixleAlpha(ctx, mid - 1, 1);
+    if (centerA == 0 && lastA != 0) {
+      break;
+    } else if (centerA != 0) {
+      l = mid + 1;
+    } else {
+      r = mid - 1;
+    }
   }
-  x++;
+  x = mid;
   //find absolute furthest visible pixle right
-  while (y <= 180) {
+  while (y <= window.maxHeight) {
     y++;
     a = pixleAlpha(ctx, x, y);
     while (a != 0) {
@@ -1123,7 +1163,7 @@ window.getCanvasDimentions = function getCanvasDimentions(ctx) {
   right = dims[0] = x;
   //find initial furthest visible pixle down
   x = 1;
-  y = 180;
+  y = window.maxHeight;
   a = 0;
   while (a == 0 && y >= 0) {
     y--;
@@ -1142,3 +1182,52 @@ window.getCanvasDimentions = function getCanvasDimentions(ctx) {
   dims[1] = y;
   return dims;
 }
+
+
+/*function test(ctx) {
+  let dims = [null, null];
+  //setup alpha matrix
+  let imageData = ctx.getImageData(0, 0, window.maxWidth, window.maxHeight);
+  let mat = RGBAtoImageMat(imageData.data, window.maxHeight);
+  function getAlpha(x, y) {return mat[y][x];};
+  //find initial furthest visible pixle right
+  let x = window.maxWidth;
+  let y = 1;
+  let a = 0;
+  while (a == 0 && x >= 0) {
+    x--;
+    a = getAlpha(x, y);
+  }
+  x++;
+  //find absolute furthest visible pixle right
+  while (y < window.maxHeight - 1) {
+    y++;
+    a = getAlpha(x, y);
+    while (a != 0) {
+      x++;
+      a = getAlpha(x, y);
+    }
+  }
+  let right;
+  right = dims[0] = x;
+  //find initial furthest visible pixle down
+  x = 1;
+  y = window.maxHeight;
+  a = 0;
+  while (a == 0 && y >= 0) {
+    y--;
+    a = getAlpha(x, y);
+  }
+  y++
+  //find absolute furthest visible pixle right
+  while (x < right) {
+    x++;
+    a = getAlpha(x, y);
+    while (a != 0 && y < window.maxHeight) {
+      y++;
+      a = getAlpha(x, y);
+    }
+  }
+  dims[1] = y;
+  return dims;
+}*/
