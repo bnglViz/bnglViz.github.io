@@ -218,6 +218,10 @@ window.Molecule = class Molecule {
     //dimentions, calculated later
     this.x = 0;
     this.y = 0;
+    //radius for main round rects
+    this.radius = 15;
+    //radius for main round sites
+    this.siteRadius = 8;
   }
 
   addSite(site, list) {
@@ -375,25 +379,24 @@ window.Molecule = class Molecule {
     ctx.closePath();
   }
 
-  //draw bionetgen sites with states labeled
-  drawSitesComplex(ctx, x, y, radius, scale = 1, initX = 0, visible = true) {
-    const siteRadius = 8;
+  //draw sites
+  drawSites(ctx, x, y, radius, scale = 1, initX = 0, visible = true) {
     const spaceBetweenSites = 3;
     let siteLength, stateLength, longestState, tallestState;
     siteLength = stateLength = longestState = tallestState = 0;
     let hasStates = false;
     //adding sites
-    let dx = radius - 2 * siteRadius;
+    let dx = radius - 2 * this.siteRadius;
     for (var i = 0; i < this.sites.length; i++) {
       //bottom line of sites
       let dy = 2 * radius + 2;
-      dx += + 2 * siteRadius + siteLength;
+      dx += + 2 * this.siteRadius + siteLength;
       //if site not first add spacing between sites
       if (i != 0) {
         dx += spaceBetweenSites;
       }
-      if (longestState > 2 * siteRadius + siteLength) {
-        dx += - siteLength + longestState - 2 * siteRadius;
+      if (longestState > 2 * this.siteRadius + siteLength) {
+        dx += - siteLength + longestState - 2 * this.siteRadius;
       }
       //drawing sites
       siteLength = 4.9 * this.sites[i].name.length;
@@ -410,13 +413,13 @@ window.Molecule = class Molecule {
             params[4],
             params[2]
           );
-        }, params: [xParam, yParam, colorParam, siteRadius, siteLength]});
+        }, params: [xParam, yParam, colorParam, this.siteRadius, siteLength]});
       }
       //drawing site names
       let nameParam = this.sites[i].name;
       colorParam = this.sites[i].textColor;
-      xParam = x + dx - siteRadius / 2;
-      yParam = y + dy + siteRadius / 2 + 1;
+      xParam = x + dx - this.siteRadius / 2;
+      yParam = y + dy + this.siteRadius / 2 + 1;
       if (visible) {
         this.drawList.push({func: (params) => {
           ctx.fillStyle = "#" + params[3];
@@ -438,12 +441,12 @@ window.Molecule = class Molecule {
       //add bonds to stateless sites
       if (this.sites[i].bondName != null) {
         if (this.sites[i].states.length == 0) {
-          this.sites[i].position = [x + dx - initX, y + dy + siteRadius];
+          this.sites[i].position = [x + dx - initX, y + dy + this.siteRadius];
         }
       }
       for (var u = 0; u < states.length; u++) {
-        var sx = x + dx - siteRadius + 2;
-        var sy = y + dy + u * 13 + siteRadius;
+        var sx = x + dx - this.siteRadius + 2;
+        var sy = y + dy + u * 13 + this.siteRadius;
         //fix lengths
         stateLength = ctx.measureText(this.sites[i].states[u]).width;
         if (this.sites[i].states[u].length <= 10) {
@@ -504,7 +507,7 @@ window.Molecule = class Molecule {
     if (hasStates) {
       dims.push(tallestState);
     } else {
-      dims.push(radius * 2 + siteRadius + 2);
+      dims.push(radius * 2 + this.siteRadius + 2);
     }
     return (dims);
   }
@@ -512,10 +515,9 @@ window.Molecule = class Molecule {
   //draw molecule with states and sites labled
   initDrawList(ctx, x, y, scale = 1, initX = 0) {
     if (this.def) {
-      const radius = 15;
       var length = ctx.measureText(this.name).width;
       length *= ((length < 0) ? -1 : 1);
-      var dims = this.drawSitesComplex(ctx, x, y, radius, 1, initX, false);
+      var dims = this.drawSites(ctx, x, y, this.radius, 1, initX, false);
       if (length < dims[0]) {
         length = dims[0];
       }
@@ -533,7 +535,7 @@ window.Molecule = class Molecule {
           params[4]
         );
         //drawing sites
-        this.drawSitesComplex(
+        this.drawSites(
           ctx,
           params[0],
           params[1],
@@ -549,11 +551,11 @@ window.Molecule = class Molecule {
           params[0] + params[2] / 2,
           params[1] + params[2] + 5
         );
-      }, params: [x, y, radius, length, this.color, initX, this.name]});
+      }, params: [x, y, this.radius, length, this.color, initX, this.name]});
       //return [length, height] of molecule for Graphic class
       this.x = dims[0];
       this.y = dims[1];
-      return ([radius * 2 + length, dims[1]]);
+      return ([this.radius * 2 + length, dims[1]]);
     }
   }
 }
@@ -719,15 +721,12 @@ window.Graphic = class Graphic {
     }
   }
 
-  //draw membrane, only for species
+  //draw membrane (compartment)
   drawMembrane(ctx) {
     if (this.comp) {
       //box dims
       let textWidth = ctx.measureText(this.comp).width;
-
-      //change height, width
-      let membraneHeight = 12;
-      this.y += membraneHeight;
+      let y = 55;
 
       //compartment color from dimension
       let color = ((this.compDimension == 3) ? '#eee': '#aaa');
@@ -736,27 +735,27 @@ window.Graphic = class Graphic {
       this.drawList.push({func: (params) => {
         //draw membrane at top right corner, filling ctx
         ctx.fillStyle = color;
-        ctx.fillRect(0, 0, params[0] + 9, this.y);
+        ctx.fillRect(0, 0, params[0] + 9, y);
         ctx.fillStyle = '#000000';
         ctx.font = "11px Arial";
         ctx.beginPath();
         ctx.moveTo(0, 0);
         //left line
-        ctx.lineTo(0, this.y);
+        ctx.lineTo(0, y);
         //bottom line
-        ctx.lineTo(params[0] + 9, this.y);
+        ctx.lineTo(params[0] + 9, y);
         //right line
         ctx.lineTo(params[0] + 9, 0);
         //top line
         ctx.lineTo(0, 0);
         ctx.stroke();
         ctx.closePath();
-        ctx.fillText(this.comp, 2, this.y - 5);
+        ctx.fillText(this.comp, 2, y - 5);
       }, params: [textWidth]});
     }
   }
 
-  draw(ctx, initX, initY, scale = 1) {
+  draw(ctx, initX, initY) {
     if (this.def) {
       let length = 0;
       let height = 0;
@@ -767,9 +766,9 @@ window.Graphic = class Graphic {
       this.drawMembrane(ctx);
       //set up dimension vars
       for (let i = 0; i < this.molecules.length; i++) {
-        let thisX = scale * (2 + length + initX);
-        let thisY = scale * (2 + initY);
-        let dims = this.molecules[i].initDrawList(ctx, thisX, thisY, scale, initX);
+        let thisX = 2 + length + initX;
+        let thisY = 2 + initY;
+        let dims = this.molecules[i].initDrawList(ctx, thisX, thisY, null, initX);
         length += dims[0];
         if (dims[1] > height) {
           height = dims[1];
@@ -839,7 +838,7 @@ window.Graphic = class Graphic {
           x2 = pairs[i][1][0] + initX;
           y2 = pairs[i][1][1] + initY;
         }
-        let y0 = scale * pairs[i][0][1] + initY;
+        let y0 =  pairs[i][0][1] + initY;
         let y1 = (pairs[i][0][1] + 5 * i + 10) + initY;
         let textParam = pairs[i][2];
         let textParamX = x1 - 4;
