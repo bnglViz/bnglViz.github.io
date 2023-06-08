@@ -1,0 +1,61 @@
+begin model
+
+begin compartments
+c0	3	1
+end compartments
+
+begin parameters
+end parameters
+
+begin molecule types
+A(b1,b2,c)
+B(a1,a2,a3,c)
+C(b1,b2,a1,a2,a3)
+end molecule types
+
+begin seed species
+1 @c0:A(b1,b2,c) 300.0
+2 @c0:B(a1,a2,a3,c) 200.0
+3 @c0:C(b1,b2,a1,a2,a3) 100.0
+end seed species
+
+begin observables
+Molecules O0 @c0:A(b1!+,b2!+,c!+)
+Molecules perfectmachine @c0:A(b1!+,b2!+,c!+).A(b1!+,b2!+,c!+).A(b1!+,b2!+,c!+).B(a1!+,a2!+,a3!+,c!+).B(a1!+,a2!+,a3!+,c!+).C(b1!+,b2!+,a1!+,a2!+,a3!+)
+Species Agreaterthan10 @c0:A()>10
+Species Agreaterthan3 @c0:A()>3
+Species Agreaterthan100 @c0:A()>100
+end observables
+
+# begin functions
+# end functions
+
+begin reaction rules
+AB:	@c0:A(b1,b2!+) + @c0:B(a1) <-> @c0:A(b1!1,b2!+).B(a1!1)		100.0, 0.1
+AB_0:	@c0:A(b1) + @c0:B(a2) <-> @c0:A(b1!1).B(a2!1)		100.0, 0.1
+AB_1:	@c0:A(b1) + @c0:B(a3) <-> @c0:A(b1!1).B(a3!1)		100.0, 0.1
+AB_2:	@c0:A(b2) + @c0:B(a1) <-> @c0:A(b2!1).B(a1!1)		100.0, 0.1
+AB_3:	@c0:A(b2) + @c0:B(a2) <-> @c0:A(b2!1).B(a2!1)		100.0, 0.1
+AB_4:	@c0:A(b2) + @c0:B(a3) <-> @c0:A(b2!1).B(a3!1)		100.0, 0.1
+AC:	@c0:A(c) + @c0:C(a1) <-> @c0:A(c!1).C(a1!1)		100.0, 0.1
+AC_0:	@c0:A(c) + @c0:C(a2) <-> @c0:A(c!1).C(a2!1)		100.0, 0.1
+AC_1:	@c0:A(c) + @c0:C(a3) <-> @c0:A(c!1).C(a3!1)		100.0, 0.1
+BC:	@c0:B(c) + @c0:C(b1) <-> @c0:B(c!1).C(b1!1)		100.0, 0.1
+BC_0:	@c0:B(c) + @c0:C(b2) <-> @c0:B(c!1).C(b2!1)		100.0, 0.1
+AB_bound:	@c0:A(b1).B(a1) <-> @c0:A(b1!1).B(a1!1)		100.0, 0.1
+AB_0_bound:	@c0:A(b1).B(a2) <-> @c0:A(b1!1).B(a2!1)		100.0, 0.1
+AB_1_bound:	@c0:A(b1).B(a3) <-> @c0:A(b1!1).B(a3!1)		100.0, 0.1
+AB_2_bound:	@c0:A(b2).B(a1) <-> @c0:A(b2!1).B(a1!1)		100.0, 0.1
+AB_3_bound:	@c0:A(b2).B(a2) <-> @c0:A(b2!1).B(a2!1)		100.0, 0.1
+AB_4_bound:	@c0:A(b2).B(a3) <-> @c0:A(b2!1).B(a3!1)		100.0, 0.1
+AC_bound:	@c0:A(c).C(a1) <-> @c0:A(c!1).C(a1!1)		100.0, 0.1
+AC_0_bound:	@c0:A(c).C(a2) <-> @c0:A(c!1).C(a2!1)		100.0, 0.1
+AC_1_bound:	@c0:A(c).C(a3) <-> @c0:A(c!1).C(a3!1)		100.0, 0.1
+BC_bound:	@c0:B(c).C(b1) <-> @c0:B(c!1).C(b1!1)		100.0, 0.1
+BC_0_bound:	@c0:B(c).C(b2) <-> @c0:B(c!1).C(b2!1)		100.0, 0.1
+end reaction rules
+
+end model
+
+simulate_nf({t_end=>1.0,n_steps=>20})
+
