@@ -606,8 +606,8 @@ window.MoleculeManager = class MoleculeManager {
     return this.compMap[compartment];
   }
 
-  hasCompartment(compartment) {
-    return (this.compMap.hasOwnProperty(compartment));
+  hasCompartment(name) {
+    return (this.compMap.hasOwnProperty(name));
   }
 
   getDimension(compartment) {
@@ -672,11 +672,6 @@ window.Graphic = class Graphic {
       //dark mode boolean
       this.darkMode = parameters.darkMode;
       //compartment name
-      /*if (this.mode && this.mode != 'normal' && this.mode != 'compact') {
-        this.comp = this.mode;
-        //abreviate compratment name
-        this.comp = this.comp.slice(0, 3) + '...';
-      }*/
       this.comp = parameters.compartment;
       //compartment dimension number
       this.compDimension = parameters.compDimension;
@@ -686,6 +681,8 @@ window.Graphic = class Graphic {
       this.process();
       //dimesntions, calcutlated later
       this.x = this.y = 0;
+      //boolean if bonds have any connections
+      this.anyBondConnection = false;
     } catch(e) {
       console.log("model-graphics.js Graphic() constructor() error:\n" + e);
     }
@@ -796,6 +793,9 @@ window.Graphic = class Graphic {
                   if (z != y || u != i) {
                     let m2 = this.molecules[u].sites[z];
                     if (m2.bondName == m1.bondName) {
+                      if (this.graphic) {
+                        this.graphic.anyBondConnection = true;
+                      }
                       newPair.push(m2.position);
                       newPair.push(m2.bondName);
                       newPair.push("normal");
@@ -839,7 +839,12 @@ window.Graphic = class Graphic {
           y2 = pairs[i][1][1] + initY;
         }
         let y0 =  pairs[i][0][1] + initY;
-        let y1 = (pairs[i][0][1] + 5 * i + 10) + initY;
+        let y1;
+        if (this.graphic && this.graphic.anyBondConnection) {
+          y1 = (pairs[i][0][1] + 5 * i + 10) + initY;
+        } else {
+          y1 = (pairs[i][0][1] + 10) + initY;
+        }
         let textParam = pairs[i][2];
         let textParamX = x1 - 4;
         let textParamY = pairs[i][0][1] + 11 + initY;

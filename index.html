@@ -54,7 +54,7 @@
   var oldFileInputValue = "";
   var allElms;
   var mm = new MoleculeManager();
-  var be = new BNGLExtractor();
+  var be = new BNGLExtractor(mm);
 
   //manage ids
   class IDManager {
@@ -292,12 +292,17 @@
     let molcCompMap = {};
     let bngl, conc, comment, name, compartment;
     if (type != "reactions" && type != "observables" && type != "compartments") {
-      [bngl, conc, comment, observType] = Object.values(data);
-      comment = comment.trim();
+      bngl = data.bngl;
+      conc = data.conc.trim();
+      comment = data.comment.trim();
+      observType = data.observType;
       [bngl, compartment] = mm.processMoleculeCompartment(bngl.trim());
-      bngl = addBNGLParenthesis(bngl);
+      if (compartment) {
+        bngl = "@" + compartment + ":" + addBNGLParenthesis(bngl);
+      } else {
+        bngl = addBNGLParenthesis(bngl);
+      }
       molcCompMap[bngl] = compartment;
-      conc = conc.trim();
       //get name (change this to only after parenthesis)
       name = bngl.split("(")[0];
       var bngls = [bngl];
@@ -361,7 +366,6 @@
     if (type == "species") {
       return [name, newCans, bngl, conc, comment];
     } else if (type == "observables") {
-      //return [observType, name, newCans, bngl, comment];
       return [
         observData.type,
         observData.name,

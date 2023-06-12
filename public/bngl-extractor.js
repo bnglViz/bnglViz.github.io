@@ -14,6 +14,10 @@ class BNGLNewLineIndex {
 //no molecule definitions include "-" or "<"
 window.BNGLExtractor = class BNGLExtractor {
 
+  constructor(mm) {
+    this.mm = mm;
+  }
+
   //name is misleading, returns index of first whitespace OR # character
   isWhitespace(s) {
     return (/\s/.test(s) || s === "#");
@@ -524,8 +528,19 @@ window.BNGLExtractor = class BNGLExtractor {
       return list[0].join(" ");
     }
     newLines = data.newLines;
-    let condensedList = reactants.concat([sign]).concat(products);
+    //add compartments
+    reactants.forEach((item, i) => {
+      if (this.mm.hasCompartment(item)) {
+        reactants[i] = "@" + this.mm.getCompartment(item) + ":" + reactants[i];
+      }
+    });
+    products.forEach((item, i) => {
+      if (this.mm.hasCompartment(item)) {
+        products[i] = "@" + this.mm.getCompartment(item) + ":" + products[i];
+      }
+    });
     //add new lines
+    let condensedList = reactants.concat([sign]).concat(products);
     for (let i = 0; i < newLines.length; i++) {
       condensedList.splice(newLines[i].index + i, 0, "\\\n");
     }
