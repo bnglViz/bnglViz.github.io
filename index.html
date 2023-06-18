@@ -9,7 +9,7 @@
 <table>
   <tr>
     <td>
-      <input id="bngl-file-input" type="file" onchange="visualize()">
+      <input id="bngl-file-input" type="file" oninput="visualize();" onclick="inputClick();">
     </td>
     <td id="canvas-cell">
       <canvas id="testCanvas"></canvas>
@@ -51,7 +51,6 @@
   const body = document.body;
 
   //other global var declaration
-  var oldFileInputValue = "";
   var allElms;
   var mm = new MoleculeManager();
   var be = new BNGLExtractor(mm);
@@ -111,7 +110,20 @@
   //draw test canvas
   testCanvas.width = window.maxWidth;
   testCanvas.height = window.maxHeight;
-  drawBNGL('z', testCanvas);
+  drawBNGL('@EC:EGF(rb)', testCanvas);
+  function testText() {
+    testCanvas.width = 150;
+    testCanvas.height = 50;
+    let ctx = testCanvas.getContext("2d", { willReadFrequently: true });
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "15px Arial";
+    ctx.fillText(word, 0, 15);
+    ctx.fillStyle = "#ff0000";
+    let width = ctx.measureText(word).width;
+    ctx.rect(0, 15, width, 1);
+    ctx.fill();
+  }
+  //testText();
 
   //draw bngl
   function drawBNGL(bngl, canvas, data = {type: "molecules", drawExtraPlus: false}) {
@@ -448,8 +460,6 @@
   //render everything in bngl
   function visualize() {
     //remove all old visualizations
-    let fileHasChanged = fileInput.value != oldFileInputValue;
-    oldFileInputValue = fileInput.value;
     //remove everything in table
     let oldElms = tableContain.children;
     let numOldElms = oldElms.length;
@@ -497,6 +507,12 @@
     if (fileInput.value) {
       reader.readAsText(bnglFile);
     }
+  }
+
+  //function to reset input element value when it is clicked
+  //this is needed because chrome doesn't trigger onchange if filename is same
+  function inputClick() {
+    fileInput.value = "";
   }
 </script>
 </body>

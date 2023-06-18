@@ -515,8 +515,8 @@ window.Molecule = class Molecule {
   //draw molecule with states and sites labled
   initDrawList(ctx, x, y, scale = 1, initX = 0) {
     if (this.def) {
-      var length = ctx.measureText(this.name).width;
-      length *= ((length < 0) ? -1 : 1);
+      ctx.font = "15px Arial";
+      var length = Math.abs(ctx.measureText(this.name).width);
       var dims = this.drawSites(ctx, x, y, this.radius, 1, initX, false);
       if (length < dims[0]) {
         length = dims[0];
