@@ -569,6 +569,8 @@ window.MoleculeManager = class MoleculeManager {
     this.compMap = {};
     //map from molecule name to compartment name
     this.molcCompMap = {};
+    //map from molecule name to polymer length string
+    this.polymerMap = {};
     //most recent compartment name added
     this.latestComp = null;
   }
@@ -594,6 +596,18 @@ window.MoleculeManager = class MoleculeManager {
     return [this.moleculeName, compartmentName];
   }
 
+  addPolymer(name, polymer) {
+    this.polymerMap[name] = polymer;
+  }
+
+  getPolymer(name) {
+    return this.polymerMap[name];
+  }
+
+  hasPolymer(name) {
+    return this.polymerMap.hasOwnProperty(name);
+  }
+
   addCompartment(compartment, dimension) {
     this.compMap[compartment] = dimension;
   }
@@ -607,7 +621,11 @@ window.MoleculeManager = class MoleculeManager {
   }
 
   hasCompartment(name) {
-    return (this.compMap.hasOwnProperty(name));
+    return this.compMap.hasOwnProperty(name);
+  }
+
+  hasMoleculeWithCompartment(name) {
+    return this.molcCompMap.hasOwnProperty(name);
   }
 
   getDimension(compartment) {

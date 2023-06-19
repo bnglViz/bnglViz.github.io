@@ -42,6 +42,7 @@
   ];
   const observablesTokens = ["observables"];
   const reactionTokens = ["reaction rules", "reaction_rules"];
+  const polymerTokens = ["<", "<=", ">", ">="];
 
   //get major elements
   const testCanvas = document.getElementById("testCanvas");
@@ -265,12 +266,14 @@
         return [[], list, null];
       }
     }
+
     function sliceNewLine(output, startIndex, index) {
       //combine reactants, sign, and product into 1 list to match newline index format
       let sliced = condensedList.slice(startIndex, index);
       //reformat() expands condensed list back into reactants, sign, and product
       output.push(reformat(sliced));
     }
+
     let condensedList;
     if (sign) {
       condensedList = reactants.concat([sign]).concat(products);
@@ -325,10 +328,23 @@
     } else if (type == "observables") {
       [reactants, products, sign, observData, comment, newLines] = Object.values(data);
       //add paranthesis if there are none
-      let bngl, compartment;
-      reactants.forEach((item, i) => {
-        [bngl, compartment] = mm.processMoleculeCompartment(item)
+      let bngl, compartment, polymer, polymerIndex;
+      reactants.forEach((bngl, i) => {
+        //manage polymer lengths
+        for (let i = 0; i < polymerTokens.length; i++) {
+          let token = polymerTokens[i];
+          if (bngl.includes(token)) {
+            polymerIndex = bngl.indexOf(token);
+            polymer = bngl.slice(polymerIndex, bngl.length);
+            bngl = bngl.slice(0, polymerIndex);
+          }
+        }
+        //other processing
+        [bngl, compartment] = mm.processMoleculeCompartment(bngl);
         reactants[i] = addBNGLParenthesis(bngl);
+        if (polymer && polymer.trim()) {
+          mm.addPolymer(observData.name, polymer);
+        }
         molcCompMap[bngl] = compartment;
       });
       var bngls = separateBNGLNewLines(reactants, products, sign, newLines);
@@ -382,7 +398,7 @@
         observData.type,
         observData.name,
         newCans,
-        be.compileBNGL(data, type, observData.type),
+        be.compileBNGL(data, type, observData),
         comment
       ];
     } else if (type == "reactions") {
@@ -480,7 +496,16 @@
     reader.onload = () => {
       let bngl = reader.result;
       //process all things of intrest
-      comments = be.extractComments(bngl);
+      comments = be.extractComments(
+        bngl,
+        [
+          compartmentTokens,
+          moleculeTokens,
+          speciesTokens,
+          observablesTokens,
+          reactionTokens
+        ]
+      );
       compartments = be.extractBNGL(bngl, compartmentTokens, "compartments");
       molecules = be.extractBNGL(bngl, moleculeTokens);
       species = be.extractBNGL(bngl, speciesTokens);

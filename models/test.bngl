@@ -11,11 +11,13 @@ end molecule types
 begin species
 end species
 
+#sneaky comment
+
 begin reaction rules
 end reaction rules
 
 begin observables
-Species Agreaterthan10 @c0:A()>10
+Species Agreaterthan10 @c0:A()>=10
 end observables
 
 

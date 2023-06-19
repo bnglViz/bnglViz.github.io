@@ -330,9 +330,23 @@ window.BNGLExtractor = class BNGLExtractor {
     }
   }
 
-  extractComments(bnglStr) {
-    let header = bnglStr.slice(0, bnglStr.indexOf("begin"));
-    let lines = header.split("\n");
+  extractComments(bnglStr, sectionTokenList) {
+    //helper function to remove all sections with content, leving only comments
+    function removeSection(bnglStr, sectionTokens) {
+      for (let i = 0; i < sectionTokens.length; i++) {
+        let token = sectionTokens[i];
+        if (bnglStr.includes(token)) {
+          return bnglStr.slice(0, "begin " + token) + bnglStr.slice("end " + token, bnglStr.length);
+        }
+      }
+      return bnglStr;
+    }
+
+    for (let i = 0; i < sectionTokenList.length; i++) {
+      let sectionTokens = sectionTokenList[i];
+      bnglStr = removeSection(bnglStr, sectionTokens);
+    }
+    let lines = bnglStr.split("\n");
     let output = [];
     lines.forEach((line, i) => {
       let comment = this.extractComment(line);
@@ -417,11 +431,6 @@ window.BNGLExtractor = class BNGLExtractor {
           let title;
           if (this.isReactionTitle(bngl)) {
             [title, bngl] = bngl.split(":");
-          }
-          //manage polymer lengths
-          if (type == "observable") {
-            bngl = bngl.replace(/</g, "#<");
-            bngl = bngl.replace(/>/g, "#>");
           }
           bngls[u] = bngl;
         }
@@ -520,25 +529,30 @@ window.BNGLExtractor = class BNGLExtractor {
   }
 
   //compile reaction extraction output into bngl string
-  compileBNGL(data, type = "", observType = "") {
+  compileBNGL(data, type = "", observData = {}) {
+    let observType = observData.type;
+    let observName = observData.name;
     let reactants, products, sign, newLines;
     let list = Object.values(data);
     [reactants, products, sign] = list;
-    if (type == "observables") {
-      return list[0].join(" ");
-    }
     newLines = data.newLines;
     //add compartments
     reactants.forEach((item, i) => {
-      if (this.mm.hasCompartment(item)) {
+      if (this.mm.hasMoleculeWithCompartment(item)) {
         reactants[i] = "@" + this.mm.getCompartment(item) + ":" + reactants[i];
+        if (type == "observables" && mm.hasPolymer(observName)) {
+          reactants[i] += mm.getPolymer(observName);
+        }
       }
     });
     products.forEach((item, i) => {
-      if (this.mm.hasCompartment(item)) {
+      if (this.mm.hasMoleculeWithCompartment(item)) {
         products[i] = "@" + this.mm.getCompartment(item) + ":" + products[i];
       }
     });
+    if (type == "observables") {
+      return list[0].join(" ");
+    }
     //add new lines
     let condensedList = reactants.concat([sign]).concat(products);
     for (let i = 0; i < newLines.length; i++) {
