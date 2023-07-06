@@ -133,7 +133,7 @@
     let compartmentMap = data.compartmentMap;
     //set up drawing context. "willReadFrequently: true" puts processes in GPU
     let ctx = canvas.getContext("2d", { willReadFrequently: true });
-    let drawObj, compartment;
+    let drawObj, compartment, numberMolecules;
     let parameters = {
       mode: 'compact',
       darkMode: this.darkMode,
@@ -148,10 +148,12 @@
       parameters["manager"] = mm;
       //should be [reactants, products, sign] but observables with - bond are in sign
       drawObj = new Graphic(bngl[0][0], parameters);
+      numberMolecules = 1;
     } else if (type === "reactions") {
       [reactants, products, sign] = bngl;
       parameters["manager"] = mm;
       drawObj = new Reaction(reactants, products, sign, ctx, parameters);
+      numberMolecules = reactants.length + products.length;
     } else if (type === "species") {
       if (compartmentMap) {
         compartment = compartmentMap[bngl];
@@ -160,6 +162,7 @@
       }
       parameters["manager"] = mm;
       drawObj = new Graphic(bngl, parameters);
+      numberMolecules = 1;
     } else {
       if (compartmentMap) {
         compartment = compartmentMap[bngl];
@@ -167,13 +170,14 @@
         parameters["compartment"] = compartment;
       }
       drawObj = new Graphic(bngl, parameters);
+      numberMolecules = 1;
     }
     let reactionDims = drawObj.draw(ctx, 0, 0);
     //draw graphic
     drawObj.doDrawList();
     //get dimensions
     let dims;
-    dims = getCanvasDimentions(ctx);
+    dims = getCanvasDimentions(ctx, numberMolecules);
     //resize canvas
     canvas.width = dims[0];
     canvas.height = dims[1];
@@ -318,8 +322,10 @@
         bngl = addBNGLParenthesis(bngl);
       }
       molcCompMap[bngl] = compartment;
-      //get name (change this to only after parenthesis)
       name = bngl.split("(")[0];
+      if (name.includes(":")) {
+        name = name.split(":")[1];
+      }
       var bngls = [bngl];
     } else if (type == "compartments") {
       //add compartments to molecule manager
@@ -405,7 +411,7 @@
       return [
         be.compileBNGL(data),
         newCans,
-        rate,
+        rate.trim(),
         comment
       ];
     } else {

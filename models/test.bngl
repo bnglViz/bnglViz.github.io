@@ -1,24 +1,28 @@
 begin parameters
 end parameters
 
+#top
 begin compartments
-c0	3	1
+M	2	1
 end compartments
 
+#after compartments
 begin molecule types
 end molecule types
 
+#after molecules
 begin species
 end species
 
-#sneaky comment
-
+#after species
 begin reaction rules
 end reaction rules
 
+#after reactions
 begin observables
-Species Agreaterthan10 @c0:A()>=10
 end observables
+
+#bottom
 
 
 generate_network();

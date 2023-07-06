@@ -737,35 +737,36 @@ window.Graphic = class Graphic {
   }
 
   //draw membrane (compartment)
-  drawMembrane(ctx) {
+  drawMembrane(ctx, xPos, yPos) {
     if (this.comp) {
       //box dims
       let textWidth = ctx.measureText(this.comp).width;
-      let y = 55;
+      let y = 55 + yPos;
 
       //compartment color from dimension
-      let color = ((this.compDimension == 3) ? '#eee': '#aaa');
+      let color = ((this.compDimension == 3) ? '#333': '#000');
 
       //add to draw list
       this.drawList.push({func: (params) => {
         //draw membrane at top right corner, filling ctx
         ctx.fillStyle = color;
-        ctx.fillRect(0, 0, params[0] + 9, y);
-        ctx.fillStyle = '#000000';
+        ctx.fillRect(xPos, yPos, params[0] + 9, y);
+        ctx.strokeStyle = '#ddd';
+        ctx.fillStyle = '#ddd';
         ctx.font = "11px Arial";
         ctx.beginPath();
-        ctx.moveTo(0, 0);
+        ctx.moveTo(xPos, yPos);
         //left line
-        ctx.lineTo(0, y);
+        ctx.lineTo(xPos, y);
         //bottom line
-        ctx.lineTo(params[0] + 9, y);
+        ctx.lineTo(xPos + params[0] + 9, y);
         //right line
-        ctx.lineTo(params[0] + 9, 0);
+        ctx.lineTo(xPos + params[0] + 9, yPos);
         //top line
-        ctx.lineTo(0, 0);
+        ctx.lineTo(xPos, yPos);
         ctx.stroke();
         ctx.closePath();
-        ctx.fillText(this.comp, 2, y - 5);
+        ctx.fillText(this.comp, xPos + 2, y - 5);
       }, params: [textWidth]});
     }
   }
@@ -778,7 +779,7 @@ window.Graphic = class Graphic {
       let completedBonds = new Set();
       let pairs = [];//list of pairs of xy coords for each bond
       //draw membrane
-      this.drawMembrane(ctx);
+      this.drawMembrane(ctx, initX, initY);
       //set up dimension vars
       for (let i = 0; i < this.molecules.length; i++) {
         let thisX = 2 + length + initX;
@@ -811,9 +812,7 @@ window.Graphic = class Graphic {
                   if (z != y || u != i) {
                     let m2 = this.molecules[u].sites[z];
                     if (m2.bondName == m1.bondName) {
-                      if (this.graphic) {
-                        this.graphic.anyBondConnection = true;
-                      }
+                      this.anyBondConnection = true;
                       newPair.push(m2.position);
                       newPair.push(m2.bondName);
                       newPair.push("normal");
@@ -858,7 +857,7 @@ window.Graphic = class Graphic {
         }
         let y0 =  pairs[i][0][1] + initY;
         let y1;
-        if (this.graphic && this.graphic.anyBondConnection) {
+        if (this.anyBondConnection) {
           y1 = (pairs[i][0][1] + 5 * i + 10) + initY;
         } else {
           y1 = (pairs[i][0][1] + 10) + initY;
@@ -941,7 +940,7 @@ class Reaction {
     this.totalLength = 0;
     this.totalHeight = 0;
     //boolean
-    this.drawExtraPlus = parameters.drawExtraPlus;
+    this.drawExtraPlus = !!parameters.drawExtraPlus;
     //MoleculeManager instance
     this.mm = parameters.manager;
   }
@@ -1001,7 +1000,8 @@ class Reaction {
       let parameters = {
         mode: 'compact',
         darkMode: this.darkMode,
-        manager: this.mm
+        manager: this.mm,
+        compartment: this.mm.getCompartment(bngl)
       };
       let drawObj = new Graphic(bngl, parameters);
 
@@ -1060,7 +1060,8 @@ class Reaction {
       let parameters = {
         mode: 'compact',
         darkMode: this.darkMode,
-        manager: this.mm
+        manager: this.mm,
+        compartment: this.mm.getCompartment(bngl)
       };
       let drawObj = new Graphic(bngl, parameters);
 
@@ -1150,106 +1151,102 @@ window.pixleAlpha = function pixleAlpha(ctx, x, y) {
 }
 
 //find the size of drawing in ctx
-window.getCanvasDimentions = function getCanvasDimentions(ctx) {
+window.getCanvasDimentions = function getCanvasDimentions(ctx, numMol) {
   let dims = [null, null];
-  //find initial furthest visible pixle right with binary search
-  let x = window.maxWidth;
-  let y = 1;
-  let a = 0;
-  let l = 23;
-  let r = window.maxWidth - 1;
-  let mid, centerA, lastA;
-  while (r >= l) {
-    mid = l + Math.floor((r - l) / 2);
-    centerA = pixleAlpha(ctx, mid, 1);
-    lastA = pixleAlpha(ctx, mid - 1, 1);
-    if (centerA == 0 && lastA != 0) {
-      break;
-    } else if (centerA != 0) {
-      l = mid + 1;
-    } else {
-      r = mid - 1;
+  //if binary search can be used
+  if (numMol == 1) {
+    //find initial furthest visible pixle right with binary search
+    let x = window.maxWidth;
+    let y = 1;
+    let a = 0;
+    let l = 23;
+    let r = window.maxWidth - 1;
+    let mid, centerA, lastA;
+    while (r >= l) {
+      mid = l + Math.floor((r - l) / 2);
+      centerA = pixleAlpha(ctx, mid, 1);
+      lastA = pixleAlpha(ctx, mid - 1, 1);
+      if (centerA == 0 && lastA != 0) {
+        break;
+      } else if (centerA != 0) {
+        l = mid + 1;
+      } else {
+        r = mid - 1;
+      }
     }
-  }
-  x = mid;
-  //find absolute furthest visible pixle right
-  while (y <= window.maxHeight) {
-    y++;
-    a = pixleAlpha(ctx, x, y);
-    while (a != 0) {
-      x++;
-      a = pixleAlpha(ctx, x, y);
-    }
-  }
-  let right;
-  right = dims[0] = x;
-  //find initial furthest visible pixle down
-  x = 1;
-  y = window.maxHeight;
-  a = 0;
-  while (a == 0 && y >= 0) {
-    y--;
-    a = pixleAlpha(ctx, x, y);
-  }
-  y++
-  //find absolute furthest visible pixle right
-  while (x <= right) {
-    x++;
-    a = pixleAlpha(ctx, x, y);
-    while (a != 0) {
+    x = mid;
+    //find absolute furthest visible pixle right
+    while (y <= window.maxHeight) {
       y++;
       a = pixleAlpha(ctx, x, y);
+      while (a != 0) {
+        x++;
+        a = pixleAlpha(ctx, x, y);
+      }
     }
+    let right;
+    right = dims[0] = x;
+    //find initial furthest visible pixle down
+    x = 1;
+    y = window.maxHeight;
+    a = 0;
+    while (a == 0 && y >= 0) {
+      y--;
+      a = pixleAlpha(ctx, x, y);
+    }
+    y++
+    //find absolute furthest visible pixle right
+    while (x <= right) {
+      x++;
+      a = pixleAlpha(ctx, x, y);
+      while (a != 0) {
+        y++;
+        a = pixleAlpha(ctx, x, y);
+      }
+    }
+    dims[1] = y;
+    return dims;
+  } else {
+    //if binary search cannot be used
+    //find initial furthest visible pixle right
+    let x = 4500;
+    let y = 1;
+    let a = 0;
+    while (a == 0 && x >= 0) {
+      x--;
+      a = pixleAlpha(ctx, x, 1);
+    }
+    x++;
+    //find absolute furthest visible pixle right
+    while (y <= 250) {
+      y++;
+      a = pixleAlpha(ctx, x, y);
+      while (a != 0) {
+        x++;
+        a = pixleAlpha(ctx, x, y);
+      }
+    }
+    let right;
+    right = dims[0] = x;
+    //find initial furthest visible pixle down
+    x = 1;
+    y = 250;
+    a = 0;
+    while (a == 0 && y >= 0) {
+      y--;
+      a = pixleAlpha(ctx, x, y);
+    }
+    y++
+    //find absolute furthest visible pixle right
+    while (x <= right) {
+      x++;
+      a = pixleAlpha(ctx, x, y);
+      while (a != 0) {
+        y++;
+        a = pixleAlpha(ctx, x, y);
+      }
+    }
+    dims[1] = y;
+    return dims;
   }
-  dims[1] = y;
-  return dims;
 }
-
-
-/*function test(ctx) {
-  let dims = [null, null];
-  //setup alpha matrix
-  let imageData = ctx.getImageData(0, 0, window.maxWidth, window.maxHeight);
-  let mat = RGBAtoImageMat(imageData.data, window.maxHeight);
-  function getAlpha(x, y) {return mat[y][x];};
-  //find initial furthest visible pixle right
-  let x = window.maxWidth;
-  let y = 1;
-  let a = 0;
-  while (a == 0 && x >= 0) {
-    x--;
-    a = getAlpha(x, y);
-  }
-  x++;
-  //find absolute furthest visible pixle right
-  while (y < window.maxHeight - 1) {
-    y++;
-    a = getAlpha(x, y);
-    while (a != 0) {
-      x++;
-      a = getAlpha(x, y);
-    }
-  }
-  let right;
-  right = dims[0] = x;
-  //find initial furthest visible pixle down
-  x = 1;
-  y = window.maxHeight;
-  a = 0;
-  while (a == 0 && y >= 0) {
-    y--;
-    a = getAlpha(x, y);
-  }
-  y++
-  //find absolute furthest visible pixle right
-  while (x < right) {
-    x++;
-    a = getAlpha(x, y);
-    while (a != 0 && y < window.maxHeight) {
-      y++;
-      a = getAlpha(x, y);
-    }
-  }
-  dims[1] = y;
-  return dims;
-}*/
