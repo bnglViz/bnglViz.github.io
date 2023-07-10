@@ -58,12 +58,28 @@ In rule-based modeling, like in agent-based modeling, simulations start with the
         <h3>Observables</h3>  
 
 As each species includes all details on levels of protein domains, it often necessary to group species into pools 
-        of "observables" having the same features. In the example below, the first line defines an observable "dimers" that
+        of "observables" having the same features, and count molecules within these pools to compare simulation results with 
+        experimental observations. In the example below, the first line defines an observable "dimers" that
         has two "egfr" molecules connected through "r" sites. Other sites are shown in grey, which means they can be 
         connected in any states (for "Y1068" and "Y1173" sites) or be connected to any other molecules. The second observable "RP1"
         defines all species that have "egfr" molecule as part of them, with site "Y1068" being phosphorylated, 
-        but possibly bound or unbound to other molecules.
+        but possibly bound or unbound to other molecules. Notice the first term "Molecules". It means that observable counts all
+        molecules, so the population count of this species is reported multiplied by 2, as it contains two instances of "egfr"
+        molecules. Optional term "Species" counts this species only once.
   <br><img src="images/Observables1.png" width=600> 
+
+        <h3>Reaction rules</h3>  
+
+Reaction rules define classes of reactions with the same kinetics, by specifying features of molecules that participate 
+        in these reactions. In the example below, "egf" ligand binds to "egfr" molecule via making a bond between 
+        "r" site of "egf" and "l" site of "egfr". Interestingly, "r" site of "egfr" is shown in color, indicating that 
+        it is important for this interaction. No marks under this site means that it must be unbound for interaction to happen 
+        - meaning that "egf" can bind only to monomeric "egfr".
+        All grey sites have no effect on the interaction, so the same kinetics applies whether "egfr" is bound to any other proteins 
+        on other sites.
+        The second reaction is dimerization, and the 
+  <br><img src="images/rule1.png" width=600> 
+
 
 
    
