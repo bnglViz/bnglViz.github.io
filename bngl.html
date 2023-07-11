@@ -9,13 +9,16 @@
 <table cellpadding="30">
     <tr>
     <td id="canvas-text">
-      <a href=bngl.html>What is BNGL</a>
-    </td>
-    <td id="canvas-text">
       <a href=index.html><b>BNGL VISUALIZER</b></a>
     </td>   
     <td id="canvas-text">
+      <a href=bngl.html>BNGL overview</a>
+    </td>
+    <td id="canvas-text">
       <a href=viz.html>Visualization conventions</a>
+    </td>
+    <td id="canvas-text">
+      <a href=examples.html>Examples</a>
     </td>
     <td id="canvas-text">
       <a href=about.html>About</a>
@@ -77,8 +80,10 @@ Reaction rules define classes of reactions with the same kinetics, by specifying
         - meaning that "egf" can bind only to monomeric "egfr".
         All grey sites have no effect on the interaction, so the same kinetics applies whether "egfr" is bound to any other proteins 
         on other sites.
-        The second reaction is dimerization, and the 
-  <br><img src="images/rule1.png" width=600> 
+        The second reaction is dimerization, and the "l" sites of "egfr" molecules must be bound to something. So, combined with the first rule, 
+        it means that ligand-bound receptors can dimerize, and kinetics of dimerization does not depend on the state of intracellular sites or 
+        on the other molecules bound to "egfr".
+  <br><img src="images/rule2.png" width=600> 
 
 
 
