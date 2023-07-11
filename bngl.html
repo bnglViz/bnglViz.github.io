@@ -7,6 +7,15 @@
 <body>
 <p><h1>BioNetGenLanguage (BNGL) code visualizer</h1></p>
 <table cellpadding="30">
+    <button onclick="switchColor()">Switch dark/light mode</button>
+ <tr>
+<script>
+function switchColor() {
+   var element = document.body;
+   element.classList.toggle("dark-mode");
+}
+</script>
+     </tr>
     <tr>
     <td id="canvas-text">
       <a href=index.html><b>BNGL VISUALIZER</b></a>
