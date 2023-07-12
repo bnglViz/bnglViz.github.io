@@ -19,10 +19,11 @@
     <td id="canvas-text">
       About
     </td>
-  </tr>   
+  </tr>
   <tr>
     <td>
       <input id="bngl-file-input" type="file" oninput="visualize();" onclick="inputClick();">
+      <button onclick="switchDarkMode();">Toggle DarkMode</button>
     </td>
     <td id="canvas-cell">
       <canvas id="testCanvas"></canvas>
@@ -56,6 +57,31 @@
   const observablesTokens = ["observables"];
   const reactionTokens = ["reaction rules", "reaction_rules"];
   const polymerTokens = ["<", "<=", ">", ">="];
+  var sectionTokens = [
+    compartmentTokens,
+    moleculeTokens,
+    speciesTokens,
+    observablesTokens,
+    reactionTokens
+  ]
+
+  //create section token map
+  var sectionTokenMap = {};
+  sectionTokens.forEach((item, i) => {
+    let val;
+    if (i == 0) {
+      val = "compartments";
+    } else if (i == 1) {
+      val = "molecules";
+    } else if (i == 2) {
+      val = "species";
+    } else if (i == 3) {
+      val = "observables";
+    } else if (i == 4) {
+      val = "reactions";
+    }
+    sectionTokenMap[item.toString()] = val;
+  });
 
   //get major elements
   const testCanvas = document.getElementById("testCanvas");
@@ -83,26 +109,15 @@
   var idManager = new IDManager();
 
   //set mode to dark mode initially
-  var darkMode = true;
-  switchDarkMode(false);
+  var darkMode = false;
+  applyDarkMode();
 
-  function switchDarkMode(actuallySwitch = true) {
+  function applyDarkMode() {
     //recompile list of elms
     allElms = body.getElementsByTagName("*");
     let len = allElms.length;
-    let oldClass, newClass;
-    //switch mode
-    if (actuallySwitch) {
-      if (darkMode) {
-        darkMode = false;
-        oldClass = "dark-mode";
-        newClass = "light-mode";
-      } else {
-        darkMode = true;
-        oldClass = "light-mode";
-        newClass = "dark-mode";
-      }
-    }
+    let oldClass = ((darkMode) ? "light-mode": "dark-mode");
+    let newClass = ((darkMode) ? "dark-mode": "light-mode");
     //change css classes
     for (let i = 0; i < len; i++) {
       allElms[i].classList.remove(oldClass);
@@ -111,6 +126,11 @@
     //body must be completed sepratley
     body.classList.remove(oldClass);
     body.classList.add(newClass);
+  }
+
+  function switchDarkMode() {
+    darkMode = !darkMode;
+    applyDarkMode();
   }
 
   function capitalizeFirstLetter(s) {
@@ -196,6 +216,8 @@
     canvas.height = dims[1];
     //have to redraw
     drawObj.doDrawList();
+    ctx.fillStyle = "#FF0000";
+    ctx.fillRect(dims[0] + 3, Math.floor(dims[1] / 2), 1, 1);
     if ((type === "molecules" || type === "species") && !mm.has(drawObj)) {
       mm.addMolecule(drawObj);
     }
@@ -514,29 +536,31 @@
     reader = new FileReader();
     reader.onload = () => {
       let bngl = reader.result;
-      //process all things of intrest
-      comments = be.extractComments(
-        bngl,
-        [
-          compartmentTokens,
-          moleculeTokens,
-          speciesTokens,
-          observablesTokens,
-          reactionTokens
-        ]
-      );
-      compartments = be.extractBNGL(bngl, compartmentTokens, "compartments");
-      molecules = be.extractBNGL(bngl, moleculeTokens);
-      species = be.extractBNGL(bngl, speciesTokens);
-      observables = be.extractBNGL(bngl, observablesTokens, "observable");
-      reactions = be.extractBNGL(bngl, reactionTokens, "reaction");
+      //sort tokens
+      let aVal, bVal;
+      sectionTokens.sort((a, b)=>{
+        a.forEach((item, i) => {
+          if (bngl.includes("begin " + item)) {
+            aVal = bngl.indexOf("begin " + item);
+          }
+        });
+        if (!aVal) {
+          return -1;
+        }
+        b.forEach((item, i) => {
+          if (bngl.includes("begin " + item)) {
+            bVal = bngl.indexOf("begin " + item);
+          }
+        });
+        return ((aVal < bVal) ? -1: 1);
+      });
       //visualize everything
+      comments = be.extractComments(bngl, sectionTokens);
       visualizeType("header comments", comments);
-      visualizeType("compartments", compartments);
-      visualizeType("molecules", molecules);
-      visualizeType("species", species);
-      visualizeType("observables", observables);
-      visualizeType("reactions", reactions);
+      sectionTokens.forEach((item, i) => {
+        let type = sectionTokenMap[item.toString()];
+        visualizeType(type, be.extractBNGL(bngl, item, type));
+      });
       //make arrows bigger
       let pElms = document.querySelectorAll("p");
       for (let i = 0; i < pElms.length; i++) {
@@ -545,7 +569,7 @@
         elm.innerHTML = elm.innerHTML.replace("-&gt;", ' <span class="big-arrow">&#8594;</span> ');
         elm.innerHTML = elm.innerHTML.replace("&lt;-", ' <span class="big-arrow">&#8592;</span> ');
       };
-
+      applyDarkMode();
     }
     //read if file present
     if (fileInput.value) {

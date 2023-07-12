@@ -151,7 +151,7 @@ window.BNGLExtractor = class BNGLExtractor {
     let observType = "";
     let newLines = [];
     let wasPlus = true;
-    let isObservable = type == "observable";
+    let isObservable = type == "observables";
     let hasReadType = !isObservable;
     //parse
     while (c < len) {
@@ -391,7 +391,7 @@ window.BNGLExtractor = class BNGLExtractor {
   extractBNGL(bnglStr, elmStrList, type = "") {
     let bngls = [];
     let toDelete = [];
-    let specialType = type == "reaction" || type == "observable";
+    let specialType = type == "reactions" || type == "observables";
     let isCompartment = type == "compartments";
     for (let i = 0; i < elmStrList.length; i++) {
       let elmStr = elmStrList[i];
@@ -452,7 +452,7 @@ window.BNGLExtractor = class BNGLExtractor {
         for (let u = 0; u < bngls.length; u++) {
           let data;
           if (specialType) {
-            bngls[u] = ((type == "observable") ? bngls[u].replace(/\n/g, "").replace(/\\/g, ""): bngls[u]);
+            bngls[u] = ((type == "observables") ? bngls[u].replace(/\n/g, "").replace(/\\/g, ""): bngls[u]);
             data = this.extractSingleLineReaction(bngls[u], startingLine + u + 1, type);
           } else if (isCompartment) {
             data = this.extractCompartments(bngls[u]);
@@ -495,7 +495,7 @@ window.BNGLExtractor = class BNGLExtractor {
             toDelete.push(bngls[u]);
           }
           if (onlyComment) {
-            if (type == "reaction" || type == "observable") {
+            if (type == "reactions" || type == "observables") {
               bngls[u] = bngls[u].comment;
             } else {
               bngls[u] = bngls[u].comment;

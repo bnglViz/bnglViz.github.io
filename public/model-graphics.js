@@ -1205,6 +1205,10 @@ window.getCanvasDimentions = function getCanvasDimentions(ctx, numMol) {
       }
     }
     dims[1] = y;
+    //check if arrow is present
+    if (pixleAlpha(ctx, dims[0] + 3, Math.floor(dims[1] / 2)) != 0) {
+      dims[0] += 35;
+    }
     return dims;
   } else {
     //if binary search cannot be used
@@ -1247,6 +1251,10 @@ window.getCanvasDimentions = function getCanvasDimentions(ctx, numMol) {
       }
     }
     dims[1] = y;
+    //check if arrow is present
+    if (pixleAlpha(ctx, dims[0] + 3, Math.floor(dims[1] / 2)) != 0) {
+      dims[0] += 35;
+    }
     return dims;
   }
 }

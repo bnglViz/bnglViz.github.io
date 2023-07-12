@@ -1,9 +1,9 @@
 body {
-  background-color: black;
+  background-color: white;
 }
 
 * {
-  color: white;
+  color: black;
   font-family: "Andale Mono";
 }
 
@@ -13,6 +13,18 @@ p {
 
 canvas {
   display: block;
+}
+
+button {
+  border: 1px solid grey;
+  border-radius: 2px;
+}
+
+input::file-selector-button {
+  border: 1px solid grey;
+  border-radius: 2px;
+  font-family: "Andale Mono";
+  background-color: white;
 }
 
 .dark-mode {
