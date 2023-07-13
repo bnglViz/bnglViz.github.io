@@ -2,9 +2,6 @@ begin parameters
 end parameters
 
 #top
-begin compartments
-M	2	1
-end compartments
 
 #after compartments
 begin molecule types

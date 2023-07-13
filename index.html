@@ -13,14 +13,14 @@
     </td>
     <td id="canvas-text">
       <a href=index.html><b>BNGL VISUALIZER</b></a>
-    </td>   
+    </td>
     <td id="canvas-text">
       <a href=viz.html>Visualization conventions</a>
     </td>
     <td id="canvas-text">
       <a href=about.html>About</a>
     </td>
-  </tr> 
+  </tr>
 </table>
     <hr>
     <h2>Visualize BioNetGen model</h2>
@@ -561,11 +561,12 @@
       });
       //visualize everything
       comments = be.extractComments(bngl, sectionTokens);
-      visualizeType("header comments", comments);
       sectionTokens.forEach((item, i) => {
         let type = sectionTokenMap[item.toString()];
+        visualizeType("header comments", comments[i]);
         visualizeType(type, be.extractBNGL(bngl, item, type));
       });
+      visualizeType("header comments", comments[comments.length - 1]);
       //make arrows bigger
       let pElms = document.querySelectorAll("p");
       for (let i = 0; i < pElms.length; i++) {

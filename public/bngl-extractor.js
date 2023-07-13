@@ -332,28 +332,64 @@ window.BNGLExtractor = class BNGLExtractor {
 
   extractComments(bnglStr, sectionTokenList) {
     //helper function to remove all sections with content, leving only comments
-    function removeSection(bnglStr, sectionTokens) {
-      for (let i = 0; i < sectionTokens.length; i++) {
-        let token = sectionTokens[i];
-        if (bnglStr.includes(token)) {
-          return bnglStr.slice(0, "begin " + token) + bnglStr.slice("end " + token, bnglStr.length);
+    function removeSection(bnglStr, firstTokens, lastTokens) {
+      let firstIndex, lastIndex;
+      if (firstTokens != -1) {
+        for (let i = 0; i < firstTokens.length; i++) {
+          let firstToken = firstTokens[i];
+          if (bnglStr.includes("end " + firstToken)) {
+            firstIndex = bnglStr.indexOf("end " + firstToken) + firstToken.length + 4;
+            break;
+          }
         }
       }
-      return bnglStr;
-    }
-
-    for (let i = 0; i < sectionTokenList.length; i++) {
-      let sectionTokens = sectionTokenList[i];
-      bnglStr = removeSection(bnglStr, sectionTokens);
-    }
-    let lines = bnglStr.split("\n");
-    let output = [];
-    lines.forEach((line, i) => {
-      let comment = this.extractComment(line);
-      if (comment) {
-        output.push(comment);
+      if (lastTokens != -1) {
+        for (let i = 0; i < lastTokens.length; i++) {
+          let lastToken = lastTokens[i];
+          if (bnglStr.includes("begin " + lastToken)) {
+            lastIndex = bnglStr.indexOf("begin " + lastToken);
+            break;
+          }
+        }
       }
-    });
+      if (firstIndex < 0 || lastIndex < 0) {
+        return "";
+      }
+      if (firstTokens == -1) {
+        if (lastIndex >= 0) {
+          return bnglStr.slice(0, lastIndex);
+        } else {
+          return "";
+        }
+      }
+      if (lastTokens == -1) {
+        if (firstIndex >= 0) {
+          return bnglStr.slice(firstIndex, bnglStr.length);
+        } else {
+          return "";
+        }
+      }
+      return bnglStr.slice(firstIndex, lastIndex);
+    }
+    let cleanStrings = [];
+    let len = sectionTokenList.length;
+    for (let j = 0; j <= len; j++) {
+      let firstTokens = ((j ==  0) ? -1: sectionTokenList[j - 1]);
+      let lastTokens = ((j ==  len) ? -1: sectionTokenList[j]);
+      cleanStrings.push(removeSection(bnglStr, firstTokens, lastTokens));
+    }
+    let output = [];
+    for (let i = 0; i < cleanStrings.length; i++) {
+      output.push([]);
+      let s = cleanStrings[i];
+      let lines = s.split("\n");
+      lines.forEach((line, j) => {
+        let comment = this.extractComment(line);
+        if (comment) {
+          output[i].push(comment);
+        }
+      });
+    }
     return output;
   }
 
