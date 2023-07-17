@@ -692,7 +692,7 @@ window.Graphic = class Graphic {
       //compartment name
       this.comp = parameters.compartment;
       //compartment dimension number
-      this.compDimension = mm.getDimension(this.comp);
+      this.compDimension = ((this.comp) ? this.manager.getDimension(this.comp): undefined);
       //list of instances of molecule classes
       this.molecules = [];
       //initializing this.molecules
@@ -1151,16 +1151,16 @@ window.pixleAlpha = function pixleAlpha(ctx, x, y) {
 }
 
 //find the size of drawing in ctx
-window.getCanvasDimentions = function getCanvasDimentions(ctx, numMol) {
+window.getCanvasDimentions = function getCanvasDimentions(ctx, numMol, maxWidth, maxHeight) {
   let dims = [null, null];
   //if binary search can be used
   if (numMol == 1) {
     //find initial furthest visible pixle right with binary search
-    let x = window.maxWidth;
+    let x = maxWidth;
     let y = 1;
     let a = 0;
     let l = 23;
-    let r = window.maxWidth - 1;
+    let r = maxWidth - 1;
     let mid, centerA, lastA;
     while (r >= l) {
       mid = l + Math.floor((r - l) / 2);
@@ -1176,7 +1176,7 @@ window.getCanvasDimentions = function getCanvasDimentions(ctx, numMol) {
     }
     x = mid;
     //find absolute furthest visible pixle right
-    while (y <= window.maxHeight) {
+    while (y <= maxHeight) {
       y++;
       a = pixleAlpha(ctx, x, y);
       while (a != 0) {
@@ -1188,7 +1188,7 @@ window.getCanvasDimentions = function getCanvasDimentions(ctx, numMol) {
     right = dims[0] = x;
     //find initial furthest visible pixle down
     x = 1;
-    y = window.maxHeight;
+    y = maxHeight;
     a = 0;
     while (a == 0 && y >= 0) {
       y--;
