@@ -331,7 +331,7 @@ window.BNGLExtractor = class BNGLExtractor {
   }
 
   extractComments(bnglStr, sectionTokenList) {
-    //helper function to remove all sections with content, leving only comments
+    //helper function to get lines between sections
     function removeSection(bnglStr, firstTokens, lastTokens) {
       let firstIndex, lastIndex;
       if (firstTokens != -1) {
@@ -371,13 +371,43 @@ window.BNGLExtractor = class BNGLExtractor {
       }
       return bnglStr.slice(firstIndex, lastIndex);
     }
+    //remove sections that don't exist
+    let firstExantSectionIndex;
+    for (let i = 0; i < sectionTokenList.length; i++) {
+      let tokenGroup = sectionTokenList[i];
+      let sectionExists;
+      for (let j = 0; j < tokenGroup.length; j++) {
+        let token = tokenGroup[j];
+        sectionExists = false;
+        if (bnglStr.includes("begin " + token)) {
+          sectionExists = true;
+          break;
+        }
+      }
+      if (sectionExists) {
+        firstExantSectionIndex = i;
+        break;
+      }
+    }
+    if (firstExantSectionIndex == undefined) {
+      firstExantSectionIndex = 0;
+    }
+    sectionTokenList = sectionTokenList.slice(firstExantSectionIndex, sectionTokenList.length);
+    //compile cleaned strings between sections
     let cleanStrings = [];
     let len = sectionTokenList.length;
     for (let j = 0; j <= len; j++) {
       let firstTokens = ((j ==  0) ? -1: sectionTokenList[j - 1]);
       let lastTokens = ((j ==  len) ? -1: sectionTokenList[j]);
       cleanStrings.push(removeSection(bnglStr, firstTokens, lastTokens));
+      //add blank elements where sections are missing
+      if (j == 0) {
+        for (let i = 0; i < firstExantSectionIndex; i++) {
+          cleanStrings.push("");
+        }
+      }
     }
+    //extract comment lines of each string
     let output = [];
     for (let i = 0; i < cleanStrings.length; i++) {
       output.push([]);

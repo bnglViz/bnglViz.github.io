@@ -399,7 +399,7 @@ window.Molecule = class Molecule {
         dx += - siteLength + longestState - 2 * this.siteRadius;
       }
       //drawing sites
-      siteLength = 4.9 * this.sites[i].name.length;
+      siteLength = ctx.measureText(this.sites[i].name).width;
       let colorParam = this.sites[i].color;
       let xParam = x + dx - radius / 2;
       let yParam = y + dy - radius / 2;
@@ -692,7 +692,7 @@ window.Graphic = class Graphic {
       //compartment name
       this.comp = parameters.compartment;
       //compartment dimension number
-      this.compDimension = parameters.compDimension;
+      this.compDimension = mm.getDimension(this.comp);
       //list of instances of molecule classes
       this.molecules = [];
       //initializing this.molecules
@@ -736,19 +736,19 @@ window.Graphic = class Graphic {
     }
   }
 
-  //draw membrane (compartment)
-  drawMembrane(ctx, xPos, yPos) {
+  //draw compartment (compartment)
+  drawCompartment(ctx, xPos, yPos) {
     if (this.comp) {
       //box dims
       let textWidth = ctx.measureText(this.comp).width;
       let y = 55 + yPos;
 
       //compartment color from dimension
-      let color = ((this.compDimension == 3) ? '#333': '#000');
+      let color = ((this.compDimension == 3) ? '#000': '#666');
 
       //add to draw list
       this.drawList.push({func: (params) => {
-        //draw membrane at top right corner, filling ctx
+        //draw compartment at top right corner, filling ctx
         ctx.fillStyle = color;
         ctx.fillRect(xPos, yPos, params[0] + 9, y);
         ctx.strokeStyle = '#ddd';
@@ -778,8 +778,8 @@ window.Graphic = class Graphic {
       let checkedBonds = new Set();
       let completedBonds = new Set();
       let pairs = [];//list of pairs of xy coords for each bond
-      //draw membrane
-      this.drawMembrane(ctx, initX, initY);
+      //draw compartment
+      this.drawCompartment(ctx, initX, initY);
       //set up dimension vars
       for (let i = 0; i < this.molecules.length; i++) {
         let thisX = 2 + length + initX;

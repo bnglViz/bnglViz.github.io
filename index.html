@@ -31,7 +31,7 @@
       <button onclick="switchDarkMode();">Toggle DarkMode</button>
     </td>
     <td id="canvas-cell">
-      <canvas id="testCanvas"></canvas>
+      <canvas id="testCanvas" class="bngl-canvas"></canvas>
     </td>
     <td id="canvas-text">
       Molecule is shown as an oval ...
@@ -96,9 +96,9 @@
   const body = document.body;
 
   //other global var declaration
-  var allElms;
   var mm = new MoleculeManager();
   var be = new BNGLExtractor(mm);
+  var canvasHTMLGraphicMap = {};
 
   //manage ids
   class IDManager {
@@ -119,7 +119,7 @@
 
   function applyDarkMode() {
     //recompile list of elms
-    allElms = body.getElementsByTagName("*");
+    let allElms = body.getElementsByTagName("*");
     let len = allElms.length;
     let oldClass = ((darkMode) ? "light-mode": "dark-mode");
     let newClass = ((darkMode) ? "dark-mode": "light-mode");
@@ -133,9 +133,23 @@
     body.classList.add(newClass);
   }
 
+  function applyDarkModeCanvases() {
+    //redraw canvases
+    let cans = document.querySelectorAll(".bngl-canvas");
+    cans.forEach((item, i) => {
+      item.getContext
+      let graphic, ctx;
+      [graphic, ctx] = canvasHTMLGraphicMap[item.id];
+      ctx.clearRect(0, 0, 1000000, 10000);
+      graphic.darkMode = darkMode;
+      graphic.doDrawList();
+    });
+  }
+
   function switchDarkMode() {
     darkMode = !darkMode;
     applyDarkMode();
+    applyDarkModeCanvases();
   }
 
   function capitalizeFirstLetter(s) {
@@ -150,19 +164,6 @@
   testCanvas.width = window.maxWidth;
   testCanvas.height = window.maxHeight;
   drawBNGL('@EC:EGF(rb)', testCanvas);
-  function testText() {
-    testCanvas.width = 150;
-    testCanvas.height = 50;
-    let ctx = testCanvas.getContext("2d", { willReadFrequently: true });
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "15px Arial";
-    ctx.fillText(word, 0, 15);
-    ctx.fillStyle = "#ff0000";
-    let width = ctx.measureText(word).width;
-    ctx.rect(0, 15, width, 1);
-    ctx.fill();
-  }
-  //testText();
 
   //draw bngl
   function drawBNGL(bngl, canvas, data = {type: "molecules", drawExtraPlus: false}) {
@@ -195,10 +196,8 @@
     } else if (type === "species") {
       if (compartmentMap) {
         compartment = compartmentMap[bngl];
-        parameters["compDimension"] = mm.getDimension(compartment);
         parameters["compartment"] = compartment;
       }
-      parameters["manager"] = mm;
       drawObj = new Graphic(bngl, parameters);
       numberMolecules = 1;
     } else {
@@ -220,9 +219,13 @@
     canvas.width = dims[0];
     canvas.height = dims[1];
     //have to redraw
+    ctx.clearRect(0, 0, 1000000, 10000);
     drawObj.doDrawList();
-    ctx.fillStyle = "#FF0000";
-    ctx.fillRect(dims[0] + 3, Math.floor(dims[1] / 2), 1, 1);
+    //map html elm and graphic instance
+    let id = idManager.getID();
+    canvas.id = id;
+    canvasHTMLGraphicMap[id] = [drawObj, ctx];
+    //manage greysites
     if ((type === "molecules" || type === "species") && !mm.has(drawObj)) {
       mm.addMolecule(drawObj);
     }
