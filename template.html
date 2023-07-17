@@ -44,32 +44,59 @@
 <script src="public/bngl-extractor.js"></script>
 <script src="public/html-interface.js"></script>
 <script>
-  //get major elements
-  const testCanvas = document.getElementById("testCanvas");
-  const canvContain = document.getElementById("canvas-container");
-  const tableContain = document.getElementById("table-container");
-  const fileInput = document.getElementById("bngl-file-input");
-  const body = document.body;
+//template bngl text
+const bngl = `
+begin parameters
+end parameters
 
-  //connect interface
-  var htmlInterface = new HTMLInterface();
+begin compartments
+EC	3	1
+end compartments
 
-  //templating then bngl file
-  var blob = new Blob(["#cringe"], {type: "text/plain"});
-  let reader = new FileReader();
-  reader.onload = () => {htmlInterface.visualize(reader.result);};
-  reader.readAsText(blob);
+begin molecule types
+end molecule types
 
-  //draw test canvas
-  testCanvas.width = htmlInterface.maxWidth;
-  testCanvas.height = htmlInterface.maxHeight;
-  htmlInterface.drawBNGL('@EC:EGF(rb)', testCanvas);
+begin species
+ICN(location~ER,Nbind,CSLbind,MAMLbind)
+end species
 
-  //function to reset input element value when it is clicked
-  //this is needed because chrome doesn't trigger onchange if filename is same
-  function inputClick() {
-    fileInput.value = "";
-  }
+begin reaction rules
+end reaction rules
+
+begin observables
+end observables
+
+
+generate_network();
+writeSBML();
+simulate_ode({t_end=>50,n_steps=>20});
+`;
+//get major elements
+const testCanvas = document.getElementById("testCanvas");
+const canvContain = document.getElementById("canvas-container");
+const tableContain = document.getElementById("table-container");
+const fileInput = document.getElementById("bngl-file-input");
+const body = document.body;
+
+//connect interface
+var htmlInterface = new HTMLInterface();
+
+//templating then bngl file
+var blob = new Blob([bngl], {type: "text/plain"});
+let reader = new FileReader();
+reader.onload = () => {htmlInterface.visualize(reader.result);};
+reader.readAsText(blob);
+
+//draw test canvas
+testCanvas.width = htmlInterface.maxWidth;
+testCanvas.height = htmlInterface.maxHeight;
+htmlInterface.drawBNGL('@EC:EGF(rb)', testCanvas);
+
+//function to reset input element value when it is clicked
+//this is needed because chrome doesn't trigger onchange if filename is same
+function inputClick() {
+  fileInput.value = "";
+}
 </script>
 </body>
 </html>
