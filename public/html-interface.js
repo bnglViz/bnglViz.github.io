@@ -486,12 +486,10 @@ class HTMLInterface {
     //reset molecule manager
     this.mm.reset();
     //render new file
-    let reader = new FileReader();
-    reader.onload = () => {
-      let bngl = reader.result;
+    function read(bngl, intrObj) {
       //sort tokens
       let aVal, bVal;
-      this.sectionTokens.sort((a, b)=>{
+      intrObj.sectionTokens.sort((a, b)=>{
         a.forEach((item, i) => {
           if (bngl.includes("begin " + item)) {
             aVal = bngl.indexOf("begin " + item);
@@ -508,13 +506,13 @@ class HTMLInterface {
         return ((aVal < bVal) ? -1: 1);
       });
       //visualize everything
-      let comments = this.be.extractComments(bngl, this.sectionTokens);
-      this.sectionTokens.forEach((item, i) => {
-        let type = this.sectionTokenMap[item.toString()];
-        this.visualizeType("header comments", comments[i]);
-        this.visualizeType(type, this.be.extractBNGL(bngl, item, type));
+      let comments = intrObj.be.extractComments(bngl, intrObj.sectionTokens);
+      intrObj.sectionTokens.forEach((item, i) => {
+        let type = intrObj.sectionTokenMap[item.toString()];
+        intrObj.visualizeType("header comments", comments[i]);
+        intrObj.visualizeType(type, intrObj.be.extractBNGL(bngl, item, type));
       });
-      this.visualizeType("header comments", comments[comments.length - 1]);
+      intrObj.visualizeType("header comments", comments[comments.length - 1]);
       //make arrows bigger
       let pElms = document.querySelectorAll("p");
       for (let i = 0; i < pElms.length; i++) {
@@ -523,46 +521,15 @@ class HTMLInterface {
         elm.innerHTML = elm.innerHTML.replace("-&gt;", ' <span class="big-arrow">&#8594;</span> ');
         elm.innerHTML = elm.innerHTML.replace("&lt;-", ' <span class="big-arrow">&#8592;</span> ');
       };
-      this.applyDarkMode();
+      intrObj.applyDarkMode();
+    }
+    let reader = new FileReader();
+    reader.onload = () => {
+      read(reader.result, this);
     }
     //read if file present
     if (typeof blob == "string") {
-      let bngl = blob;
-      //sort tokens
-      let aVal, bVal;
-      this.sectionTokens.sort((a, b)=>{
-        a.forEach((item, i) => {
-          if (bngl.includes("begin " + item)) {
-            aVal = bngl.indexOf("begin " + item);
-          }
-        });
-        if (!aVal) {
-          return -1;
-        }
-        b.forEach((item, i) => {
-          if (bngl.includes("begin " + item)) {
-            bVal = bngl.indexOf("begin " + item);
-          }
-        });
-        return ((aVal < bVal) ? -1: 1);
-      });
-      //visualize everything
-      let comments = this.be.extractComments(bngl, this.sectionTokens);
-      this.sectionTokens.forEach((item, i) => {
-        let type = this.sectionTokenMap[item.toString()];
-        this.visualizeType("header comments", comments[i]);
-        this.visualizeType(type, this.be.extractBNGL(bngl, item, type));
-      });
-      this.visualizeType("header comments", comments[comments.length - 1]);
-      //make arrows bigger
-      let pElms = document.querySelectorAll("p");
-      for (let i = 0; i < pElms.length; i++) {
-        let elm = pElms[i];
-        elm.innerHTML = elm.innerHTML.replace("&lt;-&gt;", ' <span class="big-arrow">&#8596;</span> ');
-        elm.innerHTML = elm.innerHTML.replace("-&gt;", ' <span class="big-arrow">&#8594;</span> ');
-        elm.innerHTML = elm.innerHTML.replace("&lt;-", ' <span class="big-arrow">&#8592;</span> ');
-      };
-      this.applyDarkMode();
+      read(blob, this);
     } else if (typeof blob == "object") {
       if (fileInput.value) {
         reader.readAsText(blob);
