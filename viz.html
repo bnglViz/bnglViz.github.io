@@ -31,9 +31,8 @@
 
     <h2>Visualization conventions</h2>
 
-    <ul>
-<li> Molecules block:
-  <table cellpadding="1" border="1">
+
+  <table cellpadding="10" border="1">
  <tr>
     <td id="canvas-text">
       <b>BNGL code</b>
@@ -44,6 +43,16 @@
  </tr>
 <tr>
        <td id="canvas-text">
+     <pre>begin compartments
+          1 EGFR   EGFR(ecd,tmd,Y1~u~p,Y2~u~p)   # EGF receptor</pre>
+           <b>NB:</b> The first number is optional and not included in BNGL processing or visualization.
+       </td>
+    <td id="canvas-text">
+      <img src="images/bngl_molec.png" width=400>
+    </td>
+  </tr> 
+ <tr>
+       <td id="canvas-text">
      <code>begin molecules</code><br>
      <code> EGFR   EGFR(ecd,tmd,Y1~u~p,Y2~u~p)   #EGF receptor</code>
     </td>
@@ -51,10 +60,9 @@
       <img src="images/bngl_molec.png" width=400>
     </td>
   </tr> 
+      
 </table>
-</li>
 
-    </ul>
    
 </body>
 </html>
