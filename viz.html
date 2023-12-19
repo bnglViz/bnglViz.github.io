@@ -44,12 +44,12 @@
 <tr>
        <td id="canvas-text">
      <code>begin compartments<br>
-        Cyt	3	1
+        Cyt	3	1<br>
         Mem	2	1    </code><br><br>
         <small><b>NB:</b> The first number after the compartment name is the dimension, and the next is the size. </small> 
        </td>
     <td id="canvas-text">
-      <img src="images/bngl_molec.png" width=400>
+      <img src="images/bngl_comp.png" width=400>
     </td>
   </tr> 
  <tr>
@@ -62,6 +62,16 @@
     </td>
     <td id="canvas-text">
       <img src="images/bngl_molec.png" width=400>
+    </td>
+            <td id="canvas-text">
+     <code>begin species<br>
+1  egfr(l,r,Y1068~Y,Y1148~Y)     egfr_tot #unphosphorylated receptor</code><br><br>
+    <small><b>NB:</b> The first number is optional and not included in BNGL processing or visualization. 
+           Instead of <code>begin species</code> the block may start with <code>begin seed species</code>. 
+           This block can NOT be omitted.</small>
+    </td>
+    <td id="canvas-text">
+      <img src="images/bngl_species.png" width=400>
     </td>
   </tr> 
       
