@@ -1,0 +1,195 @@
+#Enzymatic modification of a 20-site substrate using the 2-step binding model.
+#Note: reaction on-rates must be suitably altered for substrates with fewer sites.
+begin parameters
+#Reaction area.
+A 0.0001
+#Substrate concentration.
+tS 1
+#Encounter reactions (E refers to kinase and F refers to phosphatase).
+#Diffusion-limited on-rate (k+)
+Ekp 0.1
+Fkp 0.1
+#Local diffusion rate (k-)
+Ekm 0.1/A
+Fkm 0.1/A
+#Local on-rates (k * on)
+Ekf1 20 * 10/A
+Ekf2 19 * 10/A
+Ekf3 18 * 10/A
+Ekf4 17 * 10/A
+Ekf5 16 * 10/A
+Ekf6 15 * 10/A
+Ekf7 14 * 10/A
+Ekf8 13 * 10/A
+Ekf9 12 * 10/A
+Ekf10 11 * 10/A
+Ekf11 10 * 10/A
+Ekf12 9 * 10/A
+Ekf13 8 * 10/A
+Ekf14 7 * 10/A
+Ekf15 6 * 10/A
+Ekf16 5 * 10/A
+Ekf17 4 * 10/A
+Ekf18 3 * 10/A
+Ekf19 2 * 10/A
+Ekf20 1 * 10/A
+Fkf1 1 * 10/A
+Fkf2 2 * 10/A
+Fkf3 3 * 10/A
+Fkf4 4 * 10/A
+Fkf5 5 * 10/A
+Fkf6 6 * 10/A
+Fkf7 7 * 10/A
+Fkf8 8 * 10/A
+Fkf9 9 * 10/A
+Fkf10 10 * 10/A
+Fkf11 11 * 10/A
+Fkf12 12 * 10/A
+Fkf13 13 * 10/A
+Fkf14 14 * 10/A
+Fkf15 15 * 10/A
+Fkf16 16 * 10/A
+Fkf17 17 * 10/A
+Fkf18 18 * 10/A
+Fkf19 19 * 10/A
+Fkf20 20 * 10/A
+#Unbinding rate (koff)
+Ekb 1
+Fkb 1
+#Modification rate (kr)
+Ekc 0.1
+Fkc 0.1
+#Reactivation rate (mu)
+Emu 1
+Fmu 1
+end parameters
+begin molecule types
+#Attribute E/F indicates if a kinase or phosphatase is within the encounter complex (1 = within encounter complex).
+#Attribute A indicates if the enzyme within the encounter complex is activate (A~0) or inactive (A~1).
+#Attribute Y indicates the number of phosphorylated sites.
+S(E~0~1,F~0~1,A~0~1,Y~U~P~2P~3P~4P~5P~6P~7P~8P~9P~10P~11P~12P~13P~14P~15P~16P~17P~18P~19P~20P)
+end molecule types
+begin species
+S(E~0,F~0,A~0,Y~U) tS
+end species
+
+begin reaction rules
+#ENCOUNTER COMPLEX
+S(E~0,F~0,A~0) <-> S(E~1,F~0,A~0) Ekp,Ekm
+S(E~0,F~0,A~0) <-> S(E~0,F~1,A~0) Fkp,Fkm
+S(E~1,F~0,A~1) -> S(E~0,F~0,A~0) Ekm
+S(E~0,F~1,A~1) -> S(E~0,F~0,A~0) Fkm
+#BINDING REACTIONS
+S(E~1,A~0,Y~U) <-> S(E~1!1,A~0,Y~U!1) Ekf1,Ekb
+S(E~1,A~0,Y~P) <-> S(E~1!1,A~0,Y~P!1) Ekf2,Ekb
+S(E~1,A~0,Y~2P) <-> S(E~1!1,A~0,Y~2P!1) Ekf3,Ekb
+S(E~1,A~0,Y~3P) <-> S(E~1!1,A~0,Y~3P!1) Ekf4,Ekb
+S(E~1,A~0,Y~4P) <-> S(E~1!1,A~0,Y~4P!1) Ekf5,Ekb
+S(E~1,A~0,Y~5P) <-> S(E~1!1,A~0,Y~5P!1) Ekf6,Ekb
+S(E~1,A~0,Y~6P) <-> S(E~1!1,A~0,Y~6P!1) Ekf7,Ekb
+S(E~1,A~0,Y~7P) <-> S(E~1!1,A~0,Y~7P!1) Ekf8,Ekb
+S(E~1,A~0,Y~8P) <-> S(E~1!1,A~0,Y~8P!1) Ekf9,Ekb
+S(E~1,A~0,Y~9P) <-> S(E~1!1,A~0,Y~9P!1) Ekf10,Ekb
+S(E~1,A~0,Y~10P) <-> S(E~1!1,A~0,Y~10P!1) Ekf11,Ekb
+S(E~1,A~0,Y~11P) <-> S(E~1!1,A~0,Y~11P!1) Ekf12,Ekb
+S(E~1,A~0,Y~12P) <-> S(E~1!1,A~0,Y~12P!1) Ekf13,Ekb
+S(E~1,A~0,Y~13P) <-> S(E~1!1,A~0,Y~13P!1) Ekf14,Ekb
+S(E~1,A~0,Y~14P) <-> S(E~1!1,A~0,Y~14P!1) Ekf15,Ekb
+S(E~1,A~0,Y~15P) <-> S(E~1!1,A~0,Y~15P!1) Ekf16,Ekb
+S(E~1,A~0,Y~16P) <-> S(E~1!1,A~0,Y~16P!1) Ekf17,Ekb
+S(E~1,A~0,Y~17P) <-> S(E~1!1,A~0,Y~17P!1) Ekf18,Ekb
+S(E~1,A~0,Y~18P) <-> S(E~1!1,A~0,Y~18P!1) Ekf19,Ekb
+S(E~1,A~0,Y~19P) <-> S(E~1!1,A~0,Y~19P!1) Ekf20,Ekb
+S(F~1,A~0,Y~P) <-> S(F~1!1,A~0,Y~P!1) Fkf1,Fkb
+S(F~1,A~0,Y~2P) <-> S(F~1!1,A~0,Y~2P!1) Fkf2,Fkb
+S(F~1,A~0,Y~3P) <-> S(F~1!1,A~0,Y~3P!1) Fkf3,Fkb
+S(F~1,A~0,Y~4P) <-> S(F~1!1,A~0,Y~4P!1) Fkf4,Fkb
+S(F~1,A~0,Y~5P) <-> S(F~1!1,A~0,Y~5P!1) Fkf5,Fkb
+S(F~1,A~0,Y~6P) <-> S(F~1!1,A~0,Y~6P!1) Fkf6,Fkb
+S(F~1,A~0,Y~7P) <-> S(F~1!1,A~0,Y~7P!1) Fkf7,Fkb
+S(F~1,A~0,Y~8P) <-> S(F~1!1,A~0,Y~8P!1) Fkf8,Fkb
+S(F~1,A~0,Y~9P) <-> S(F~1!1,A~0,Y~9P!1) Fkf9,Fkb
+S(F~1,A~0,Y~10P) <-> S(F~1!1,A~0,Y~10P!1) Fkf10,Fkb
+S(F~1,A~0,Y~11P) <-> S(F~1!1,A~0,Y~11P!1) Fkf11,Fkb
+S(F~1,A~0,Y~12P) <-> S(F~1!1,A~0,Y~12P!1) Fkf12,Fkb
+S(F~1,A~0,Y~13P) <-> S(F~1!1,A~0,Y~13P!1) Fkf13,Fkb
+S(F~1,A~0,Y~14P) <-> S(F~1!1,A~0,Y~14P!1) Fkf14,Fkb
+S(F~1,A~0,Y~15P) <-> S(F~1!1,A~0,Y~15P!1) Fkf15,Fkb
+S(F~1,A~0,Y~16P) <-> S(F~1!1,A~0,Y~16P!1) Fkf16,Fkb
+S(F~1,A~0,Y~17P) <-> S(F~1!1,A~0,Y~17P!1) Fkf17,Fkb
+S(F~1,A~0,Y~18P) <-> S(F~1!1,A~0,Y~18P!1) Fkf18,Fkb
+S(F~1,A~0,Y~19P) <-> S(F~1!1,A~0,Y~19P!1) Fkf19,Fkb
+S(F~1,A~0,Y~20P) <-> S(F~1!1,A~0,Y~20P!1) Fkf20,Fkb
+#CATALYSIS + ENZYME INACTIVATION.
+S(E~1!1,A~0,Y~U!1) -> S(E~1,A~1,Y~P) Ekc
+S(E~1!1,A~0,Y~P!1) -> S(E~1,A~1,Y~2P) Ekc
+S(E~1!1,A~0,Y~2P!1) -> S(E~1,A~1,Y~3P) Ekc
+S(E~1!1,A~0,Y~3P!1) -> S(E~1,A~1,Y~4P) Ekc
+S(E~1!1,A~0,Y~4P!1) -> S(E~1,A~1,Y~5P) Ekc
+S(E~1!1,A~0,Y~5P!1) -> S(E~1,A~1,Y~6P) Ekc
+S(E~1!1,A~0,Y~6P!1) -> S(E~1,A~1,Y~7P) Ekc
+S(E~1!1,A~0,Y~7P!1) -> S(E~1,A~1,Y~8P) Ekc
+S(E~1!1,A~0,Y~8P!1) -> S(E~1,A~1,Y~9P) Ekc
+S(E~1!1,A~0,Y~9P!1) -> S(E~1,A~1,Y~10P) Ekc
+S(E~1!1,A~0,Y~10P!1) -> S(E~1,A~1,Y~11P) Ekc
+S(E~1!1,A~0,Y~11P!1) -> S(E~1,A~1,Y~12P) Ekc
+S(E~1!1,A~0,Y~12P!1) -> S(E~1,A~1,Y~13P) Ekc
+S(E~1!1,A~0,Y~13P!1) -> S(E~1,A~1,Y~14P) Ekc
+S(E~1!1,A~0,Y~14P!1) -> S(E~1,A~1,Y~15P) Ekc
+S(E~1!1,A~0,Y~15P!1) -> S(E~1,A~1,Y~16P) Ekc
+S(E~1!1,A~0,Y~16P!1) -> S(E~1,A~1,Y~17P) Ekc
+S(E~1!1,A~0,Y~17P!1) -> S(E~1,A~1,Y~18P) Ekc
+S(E~1!1,A~0,Y~18P!1) -> S(E~1,A~1,Y~19P) Ekc
+S(E~1!1,A~0,Y~19P!1) -> S(E~1,A~1,Y~20P) Ekc
+S(F~1!1,A~0,Y~20P!1) -> S(F~1,A~1,Y~19P) Fkc
+S(F~1!1,A~0,Y~19P!1) -> S(F~1,A~1,Y~18P) Fkc
+S(F~1!1,A~0,Y~18P!1) -> S(F~1,A~1,Y~17P) Fkc
+S(F~1!1,A~0,Y~17P!1) -> S(F~1,A~1,Y~16P) Fkc
+S(F~1!1,A~0,Y~16P!1) -> S(F~1,A~1,Y~15P) Fkc
+S(F~1!1,A~0,Y~15P!1) -> S(F~1,A~1,Y~14P) Fkc
+S(F~1!1,A~0,Y~14P!1) -> S(F~1,A~1,Y~13P) Fkc
+S(F~1!1,A~0,Y~13P!1) -> S(F~1,A~1,Y~12P) Fkc
+S(F~1!1,A~0,Y~12P!1) -> S(F~1,A~1,Y~11P) Fkc
+S(F~1!1,A~0,Y~11P!1) -> S(F~1,A~1,Y~10P) Fkc
+S(F~1!1,A~0,Y~10P!1) -> S(F~1,A~1,Y~9P) Fkc
+S(F~1!1,A~0,Y~9P!1) -> S(F~1,A~1,Y~8P) Fkc
+S(F~1!1,A~0,Y~8P!1) -> S(F~1,A~1,Y~7P) Fkc
+S(F~1!1,A~0,Y~7P!1) -> S(F~1,A~1,Y~6P) Fkc
+S(F~1!1,A~0,Y~6P!1) -> S(F~1,A~1,Y~5P) Fkc
+S(F~1!1,A~0,Y~5P!1) -> S(F~1,A~1,Y~4P) Fkc
+S(F~1!1,A~0,Y~4P!1) -> S(F~1,A~1,Y~3P) Fkc
+S(F~1!1,A~0,Y~3P!1) -> S(F~1,A~1,Y~2P) Fkc
+S(F~1!1,A~0,Y~2P!1) -> S(F~1,A~1,Y~P) Fkc
+S(F~1!1,A~0,Y~P!1) -> S(F~1,A~1,Y~U) Fkc
+#REFRACTORY PERIOD
+S(E~1,A~1) -> S(E~1,A~0) Emu
+S(F~1,A~1) -> S(F~1,A~0) Fmu
+end reaction rules
+begin observables
+	Molecules S0 S(Y~U!?)
+	Molecules S1 S(Y~P!?)
+	Molecules S2 S(Y~2P!?)
+	Molecules S3 S(Y~3P!?)
+	Molecules S4 S(Y~4P!?)
+	Molecules S5 S(Y~5P!?)
+	Molecules S6 S(Y~6P!?)
+	Molecules S7 S(Y~7P!?)
+	Molecules S8 S(Y~8P!?)
+	Molecules S9 S(Y~9P!?)
+	Molecules S10 S(Y~10P!?)
+	Molecules S11 S(Y~11P!?)
+	Molecules S12 S(Y~12P!?)
+	Molecules S13 S(Y~13P!?)
+	Molecules S14 S(Y~14P!?)
+	Molecules S15 S(Y~15P!?)
+	Molecules S16 S(Y~16P!?)
+	Molecules S17 S(Y~17P!?)
+	Molecules S18 S(Y~18P!?)
+	Molecules S19 S(Y~19P!?)
+	Molecules S20 S(Y~20P!?)
+end observables
+begin actions
+generate_network({overwrite=>1});
+#simulate_ode({t_end=>500000,n_steps=>30,sparse=>1,steady_state=>1});
+#writeMfile({});
+end actions
