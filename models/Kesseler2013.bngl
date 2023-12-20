@@ -1,0 +1,740 @@
+##############################################################################################################################
+#G2 checkpoint and transition to mitosis.
+#Questions about this model should be addressed to:
+#Dr. Dennis Simpson 
+#University of North Carolina at Chapel Hill
+#Dept. of Pathology & Laboratory Medicine
+#CB7295
+#Chapel Hill, NC  27599
+#email: dsimpson@med.unc.edu
+#Phone: 919-966-8552
+#
+#Current version:  v1.1
+#Version Date:  Aug. 9, 2010
+#
+#Version: v1.0; June 2010 by Kevin Kesseler.  Original core model.
+#Version: v1.1; Aug. 9, 2010 by Dennis Simpson.  Added annotations to core model.
+#
+##############################################################################################################################
+
+begin parameters
+
+##	INITIAL VALUES   ##
+MPF0 0.1
+CDC25B0 0.1
+CDC25C0 0.1
+CDC25A0 0.5
+WEE10 0.5
+MYT10 0.5
+PIN10 1.0
+PP2Ac0 1.0
+PP2An0 1.0
+ProX0 1.0
+E33c0 1.0
+E33n0 1.0
+CHK1a0 0.0025
+CHK2a0 0.005
+CHK1i0 0.045
+CHK2i0 0.045
+CHK1an0 0.0025
+CRM10 1.0
+PLK10c   0.7
+PLK10n	 0.3
+H30 1.0
+Importin0 1.0
+DUMc0 1.0
+DUMn0 1.0
+DUMm0 1.0
+
+##	CREATION AND DESTRUCTION RATES   ##
+kMPFin 0.001
+kCDC25Ain 0.00005
+kCDC25Bin 0.00005
+kCDC25Cin 0.00005
+kWEEin 0.005
+kMYTin 0.001
+kCHKin 0.000000
+
+kMPFout 0.001
+kCDCout 0.0001
+kCDC25Ades 1.0
+kWEEout 0.005
+kMYTout 0.001
+
+##	DEFAULT VALUES   ##
+kOff 0.1
+kOffN 0.3
+kE    1000.0
+kEn  3000.0
+
+##	MPF ACTIVATION   ##
+kMPFaOn 50.0
+kMPFaOff kOff
+kMPFa kE
+
+kMPFaOnN 450.0
+kMPFaOffN kOffN
+kMPFaN kEn
+
+##	CDC25 ACTIVATION   ##
+kCDCaOn 20.0
+kCDCaOff kOff
+kCDCa kE
+
+kCDCaOnN 180.0
+kCDCaOffN kOffN
+kCDCaN kEn
+
+##	MPF UNSEQUESTER   ##
+kMPFus kE
+kMPFusOn 500.0
+kMPFusOff kOff
+
+##	WEE1 DEACTIVATION   ##
+kWEEdOn 0.5
+kWEEdOff  kOffN
+kWEEd kEn
+
+kWEEdOn2 2.0
+kWEEdOn3 10.0
+
+##	MPF DEACTIVATION   ##
+kMPFdOn 100.0
+kMPFdOff kOff
+kMPFd kE
+
+kMPFdOnN 900.0
+kMPFdOffN kOffN
+kMPFdN kEn
+
+kMPFsdOnN 4500.0
+kMPFsdOffN kMPFdOffN
+kMPFsdN kMPFdN
+
+##	MPF NUCLEAR IMPORT   ##
+kMPFimpOn 0.001
+kMPFimpOff kOff
+kMPFimp kE
+
+kMPFimpOnN 0.009
+kMPFimpOffN kOffN
+kMPFimpN kEn
+
+##	MPF SEQUESTERATION   ##
+kMPFsOn 100.0
+kMPFsOff kOff
+kMPFs kE
+
+##	CDC25 PHOSPHORYLATION ON S216   ##
+kCDCpOn 0.05
+kCDCpOff kOff
+kCDCp kE
+
+kCDCpOnN 0.45
+kCDCpOffN kOffN
+kCDCpN kEn
+
+##	WEE1 SUPERACTIVATION   ##
+kWEEsaOn 0.05
+kWEEsaOff kOffN
+kWEEsa kEn
+
+##	CDC25 S216 DEPHOSPHORYLATION   ##
+kCDCdqOn 10.0
+kCDCdqOff kOff
+kCDCdq kE
+
+kCDCdqOnN 90.0
+kCDCdqOffN kOffN
+kCDCdqN kEn
+
+##	CDC25 SEQUESTERATION   ##
+kE33bCDC 5.0
+kE33bCDCn 45.0
+
+kCDCsq 100.0
+kCDCsqN 100.0
+
+kE33CDCdis 0.01
+kE33CDCdisN 0.01
+
+kCDCus 0.01
+kCDCus2 0.05
+
+kWEEdes 100.0
+kWEEdes2 5.0
+
+krPLKph 0.1
+krPLKphN 0.9
+
+kCDCBdOn 100.0
+kCDCBdOff kOff
+kCDCBd kE
+
+kCDCBdOnN 900.0
+kCDCBdOffN kOffN
+kCDCBdN kEn
+
+kCDCBa 1.0
+
+kCDCAaCDCB 0.1
+kCDCAaCDCBn 0.9
+
+kipMPF1 0.01
+kipMPF5 0.05
+kipMPF10 0.10
+kipMPF50 0.50
+kipMPF100 5.0
+kxpMPFf 1.0
+kxpMPFs 0.01
+kipE33 0.10
+kxpE33 0.10
+kipCHK1 0.10
+kxpCHK1 0.10
+kipCHK2 0.10
+kxpCHK2 20.0
+kipCDCi 0.01
+kipCDCa 0.10
+kxpCDCf 0.10
+kxpCDCs 0.001
+kxpPLK 0.07
+kipPLK 0.03
+
+kipCDC25A 0.09
+kipCDC25B 0.05
+
+kxpCDC25A 0.01
+kxpCDC25B 0.05
+
+kImpA 0.1
+kImpD 0.01
+
+##	SPONTANEOUS Cdc25c DEACTIVATION   ##
+kCDCcD 5.0
+kCDCcDn 5.0
+
+##	DEGRADATION OF Cdc25a BY CHK1 AND CHK2   ##
+kCDCaOut 0.1
+kCDCaOutN 0.9
+
+##	CDC25 SEQUESTERATION DISABLE   ##
+kCDCsdOn 10.0
+kCDCsdOff kOff
+kCDCsd kE
+
+kCDCsdOnN 90.0
+kCDCsdOffN kOffN
+kCDCsdN kEn
+
+##	MPF NUCLEAR EXPORT   ##
+kMPFneOn 0.001
+kMPFneOn2 0.2
+kMPFneOff kOff
+kMPFne kE
+
+kMPFneOnN 0.009
+kMPFneOnN2 1.8
+kMPFneOffN kOffN
+kMPFneN kEn
+
+##	PLK1 ACTIVATION   ##
+kPLKaOn 0.5
+kPLKaOff kOff
+kPLKa kE
+
+kPLKaOnN 4.5
+kPLKaOffN kOffN
+kPLKaN kEn
+
+##	PLK1 AND CHK1 MUTUAL INHIBITION   ##
+kPLKd 50.0
+kCHK1d 0.0001
+kPLKdN 450.0
+kCHK1dN 0.0009
+
+##	pkMyt1 DEACTIVATION BY PLK1   ##
+kMYTdOn 0.02
+kMYTdOff kOff
+kMYTd kE
+
+kCHKd 0.001  
+kCHKa 0.0000001
+
+##	HISTONE H3 ACTIVATION   ##
+kH3aOn 0.02
+kH3aOff kOffN
+kH3a kEn
+
+end parameters
+
+################################################################################################################
+
+begin molecule types
+
+MPF(B,DP~U~P,NE~P~U~P2,NE2~U~P,CR~U~P,L~C~N,S~no~Ki~Su)
+CDC25(B,L~C~N,S~no~Ph~Su~Sq,SD~U~P,AP~U~P~D,SE~U~P,T~A~B~C)
+WEE1(B,L~N,DP~U~P~M,SP~U~P,S~no~Ki~Su)
+MYT1(B,S~no~Ki~Su,L~C)
+PIN1(B,L~N,S~no)
+PP2A(B,L~C~N,S~no~Ph)
+ProX(B,S~no~Ki,L~C)
+E33(B,Sq~N~Y,S~no,L~C~N)
+CHK1(B,AP~U~P,S~no~Ki~Su,L~C~N)
+CHK2(B,L~C~N,S~no~Ki~Su,AP~U~P)
+CRM1(L~M)
+Importin(L~M,CdcFI~Y~N)
+DUM(L~C~N~M)
+PLK1(B,L~C~N,S~no~Ki~Su,AP~U~P)
+H3(B,L~C~N,S~no~Su,AP~U~P)
+
+end molecule types
+
+#################################################################################################################
+
+begin species
+
+
+MPF(B,DP~U,NE~U,NE2~U,CR~P,L~C,S~no) MPF0
+CDC25(B,L~N,S~no,SD~U,AP~P,SE~U,T~A) CDC25A0
+CDC25(B,L~C,S~no,SD~U,AP~U,SE~U,T~B) CDC25B0
+CDC25(B,S~no,SD~U,AP~U,SE~U,T~C,L~C) CDC25C0
+WEE1(B,L~N,DP~U,SP~U,S~no) WEE10
+MYT1(B,S~no,L~C) MYT10
+PIN1(B,L~N,S~no) PIN10
+PP2A(B,S~no,L~C) PP2Ac0
+ProX(B,S~no,L~C) ProX0
+E33(B,Sq~N,S~no,L~C) E33c0
+CHK1(B,AP~U,S~no,L~C) CHK1i0
+CHK2i: CHK2(B,L~N,S~no,AP~U) CHK2i0
+CHK1(B,AP~P,S~no,L~C) CHK1a0
+CHK1(B,AP~P,S~no,L~N) CHK1an0
+CHK2(B,L~N,S~no,AP~P) CHK2a0
+CRM1(L~M) CRM10
+Importin(L~M,CdcFI~N) Importin0
+DUM(L~C) DUMc0
+DUM(L~N) DUMn0
+DUM(L~M) DUMm0
+PP2A(B,L~N,S~no) PP2An0
+E33(B,Sq~N,S~no,L~N) E33n0
+PLK1(B,L~C,S~no,AP~U) PLK10c
+PLK1(B,L~N,S~no,AP~U) PLK10n
+H3(B,L~N,S~no,AP~U) H30
+
+end species
+
+######################################################################################################################
+begin reaction rules
+
+##	PROTEIN CREATION RULES   ##
+DUM(L~C)->DUM(L~C)+MPF(B,DP~U,NE~U,NE2~U,CR~P,L~C,S~no) kMPFin
+DUM(L~C)->DUM(L~C)+CDC25(B,L~C,S~no,SD~U,AP~P,SE~U,T~A) kCDC25Ain
+DUM(L~C)->DUM(L~C)+CDC25(B,L~C,S~no,SD~U,AP~U,SE~U,T~B) kCDC25Bin
+DUM(L~N)->DUM(L~N)+CDC25(B,S~no,SD~U,AP~U,SE~U,T~C,L~N) kCDC25Cin
+DUM(L~N)->DUM(L~N)+WEE1(B,L~N,DP~U,SP~U,S~no) kWEEin
+DUM(L~C)->DUM(L~C)+MYT1(B,S~no,L~C) kMYTin
+
+##	PROTEIN DESTRUCTION RULES   ##
+#DUM(L~C) + MPF(B,DP~U~P,S~no) -> DUM(L~C)	kMPFout
+DUM(L~C) + MPF(B,DP,S~no) -> DUM(L~C)	kMPFout
+DUM(L~C)+CDC25(B,S~no)->DUM(L~C) kCDCout
+DUM(L~C)+WEE1(B,L~N,S~no)->DUM(L~C) kWEEout
+DUM(L~C)+MYT1(B,S~no,L~C)->DUM(L~C) kMYTout
+
+##	SPONTANEOUS ACTIVATION OF CDC25b   ##
+CDC25(B,L~C,S~no,AP~U,T~B)->CDC25(B,L~C,S~no,AP~P,T~B) kCDCBa
+CDC25(B,L~C,S~no,AP~D,T~B)->CDC25(B,L~C,S~no,AP~P,T~B) kCDCBa
+CDC25(B,L~N,S~no,AP~U,T~B)->CDC25(B,L~N,S~no,AP~P,T~B) kCDCBa
+CDC25(B,L~N,S~no,AP~D,T~B)->CDC25(B,L~N,S~no,AP~P,T~B) kCDCBa
+
+##	ACTIVATION OF Cdc25b BY CDC25a   ##
+CDC25(B,L~C,S~no,AP~U,T~B)+CDC25(B,L~C,S~no,AP~P,T~A)->CDC25(B,L~C,S~no,AP~P,T~B)+CDC25(B,L~C,S~no,AP~P,T~A) kCDCAaCDCB	
+CDC25(B,L~C,S~no,AP~D,T~B)+CDC25(B,L~C,S~no,AP~P,T~A)->CDC25(B,L~C,S~no,AP~P,T~B)+CDC25(B,L~C,S~no,AP~P,T~A) kCDCAaCDCB	
+CDC25(B,L~N,S~no,AP~U,T~B)+CDC25(B,L~N,S~no,AP~P,T~A)->CDC25(B,L~N,S~no,AP~P,T~B)+CDC25(B,L~N,S~no,AP~P,T~A) kCDCAaCDCB
+CDC25(B,L~N,S~no,AP~D,T~B)+CDC25(B,L~N,S~no,AP~P,T~A)->CDC25(B,L~N,S~no,AP~P,T~B)+CDC25(B,L~N,S~no,AP~P,T~A) kCDCAaCDCB
+
+##	ACTIVATION OF MPF BY Cdc25's   ##
+MPF(B,DP~P,S~no,L~C)+CDC25(B,L~C,S~no,AP~P)<->MPF(B!0,DP~P,S~Su,L~C).CDC25(B!0,L~C,S~Ph,AP~P) kMPFaOn,kMPFaOff
+MPF(B!0,DP~P,S~Su,L~C).CDC25(B!0,L~C,S~Ph,AP~P)->MPF(B,DP~U,S~no,L~C)+CDC25(B,L~C,S~no,AP~P) kMPFa
+MPF(B,DP~P,S~no,L~N)+CDC25(B,L~N,S~no,AP~P)<->MPF(B!0,DP~P,S~Su,L~N).CDC25(B!0,S~Ph,AP~P,L~N) kMPFaOnN,kMPFaOffN
+MPF(B!0,DP~P,S~Su,L~N).CDC25(B!0,S~Ph,AP~P,L~N)->MPF(B,DP~U,S~no,L~N)+CDC25(B,L~N,S~no,AP~P) kMPFaN
+
+##	ACTIVATION OF MPF BY Cdc25c   ##
+MPF(B,DP~P,S~no,L~C)+CDC25(B,L~C,S~no,AP~P,T~C)<->MPF(B!0,DP~P,S~Su,L~C).CDC25(B!0,L~C,S~Ph,AP~P,T~C) kMPFaOn,kMPFaOff
+MPF(B!0,DP~P,S~Su,L~C).CDC25(B!0,L~C,S~Ph,AP~P,T~C)->MPF(B,DP~U,S~no,L~C)+CDC25(B,L~C,S~no,AP~P,T~C) kMPFa
+MPF(B,DP~P,S~no,L~N)+CDC25(B,L~N,S~no,AP~P,T~C)<->MPF(B!0,DP~P,S~Su,L~N).CDC25(B!0,S~Ph,AP~P,T~C,L~N) kMPFaOnN,kMPFaOffN
+MPF(B!0,DP~P,S~Su,L~N).CDC25(B!0,S~Ph,AP~P,L~N,T~C)->MPF(B,DP~U,S~no,L~N)+CDC25(B,L~N,S~no,AP~P,T~C) kMPFaN
+
+##	SPONTANEOUS DEACTIVATION OF CDC25's   ##
+CDC25(B,L~C,S~no,T~C,AP~P)+DUM(L~C)->CDC25(B,L~C,S~no,T~C,AP~U)+DUM(L~C) kCDCcD
+CDC25(B,L~N,S~no,T~C,AP~P)+DUM(L~N)->CDC25(B,S~no,T~C,AP~U,L~N)+DUM(L~N) kCDCcDn
+
+##	DEGRADATION OF SEQUESTERED CDC25's   ##
+CDC25(B!0,L~C,SD~U,S~Sq,SE~P).E33(B!0,Sq~Y,L~C,S~no)->E33(B,Sq~N,L~C,S~no) kCDCout
+
+##	ACTIVATION OF Cdc25c BY MPF   ##
+MPF(B,L~N,DP~U,S~no)+CDC25(B,L~N,S~no,AP~U,T~C)<->MPF(B!0,L~N,DP~U,S~Ki).CDC25(B!0,L~N,S~Su,AP~U,T~C) kCDCaOnN,kCDCaOffN
+MPF(B!0,L~N,DP~U,S~Ki).CDC25(B!0,L~N,S~Su,AP~U,T~C)->MPF(B,L~N,DP~U,S~no)+CDC25(B,L~N,S~no,AP~P,T~C) kCDCaN
+MPF(B,L~C,DP~U,S~no)+CDC25(B,L~C,S~no,AP~U,T~C)<->MPF(B!0,L~C,DP~U,S~Ki).CDC25(B!0,L~C,S~Su,AP~U,T~C) kCDCaOn,kCDCaOff
+#MPF(B!0,L~C,DP~U,S~Ki).CDC25(B!0,L~C,S~Su,AP~U,T~C)->MPF(B,L~C,DP~U,S~no)+CDC25(B,L~C,S~no,SD~*,AP~P,T~C) kCDCa
+MPF(B!0,L~C,DP~U,S~Ki).CDC25(B!0,L~C,S~Su,AP~U,T~C)->MPF(B,L~C,DP~U,S~no)+CDC25(B,L~C,S~no,AP~P,T~C) kCDCa
+
+##	DEACTIVATION OF Wee1 BY MPF   ##
+MPF(B,L~N,DP~U,S~no)+WEE1(B,L~N,DP~U,S~no)<->MPF(B!0,L~N,DP~U,S~Ki).WEE1(B!0,L~N,DP~U,S~Su) kWEEdOn,kWEEdOff
+MPF(B!0,L~N,DP~U,S~Ki).WEE1(B!0,L~N,DP~U,S~Su)->WEE1(B,L~N,DP~M,SP~U,S~no)+MPF(B,L~N,DP~U,S~no) kWEEd
+
+##	PIN1 Destruction of Wee1   ##
+PIN1(B,L~N,S~no)+WEE1(B,L~N,DP~P,S~no)->PIN1(B,L~N,S~no) kWEEdes
+PIN1(B,L~N,S~no)+WEE1(B,L~N,DP~M,S~no)->PIN1(B,L~N,S~no) kWEEdes2
+
+##	DEACTIVATION OF MPF BY WEE1 AND pkMYT1   ##
+WEE1(B,L~N,S~no,SP~U)+MPF(B,L~N,DP~U,S~no)<->MPF(B!0,L~N,DP~U,S~Su).WEE1(B!0,L~N,SP~U,S~Ki) kMPFdOnN,kMPFdOffN
+MPF(B!0,L~N,DP~U,S~Su).WEE1(B!0,L~N,SP~U,S~Ki)->WEE1(B,L~N,SP~U,S~no)+MPF(B,L~N,DP~P,S~no) kMPFdN
+WEE1(B,L~N,S~no,SP~P)+MPF(B,L~N,DP~U,S~no)<->MPF(B!0,L~N,DP~U,S~Su).WEE1(B!0,L~N,SP~P,S~Ki) kMPFsdOnN,kMPFsdOffN
+MPF(B!0,L~N,DP~U,S~Su).WEE1(B!0,L~N,SP~P,S~Ki)->WEE1(B,L~N,SP~P,S~no)+MPF(B,L~N,DP~P,S~no) kMPFsdN
+MYT1(B,L~C,S~no)+MPF(B,L~C,DP~U,S~no)<->MPF(B!0,L~C,DP~U,S~Su).MYT1(B!0,L~C,S~Ki) kMPFdOn,kMPFdOff
+MPF(B!0,L~C,DP~U,S~Su).MYT1(B!0,L~C,S~Ki)->MYT1(B,L~C,S~no)+MPF(B,L~C,DP~P,S~no) kMPFd
+
+##	PHOSPHORYLATION OF MPF CYTOPLASMIC RETENTION SITE BY UNKOWN KINASE   ##
+ProX(B,S~no,L~C)+MPF(B,L~C,CR~U,S~no)<->MPF(B!0,L~C,CR~U,S~Su).ProX(B!0,L~C,S~Ki) kMPFsOn,kMPFsOff
+MPF(B!0,L~C,CR~U,S~Su).ProX(B!0,S~Ki,L~C)->ProX(B,L~C,S~no)+MPF(B,L~C,CR~P,S~no) kMPFs
+
+##	CHK1 AND CHK2 ENABLING SEQUESTERATION OF CDC25   ##
+CHK1(B,AP~P,S~no,L~C)+CDC25(B,L~C,S~no,SD~U,SE~U)<->CHK1(B!0,AP~P,S~Ki,L~C).CDC25(B!0,L~C,SD~U,SE~U,S~Su) kCDCpOn,kCDCpOff
+CHK1(B,AP~P,S~no,L~N)+CDC25(B,L~N,S~no,SD~U,SE~U)<->CHK1(B!0,AP~P,S~Ki,L~N).CDC25(B!0,L~N,SD~U,SE~U,S~Su) kCDCpOnN,kCDCpOffN
+CHK1(B!0,AP~P,S~Ki,L~C).CDC25(B!0,L~C,SD~U,SE~U,S~Su)->CHK1(B,AP~P,S~no,L~C)+CDC25(B,L~C,S~no,SD~U,SE~P) kCDCp
+CHK1(B!0,AP~P,S~Ki,L~N).CDC25(B!0,L~N,SD~U,SE~U,S~Su)->CHK1(B,AP~P,S~no,L~N)+CDC25(B,L~N,S~no,SD~U,SE~P) kCDCpN
+
+CHK2(B,L~C,S~no,AP~P)+CDC25(B,L~C,S~no,SD~U,SE~U)<->CHK2(B!0,L~C,S~Ki,AP~P).CDC25(B!0,L~C,SD~U,SE~U,S~Su) kCDCpOn,kCDCpOff
+CHK2(B!0,L~C,S~Ki,AP~P).CDC25(B!0,L~C,SD~U,SE~U,S~Su)->CHK2(B,L~C,S~no,AP~P)+CDC25(B,L~C,S~no,SD~U,SE~P) kCDCp
+CHK2(B,L~N,S~no,AP~P)+CDC25(B,L~N,S~no,SD~U,SE~U)<->CHK2(B!0,L~N,S~Ki,AP~P).CDC25(B!0,L~N,SD~U,SE~U,S~Su) kCDCpOnN,kCDCpOffN
+CHK2(B!0,L~N,S~Ki,AP~P).CDC25(B!0,L~N,SD~U,SE~U,S~Su)->CHK2(B,L~N,S~no,AP~P)+CDC25(B,L~N,S~no,SD~U,SE~P) kCDCpN
+
+##	SUPERACTIVATION OF Wee1 BY CHK1   ##
+CHK1(B,AP~P,S~no,L~N)+WEE1(B,L~N,SP~U,S~no)<->WEE1(B!0,L~N,SP~U,S~Su).CHK1(B!0,AP~P,L~N,S~Ki) kWEEsaOn,kWEEsaOff
+WEE1(B!0,L~N,SP~U,S~Su).CHK1(B!0,AP~P,L~N,S~Ki)->CHK1(B,AP~P,S~no,L~N)+WEE1(B,L~N,SP~P,S~no) kWEEsa
+
+##	PP2A REMOVING SEQUESTRATION ENABLING PHOSPHORYLATION FROM CDC25's   ##
+PP2A(B,L~C,S~no)+CDC25(B,L~C,S~no,SE~P)<->PP2A(B!0,L~C,S~Ph).CDC25(B!0,L~C,S~Su,SE~P) kCDCdqOn,kCDCdqOff
+PP2A(B!0,L~C,S~Ph).CDC25(B!0,L~C,S~Su,SE~P)->PP2A(B,L~C,S~no)+CDC25(B,L~C,S~no,SE~U) kCDCdq
+PP2A(B,L~N,S~no)+CDC25(B,L~N,S~no,SE~P)<->PP2A(B!0,S~Ph,L~N).CDC25(B!0,L~N,S~Su,SE~P) kCDCdqOnN,kCDCdqOffN	
+PP2A(B!0,S~Ph,L~N).CDC25(B!0,L~N,S~Su,SE~P)->PP2A(B,L~N,S~no)+CDC25(B,L~N,S~no,SE~U) kCDCdqN
+
+##	PP2A DISRUPTING 14-3-3 SEQUESTERATION OF CDC25's   ##
+PP2A(B,L~C,S~no)+CDC25(B!0,L~C,SD~U,S~Sq,SE~P).E33(B!0,L~C,S~no,Sq~Y)->PP2A(B,L~C,S~no)+E33(B,L~C,S~no,Sq~N)+CDC25(B,L~C,SD~U,S~no,SE~U) kCDCus
+
+##	PP2A REMOVING THE SEQUESTERATION DISABLING PHOSPHORYLATION FROM CDC25's   ##
+PP2A(B,L~C,S~no)+CDC25(B,L~C,S~no,SD~P)->PP2A(B,L~C,S~no)+CDC25(B,L~C,S~no,SD~U) krPLKph
+PP2A(B,L~C,S~no)+CDC25(B,L~N,S~no,SD~P)->PP2A(B,L~C,S~no)+CDC25(B,L~N,S~no,SD~U) krPLKphN
+
+##	14-3-3 SEQUESTERING CDC25's   ##
+E33(B,L~C,S~no,Sq~N)+CDC25(B,L~C,SD~U,S~no,SE~P)->CDC25(B!0,L~C,SD~U,S~Sq,SE~P).E33(B!0,L~C,S~no,Sq~N) kE33bCDC
+E33(B,L~N,S~no,Sq~N)+CDC25(B,L~N,SD~U,S~no,SE~P)->CDC25(B!0,L~N,SD~U,S~Sq,SE~P).E33(B!0,L~N,S~no,Sq~N) kE33bCDCn
+CDC25(B!0,L~C,SD~U,S~Sq,SE~P).E33(B!0,L~C,S~no,Sq~N)->CDC25(B!0,L~C,SD~U,S~Sq,SE~P).E33(B!0,L~C,S~no,Sq~Y) kCDCsq
+CDC25(B!0,L~C,SD~U,S~Sq,SE~P).E33(B!0,L~C,S~no,Sq~N)->E33(B,L~C,Sq~N,S~no)+CDC25(B,L~C,SD~U,S~no,SE~U) kE33CDCdis
+CDC25(B!0,L~N,SD~U,S~Sq,SE~P).E33(B!0,L~N,S~no,Sq~N)->CDC25(B!0,L~C,SD~U,S~Sq,SE~P).E33(B!0,L~C,S~no,Sq~Y) kCDCsqN
+CDC25(B!0,L~N,SD~U,S~Sq,SE~P).E33(B!0,L~N,S~no,Sq~N)->E33(B,L~N,Sq~N,S~no)+CDC25(B,L~N,SD~U,S~no,SE~U) kE33CDCdisN
+
+##	CHK1 AND CHK2 PHOSPHORYLATION OF CDC25a LEADING TO DEGRADATION  ##
+CHK1(B,AP~P,S~no,L~C)+CDC25(B,L~C,S~no,AP~P,T~A) -> CHK1(B,AP~P,S~no,L~C) kCDCaOut
+CHK2(B,AP~P,S~no,L~C)+CDC25(B,L~C,S~no,AP~P,T~A) -> CHK2(B,AP~P,S~no,L~C) kCDCaOut
+CHK1(B,AP~P,S~no,L~N)+CDC25(B,L~N,S~no,AP~P,T~A) -> CHK1(B,AP~P,S~no,L~N) kCDCaOutN
+CHK2(B,AP~P,S~no,L~N)+CDC25(B,L~N,S~no,AP~P,T~A) -> CHK2(B,AP~P,S~no,L~N) kCDCaOutN
+
+##	CHK1 DEACTIVATION OF CDC25b   ##
+CHK1(B,AP~P,S~no,L~C)+CDC25(B,L~C,S~no,AP~P,T~B)<->CDC25(B!0,L~C,AP~P,T~B,S~Su).CHK1(B!0,AP~P,S~Ki,L~C) kCDCBdOn,kCDCBdOff
+CDC25(B!0,L~C,AP~P,T~B,S~Su).CHK1(B!0,AP~P,S~Ki,L~C)->CHK1(B,AP~P,S~no,L~C)+CDC25(B,L~C,S~no,AP~D,T~B) kCDCBd
+CHK1(B,AP~P,S~no,L~N)+CDC25(B,L~N,S~no,AP~P,T~B)<->CDC25(B!0,L~N,AP~P,T~B,S~Su).CHK1(B!0,AP~P,S~Ki,L~N) kCDCBdOnN,kCDCBdOffN
+CDC25(B!0,L~N,AP~P,T~B,S~Su).CHK1(B!0,AP~P,S~Ki,L~N)->CHK1(B,AP~P,S~no,L~N)+CDC25(B,L~N,S~no,AP~D,T~B) kCDCBdN
+
+##	NUCLEAR IMPORT AND EXPORT RULES   ##
+Importin(L~M)+E33(B,Sq~N,S~no,L~C)->Importin(L~M)+E33(B,Sq~N,S~no,L~N) kipE33
+DUM(L~M)+E33(B,Sq~N,S~no,L~N)->DUM(L~M)+E33(B,Sq~N,S~no,L~C) kxpE33
+
+Importin(L~M)+CHK1(B,S~no,L~C)->Importin(L~M)+CHK1(B,S~no,L~N) kipCHK1
+DUM(L~M)+CHK1(B,S~no,L~N)->DUM(L~M)+CHK1(B,S~no,L~C) kxpCHK1
+Importin(L~M)+CHK2(B,S~no,L~C)->Importin(L~M)+CHK2(B,S~no,L~N) kipCHK2
+DUM(L~M)+CHK2(B,AP~P,S~no,L~N)->DUM(L~M)+CHK2(B,AP~P,S~no,L~C) kxpCHK2
+
+Importin(L~M)+CDC25(B,L~C,S~no,T~A)->Importin(L~M)+CDC25(B,L~N,S~no,T~A) kipCDC25A
+Importin(L~M)+CDC25(B,L~C,S~no,T~B)->Importin(L~M)+CDC25(B,L~N,S~no,T~B) kipCDC25B
+
+CRM1(L~M)+CDC25(B,L~N,S~no,T~A)->CRM1(L~M)+CDC25(B,L~C,S~no,T~A) kxpCDC25A
+CRM1(L~M)+CDC25(B,L~N,S~no,T~B)->CRM1(L~M)+CDC25(B,L~C,S~no,T~B) kxpCDC25B
+
+Importin(L~M,CdcFI~N)+CDC25(B,L~C,S~no,T~C)->Importin(L~M,CdcFI~N)+CDC25(B,L~N,S~no,,T~C) kipCDCi
+Importin(L~M,CdcFI~Y)+CDC25(B,L~C,S~no,T~C)->Importin(L~M,CdcFI~Y)+CDC25(B,L~N,S~no,T~C) kipCDCa
+CRM1(L~M)+CDC25(B,L~N,S~no,T~C,SD~P)->CRM1(L~M)+CDC25(B,L~C,S~no,T~C,SD~P) kxpCDCf
+CRM1(L~M)+CDC25(B,L~N,S~no,T~C,SD~U)->CRM1(L~M)+CDC25(B,L~C,S~no,T~C,SD~U) kxpCDCs
+PLK1(B,L~N,S~no)+CRM1(L~M)->PLK1(B,L~C,S~no)+CRM1(L~M) kxpPLK
+PLK1(B,L~C,S~no)+Importin(L~M)->PLK1(B,L~N,S~no)+Importin(L~M) kipPLK
+
+CRM1(L~M)+MPF(B,L~N,NE~U,S~no)->CRM1(L~M)+MPF(B,L~C,NE~U,S~no) kxpMPFf
+CRM1(L~M)+MPF(B,L~N,NE~P,S~no)->CRM1(L~M)+MPF(B,L~C,NE~P,S~no) kxpMPFs
+
+Importin(L~M)+MPF(B,L~C,NE~U,NE2~U,CR~P,S~no)->Importin(L~M)+MPF(B,L~N,NE~U,NE2~U,CR~P,S~no) kipMPF1
+Importin(L~M)+MPF(B,L~C,NE~U,NE2~U,CR~U,S~no)->Importin(L~M)+MPF(B,L~N,NE~U,NE2~U,CR~U,S~no) kipMPF5
+Importin(L~M)+MPF(B,L~C,NE2~P,CR~P,S~no)->Importin(L~M)+MPF(B,L~N,NE2~P,CR~P,S~no) kipMPF10
+Importin(L~M)+MPF(B,L~C,NE2~P,CR~U,S~no)->Importin(L~M)+MPF(B,L~N,NE2~P,CR~U,S~no) kipMPF100
+Importin(L~M)+MPF(B,L~C,NE~P,NE2~U,CR~U,S~no)->Importin(L~M)+MPF(B,L~N,NE~P,NE2~U,CR~U,S~no) kipMPF10
+
+##	MODIFICATION OF IMPORTIN FOR FAST TRANSPORT   ##
+Importin(L~M,CdcFI~N)+MPF(B,L~C,DP~U,CR~U,S~no) -> Importin(L~M,CdcFI~Y)+MPF(B,L~C,DP~U,CR~U,S~no) kImpA
+DUM(L~M)+Importin(L~M,CdcFI~Y) -> DUM(L~M)+Importin(L~M,CdcFI~N) kImpD
+
+##	CHK1 AND CHK2 SPONTANEOUS DEACTIVATION   ##
+CHK1(B,AP~P,S~no)+DUM(L~C)->CHK1(B,AP~U,S~no)+DUM(L~C) kCHKd	
+CHK2(B,S~no,AP~P)+DUM(L~C)->CHK2(B,S~no,AP~U)+DUM(L~C) kCHKd	
+
+##	CHK1 AND CHK2 SPONTANEOUS ACTIVATION   ##
+CHK1(B,AP~U,S~no)->CHK1(B,AP~P,S~no) kCHKa	
+CHK2(B,S~no,AP~U)->CHK2(B,S~no,AP~P) kCHKa	
+
+##	REMOVAL OF MPF CYTOPLASMIC RETENTION PHOSPHORYLATION BY CDC25's   ##
+MPF(B,L~C,CR~P,S~no)+CDC25(B,L~C,S~no,AP~P)<-> MPF(B!0,L~C,CR~P,S~Su).CDC25(B!0,L~C,S~Ph,AP~P) kMPFusOn,kMPFusOff
+MPF(B!0,L~C,CR~P,S~Su).CDC25(B!0,L~C,S~Ph,AP~P)-> MPF(B,L~C,S~no,CR~U)+CDC25(B,L~C,S~no,AP~P) kMPFus
+
+##	Plk1 RELEASE OF CDC25's SEQUESTERATION   ##
+PLK1(B,L~C,S~no,AP~P)+CDC25(B,L~C,S~no,SD~U)<->PLK1(B!0,L~C,AP~P,S~Ki).CDC25(B!0,L~C,S~Su,SD~U) kCDCsdOn,kCDCsdOff
+PLK1(B!0,L~C,S~Ki,AP~P).CDC25(B!0,L~C,SD~U,S~Su)->PLK1(B,L~C,S~no,AP~P)+CDC25(B,L~C,S~no,SD~P) kCDCsd
+PLK1(B,L~N,S~no,AP~P)+CDC25(B,L~N,S~no,SD~U)<->PLK1(B!0,L~N,AP~P,S~Ki).CDC25(B!0,L~N,S~Su,SD~U) kCDCsdOnN,kCDCsdOffN
+PLK1(B!0,L~N,S~Ki,AP~P).CDC25(B!0,L~N,SD~U,S~Su)->PLK1(B,L~N,S~no,AP~P)+CDC25(B,L~N,S~no,SD~P) kCDCsdN
+
+PLK1(B,L~C,S~no,AP~P)+CDC25(B!0,L~C,SD~U,S~Sq,SE~P).E33(B!0,Sq~Y,L~C,S~no)->PLK1(B,L~C,S~no,AP~P)+E33(B,L~C,S~no,Sq~N)+CDC25(B,L~C,SE~U,S~no,SD~U) kCDCus2
+
+##	Plk1 PHOSPHORYLATING MPF   ##
+PLK1(B,L~N,S~no,AP~P)+MPF(B,L~N,S~no,NE~U,NE2~U)<->PLK1(B!0,L~N,AP~P,S~Ki).MPF(B!0,L~N,NE~U,NE2~U,S~Su) kMPFneOnN,kMPFneOffN
+PLK1(B,L~C,S~no,AP~P)+MPF(B,L~C,NE~U,NE2~U,S~no)<->PLK1(B!0,AP~P,L~C,S~Ki).MPF(B!0,L~C,S~Su,NE~U,NE2~U) kMPFneOn,kMPFneOff
+PLK1(B,L~N,S~no,AP~P)+MPF(B,L~N,S~no,NE~U,NE2~P)<->PLK1(B!0,L~N,AP~P,S~Ki).MPF(B!0,L~N,NE~U,NE2~P,S~Su) kMPFneOnN2,kMPFneOffN
+PLK1(B,L~C,S~no,AP~P)+MPF(B,L~C,NE~U,NE2~P,S~no)<->PLK1(B!0,AP~P,L~C,S~Ki).MPF(B!0,L~C,S~Su,NE~U,NE2~P) kMPFneOn2,kMPFneOff
+PLK1(B!0,L~C,S~Ki,AP~P).MPF(B!0,L~C,NE~U,S~Su)->PLK1(B,L~C,S~no,AP~P)+MPF(B,L~C,S~no,NE~P) kMPFne
+PLK1(B!0,L~N,S~Ki,AP~P).MPF(B!0,L~N,NE~U,S~Su)->PLK1(B,L~N,S~no,AP~P)+MPF(B,L~N,S~no,NE~P) kMPFneN
+
+##	MPF PHOSPHORYLATING Plk1  ##
+PLK1(B,L~C,S~no,AP~U)+MPF(B,L~C,S~no,DP~U)<->PLK1(B!0,L~C,S~Su,AP~U).MPF(B!0,L~C,S~Ki,DP~U) kPLKaOn,kPLKaOff
+PLK1(B,L~N,S~no,AP~U)+MPF(B,L~N,S~no,DP~U)<->PLK1(B!0,L~N,S~Su,AP~U).MPF(B!0,L~N,S~Ki,DP~U) kPLKaOnN,kPLKaOffN
+PLK1(B!0,L~N,S~Su,AP~U).MPF(B!0,L~N,S~Ki,DP~U)->PLK1(B,L~N,S~no,AP~P)+MPF(B,L~N,S~no,DP~U) kPLKaN
+PLK1(B!0,L~C,S~Su,AP~U).MPF(B!0,L~C,S~Ki,DP~U)->PLK1(B,L~C,S~no,AP~P)+MPF(B,L~C,S~no,DP~U) kPLKa
+
+##	Plk1 PHOSPHORYLATING CHK1   ##
+PLK1(B,L~C,S~no,AP~P)+CHK1(B,AP~P,S~no,L~C)->PLK1(B,L~C,S~no,AP~U)+CHK1(B,AP~P,S~no,L~C) kPLKd
+PLK1(B,L~C,S~no,AP~P)+CHK1(B,AP~P,S~no,L~C)->PLK1(B,L~C,S~no,AP~P)+CHK1(B,AP~U,S~no,L~C) kCHK1d
+PLK1(B,L~N,S~no,AP~P)+CHK1(B,AP~P,S~no,L~N)->PLK1(B,S~no,AP~U,L~N)+CHK1(B,AP~P,S~no,L~N) kPLKdN
+PLK1(B,L~N,S~no,AP~P)+CHK1(B,AP~P,S~no,L~N)->PLK1(B,S~no,AP~P,L~N)+CHK1(B,AP~U,S~no,L~N) kCHK1dN
+
+##PLK1 PHOSPHORYLATING WEE1##
+PLK1(B,L~N,S~no,AP~P)+WEE1(B,L~N,DP~U,S~no)<->PLK1(B!0,L~N,S~no,AP~P).WEE1(B!0,L~N,DP~U,S~no) kWEEdOn2,kWEEdOff
+PLK1(B!0,L~N,S~no,AP~P).WEE1(B!0,L~N,DP~U,S~no)->PLK1(B,L~N,S~no,AP~P)+WEE1(B,L~N,DP~P,S~no) kWEEd
+PLK1(B,L~N,S~no,AP~P)+WEE1(B,L~N,DP~M,S~no)<->PLK1(B!0,L~N,S~no,AP~P).WEE1(B!0,L~N,DP~M,S~no) kWEEdOn3,kWEEdOff
+PLK1(B!0,L~N,S~no,AP~P).WEE1(B!0,L~N,DP~M,S~no)->PLK1(B,L~N,S~no,AP~P)+WEE1(B,L~N,DP~P,S~no) kWEEd
+
+##	Plk1 PHOSPHORYLATING pkMyt1   ##
+PLK1(B,L~C,S~no,AP~P)+MYT1(B,S~no,L~C)<->PLK1(B!0,L~C,AP~P,S~Ki).MYT1(B!0,L~C,S~Su) kMYTdOn,kMYTdOff
+PLK1(B!0,L~C,AP~P,S~Ki).MYT1(B!0,L~C,S~Su)->PLK1(B,L~C,S~no,AP~P) kMYTd
+
+##	MPF AUTOPHOSPHORYLATION   ##
+MPF(B!0,L~N,NE2~U,S~Su).MPF(B!0,L~N,DP~U,S~Ki)-> MPF(B,L~N,S~no,NE2~P)+MPF(B,L~N,DP~U,S~no) kMPFimpN
+MPF(B,L~N,S~no,NE2~U)+MPF(B,L~N,DP~U,S~no)<-> MPF(B!0,L~N,NE2~U,S~Su).MPF(B!0,L~N,DP~U,S~Ki) kMPFimpOnN,kMPFimpOffN
+MPF(B,L~C,NE2~U,S~no)+MPF(B,L~C,DP~U,S~no)<-> MPF(B!0,L~C,NE2~U,S~Su).MPF(B!0,L~C,DP~U,S~Ki) kMPFimpOn,kMPFimpOff
+MPF(B!0,L~C,NE2~U,S~Su).MPF(B!0,L~C,DP~U,S~Ki)-> MPF(B,L~C,NE2~P,S~no)+MPF(B,L~C,DP~U,S~no) kMPFimp
+
+##	Phosphorylation of Histone H3 by MPF to Mark Mitotic Entry   ##
+MPF(B,DP~U,L~N,S~no)+H3(B,AP~U,L~N,S~no)<->MPF(B!0,DP~U,L~N,S~Ki).H3(B!0,AP~U,L~N,S~Su) kH3aOn,kH3aOff
+MPF(B!0,DP~U,L~N,S~Ki).H3(B!0,AP~U,L~N,S~Su)->MPF(B,DP~U,L~N,S~no)+H3(B,AP~P,L~N,S~no) kH3a
+
+end reaction rules
+############################################################################################################################
+
+begin observables
+# The observables were set according to each figure.
+
+Molecules Histone_H3	H3(AP~P)
+Molecules Tot_WEE1 WEE1()
+Molecules Active_WEE1	WEE1(DP~U)
+Molecules Super_WEE1	WEE1(SP~P,DP~U)
+Molecules Total_MYT1	MYT1()
+Molecules Tot_PLK	PLK1()
+Molecules Ca_PLK	PLK1(L~C,AP~P)
+Molecules Na_PLK	PLK1(L~N,AP~P)
+Molecules Active_PLK	PLK1(AP~P)
+Molecules Tot_CDC25a	CDC25(T~A)
+Molecules A_CDC25a CDC25(T~A,AP~P,S~no)
+Molecules seq_CDC25a	CDC25(T~A,B!1).E33(B!1,Sq~Y)
+Molecules Na_Cdc25a_N	CDC25(T~A,AP~P,S~no,L~N)
+Molecules Tot_CDC25b	CDC25(T~B)
+Molecules Act_CDC25b	CDC25(T~B,AP~P,S~no)
+Molecules seq_CDC25b	CDC25(B!1,T~B).E33(B!1,Sq~Y)
+Molecules Na_Cdc25b	CDC25(T~B,AP~P,S~no,L~N)
+Molecules Ca_CDC25b CDC25(T~B,AP~P,S~no,L~C)
+Molecules Tot_CDC25c	CDC25(T~C)
+#Molecules Act_CDC25c	CDC25(T~*,AP~P,S~no,L~C)
+#Molecules Act_CDC25c	CDC25(AP~P,S~no,L~C)
+
+Molecules Ca_CDC25c	CDC25(T~C,AP~P,S~no,L~C)
+Molecules Na_CDC25c	CDC25(T~C,AP~P,L~N)
+Molecules seq_CDC25c	CDC25(B!1,T~C).E33(B!1,Sq~Y)
+Molecules Ca_MPF	MPF(L~C,DP~U)
+Molecules Tot_MPF	MPF()
+Molecules C_MPF	MPF(L~C)
+Molecules N_MPF	MPF(L~N)
+Molecules Na_MPF	MPF(L~N,DP~U)
+Molecules Act_CHK1	CHK1(AP~P,L~C)
+Molecules Na_CHK1	CHK1(AP~P,L~N)
+Molecules Act_CHK2	CHK2(AP~P,L~C)
+Molecules Na_CHK2	CHK2(AP~P,L~N)
+
+end observables
+
+
+###################################################################################
+##     THIS NEXT SECTION CONTAINING "setParameter" COMMANDS  					   ###
+##      was used alter the paramaters for the pramater scan and depletion experiments.	   ###
+###################################################################################
+
+##	pkMYT1   ##
+#setParameter(MYT10,0.005);		##setParameter(MYT10,0.5);
+#setParameter(kMYTin,0.0001);		##setParameter(kMYTin,0.001);
+
+##	WEE1   ##
+#setParameter(WEE10,0.005);		##setParameter(WEE10,0.5);
+#setParameter(kWEEin,0.0005);		##setParameter(kWEEin,0.005);
+
+##	MPF   ##
+#setParameter(MPF0,0.1);
+#setParameter(kMPFin,0.001);
+
+##	CDC25   ##
+#setParameter(kCDC25Bin,0.0000);	#setParameter(kCDC25Bin,0.0003);
+#setParameter(kCDC25Cin,0.00005);
+#setParameter(kCDC25Ain,0.00001);
+
+#setParameter(CDC25A0,0.5);
+#setParameter(CDC25B0,0.0);
+#setParameter(CDC25C0,0.1);
+
+#setParameter(kCDCout,0.0001);
+
+#setParameter(kCDCaOut,0.011);
+#setParameter(kCDCaOutN,0.099);
+
+#setParameter(kCDCaOn,5.0);
+#setParameter(kCDCaOnN,45.0);
+
+#setParameter(kCDCcD,5.0);
+#setParameter(kCDCcDn,5.0);
+
+#setParameter(kCDCBdOn,200.0);
+#setParameter(kCDCBdOnN,1800.0);
+
+#setParameter(kCDCBa,1.0);
+
+#setParameter(kCDCAaCDCB,0.1);
+#setParameter(kCDCAaCDCBn,0.9);
+
+#setParameter(kCDC25Ades,0.0000001);
+
+#setParameter(kE33CDCdis,0.01);
+#setParameter(kE33CDCdis,0.01);
+
+#setParameter(kCDCsq,100.0);
+#setParameter(kCDCsqN,100.0);
+
+##	CHK1   ##
+#setParameter(CHK1a0,0.005);
+#setParameter(CHK1i0,0.09);
+#setParameter(CHK1an0,0.005);
+
+##	CHK2   ##
+#setParameter(CHK2a0,0.01);
+#setParameter(CHK2i0,0.09);
+
+##	PLK1   ##
+#setParameter(PLK10c,0.07);		##setParameter(PLK10c,0.7);
+#setParameter(PLK10n,0.03);		##setParameter(PLK10n,0.3);
+
+##	PIN1   ##
+#setParameter(PIN10,1.0);
+
+##	PP2A   ##
+#setParameter(PP2Ac0,1.0);
+#setParameter(PP2An0,1.0);
+
+#setParameter(kipE33,0.2);
+#setParameter(kxpE33,0.1);
+
+#setParameter(kCDCus,0.001);
+#setParameter(kCDCus2,0.3);
+
+#setParameter(kMPFaOn,60.0);
+#setParameter(kMPFaOnN,540.0);
+
+#setParameter(kipCDCi,0.1);
+#setParameter(kipCDCa,1.0);
+
+#setParameter(kxpCDCf,1.0);
+#setParameter(kxpCDCs,0.01);
+
+#setParameter(kImpA,0.5);
+#setParameter(kImpD,0.01);
+
+#setParameter(kipE33,0.1);
+#setParameter(kxpE33,0.1);
+
+#setParameter(kipMPF1,0.01);
+#setParameter(kipMPF5,0.05);
+#setParameter(kipMPF10,0.10);
+#setParameter(kipMPF50,0.5);
+#setParameter(kipMPF100,5.0);
+#setParameter(kxpMPFf,1.0);
+#setParameter(kxpMPFs,0.01);
+#setParameter(kipCHK1,0.90);
+#setParameter(kxpCHK1,0.10);
+#setParameter(kipCHK2,0.90);
+#setParameter(kxpCHK2,0.10);
+#setParameter(kipCDCi,0.01);
+#setParameter(kipCDCa,0.10);
+#setParameter(kxpCDCf,0.10);
+#setParameter(kxpCDCs,0.001);
+#setParameter(kxpPLK,0.07);
+#setParameter(kipPLK,0.03);
+
+##	Histone H3   ##
+#setParameter(H30,1.0);
+
+#setParameter(kCDC25Cin,0.0000005);
+#setParameter(CDC25C0,0.001);
+
+###############################################################################################################
+##This Section is Used to Set the Simulation Conditions.							  						    	##
+## 												  						  							##
+##The same "generate_network" command is used for all simulations.  The conditions as set below will run the model for a       ##
+##simulated 12 hours.  The output files will have the suffix "_noDamage", "_Damage", or "_Recovery" appended to the file        ##
+##name corresponding to conditions #1, #2 or #3 below.							  							 ##
+##To simulate just the condition 1 below, uncomment the line following the "simulate_ode" command.  To run condition 2,	  ##
+##make sure conditions 1 and 3 are commented out.  To run condition 3, uncomment conditions 2 AND 3.  Keep condition 1 	  ##
+##commented out.											 											  ##
+################################################################################################################
+
+generate_network\
+({overwrite=>1,check_iso=>1,max_iter=>25,max_stoich=>{MPF=>unlimited,CDC25=>unlimited,PIN1=>unlimited,WEE1=>unlimited,\
+ProX=>unlimited,DUM=>unlimited,MYT1=>unlimited,CRM1=>1e10,Importin=>1e10}});
+
+###########################################################################################################################
+#	1. Normal mitotic entry
+	
+saveConcentrations();
+simulate_ode({t_end=>2667,n_steps=>2667,atol=>1e-12,rtol=>1e-12,sparse=>1,suffix=>noDamage});
+
+###########################################################################################################################
+#	2. Constant DNA Damage Signal
+
+#resetConcentrations();	
+#setParameter(kCHKd,0.0000001); ##This turns off the ability to spontaneously inactivate the CHK's
+#setParameter(kCHKa,0.001);	 ##This turns up the rate of spontaneous CHK activation so that most of the CHK's become acitvated.
+#simulate_ode({t_end=>1789,n_steps=>1789,atol=>1e-12,rtol=>1e-12,sparse=>1,suffix=>Damage});
+
+###########################################################################################################################
+#	3. Normal Recovery from Damage.	
+
+#setParameter(kCHKd,0.001);	##This turns up the rate of spontaneous CHK deactivation such that most of the CHK's are inactive.
+#setParameter(kCHKa,0.0000001);##This turns down the rate of spontaneous CHK activation such that most of the CHK's are inactive.
+#simulate_ode({t_end=>2700,n_steps=>2700,atol=>1e-12,rtol=>1e-12,sparse=>1,suffix=>Recovery});

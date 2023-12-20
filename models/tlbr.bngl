@@ -1,0 +1,43 @@
+# Trivalent ligand - bivalent receptor
+# Used to perform scaling and validation tests
+# No rings
+# Colvin et al., (2009) Bioinformatics
+
+begin parameters
+t_end		1000
+n_steps     	1000
+
+Fx		1.0
+
+Lig_tot		4200/Fx
+Rec_tot		300/Fx
+kp1		Fx*3.0e-07
+km1		0.01
+kp2		Fx*3.0e-03
+km2		0.01
+end parameters
+
+begin molecule types
+L(r,r,r)
+R(l,l)
+end molecule types
+
+begin species
+L(r,r,r)	Lig_tot
+R(l,l)		Rec_tot
+end species
+
+begin reaction rules
+L(r,r,r) + R(l) <-> L(r!1,r,r).R(l!1) kp1,km1
+L(r,r,r!+) + R(l) <-> L(r!1,r,r!+).R(l!1) kp2,km2
+L(r,r!+,r!+) + R(l) <-> L(r!1,r!+,r!+).R(l!1) kp2,km2
+end reaction rules
+
+begin observables
+Species Ligfree   L(r,r,r)
+Species Ligbnd1   L(r!+,r,r)
+Species Ligbnd2   L(r!+,r!+,r)
+Molecules Ligbnd3   L(r!+,r!+,r!+)
+end observables
+simulate_rm({t_end=>t_end,n_steps=>n_steps});
+

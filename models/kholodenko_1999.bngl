@@ -99,9 +99,9 @@ R_G_S                     0
 end species
 
 begin reaction rules
-R      +  EGF            <->   RA                kp1,km1
-RA     +  RA             <->   R2                kp2,km2
-R2                       <->   RP                kp3,km3
+R()      +  EGF()            <->   RA()                kp1,km1
+RA()     +  RA()             <->   R2()                kp2,km2
+R2()                       <->   RP()                kp3,km3
 RP     +  Grb2           <->   R_G               kp9,km9
 R_G    +  Sos            <->   R_G_S             kp10,km10
 RP     +  Grb2_Sos       <->   R_G_S             kp11,km11

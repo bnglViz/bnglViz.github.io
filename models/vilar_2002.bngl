@@ -42,7 +42,7 @@ begin observables       # model outputs
 end observables
 begin reaction rules
 
-  DNA(p) ->  DNA(p) + AmRNA    k7
+  1  DNA(p) ->  DNA(p) + AmRNA    k7
   DNA(r) -> DNA(r) + RmRNA    k1
   DNA(p!1).A(b!1) -> DNA(p!1).A(b!1) + AmRNA  k9
   DNA(r!1).A(b!1) -> DNA(r!1).A(b!1) + RmRNA  k7
