@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>BNGL Visualizer</title>
+    <link rel="stylesheet" type="text/css" href="public/styleblack.css"/>
+</head>
+<body>
+<p><h1>BioNetGenLanguage (BNGL) code visualizer</h1></p>
+<table cellpadding="30">
+ <tr>
+     </tr>
+    <tr>
+    <td id="canvas-text">
+      <a href=index.html><b>BNGL VISUALIZER</b></a>
+    </td>
+    <td id="canvas-text">
+      <a href=bngl.html>BNGL overview</a>
+    </td>
+    <td id="canvas-text">
+      <a href=viz.html>Visualization conventions</a>
+    </td>
+    <td id="canvas-text">
+      <a href=examples.html>Examples</a>
+    </td>
+    <td id="canvas-text">
+      <a href=about.html>About</a>
+    </td>
+  </tr>
+</table>
+    <hr>
+    <h2>Visualize BioNetGen model</h2>
+    <table>
+    <tr>
+    <td>
+      <input id="bngl-file-input" type="file" oninput="htmlInterface.visualize(fileInput.files[0]);" onclick="inputClick();">
+      <button id="dark-button" onclick="htmlInterface.switchDarkMode();">Toggle DarkMode</button>
+    </td>
+    <td id="canvas-text">
+      Molecule is shown as an oval ...
+    </td>
+  </tr>
+</table>
+<div id="canvas-container"></div>
+<div id="table-container"></div>
+<script src="public/model-graphics.js"></script>
+<script src="public/bngl-extractor.js"></script>
+<script src="public/html-interface.js"></script>
+<script>
+//template bngl text
+const bngl = `
+begin parameters
+end parameters
+
+begin compartments
+EC	3	1
+end compartments
+
+begin molecule types
+end molecule types
+
+begin species
+ICN(location~ER,Nbind,CSLbind,MAMLbind)
+end species
+
+begin reaction rules
+end reaction rules
+
+begin observables
+end observables
+
+
+generate_network();
+writeSBML();
+simulate_ode({t_end=>50,n_steps=>20});
+`;
+//get major elements
+const canvContain = document.getElementById("canvas-container");
+const tableContain = document.getElementById("table-container");
+const fileInput = document.getElementById("bngl-file-input");
+const body = document.body;
+
+//connect interface
+var htmlInterface = new HTMLInterface();
+
+//templating then bngl file
+var blob = new Blob([bngl], {type: "text/plain"});
+let reader = new FileReader();
+reader.onload = () => {htmlInterface.visualize(reader.result);};
+reader.readAsText(blob);
+
+//function to reset input element value when it is clicked
+//this is needed because chrome doesn't trigger onchange if filename is same
+function inputClick() {
+  fileInput.value = "";
+}
+</script>
+</body>
+</html>
