@@ -1,0 +1,50 @@
+begin parameters
+A_init 	100
+B_init      100
+C_init 	0
+D_init	0
+E_tot       100
+kp 	1
+km	1
+end parameters
+
+begin species
+A(e)	     A_init      
+B(e)       B_init
+C(e)       C_init
+D(e)       D_init
+E(ac,bd)   E_tot 
+end species
+
+begin reaction rules
+1  E(ac) + A(e) -> E(ac!1).A(e!1) kp  #s1,s4,s13
+2  E(bd) + B(e) -> E(bd!1).B(e!1) kp  #s2,s3,s11
+
+3  E(ac!1,bd!2).A(e!1).B(e!2) ->  E(ac!1,bd!2).C(e!1).D(e!2)  kp 
+
+4 E(ac!1).C(e!1) -> E(ac) + C(e) km  \
+exclude_reactants(1,B)
+#s6,s8
+5 E(bd!1).D(e!1) -> E(bd) + D(e) km  \
+exclude_reactants(1,A)
+#s7,s9
+
+6  E(ac,bd!1).B(e!1) + C(e) -> E(ac!2,bd!1).B(e!1).C(e!2) kp  #s10
+7  E(ac!1,bd).A(e!1) + D(e) -> E(ac!1,bd!2).A(e!1).D(e!2) kp  #s12
+end reaction rules
+
+begin observables
+
+E_tot 	      E
+A_tot             A
+B_tot             B
+C_tot 	      C
+D_tot 	      D
+
+end observables
+
+generate_network({overwrite=>1});
+
+writeSBML({suffix=>"kinetics"});
+#simulate_ode({suffix=>"kinetics",t_end=>10,n_steps=>100,atol=>1e-10,rtol=>1e-8});
+

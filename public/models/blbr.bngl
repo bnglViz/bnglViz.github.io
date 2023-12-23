@@ -1,0 +1,40 @@
+begin parameters
+ kp1 1
+ km1 1
+ kp2 1
+ km2 1
+ kp3 1
+ km3 1
+ R0  3e5
+ L0  3e5
+end parameters
+
+begin species
+  R(r,r) R0
+  L(l,l) L0
+end species
+
+begin observables
+Molecules R R()
+Molecules L L()
+Molecules R_once R(r!+)         # must be connected at least once
+Molecules R_middle R(r!+,r!+)  # middle of a chain, 
+Molecules R_end_1 R(r!-)   # end of a chain
+Molecules R_end_2 R(r)    # end of a chain
+Molecules Monomer R(r!-,r!-) #just a monomer
+
+end observables
+
+begin reaction rules
+# Ligand addition
+R(r) + L(l,l) <-> R(r!1).L(l!1,l) kp1,km1
+
+# Chain elongation
+R(r) + L(l,l!2) <-> R(r!1).L(l!1,l!2) kp2,km2
+
+# Ring closure
+R(r).L(l) <-> R(r!1).L(l!1) kp3,km3
+
+end reaction rules
+
+generate_network({overwrite=>1,check_iso=>0,max_stoich=>{R=>10,L=>10}});

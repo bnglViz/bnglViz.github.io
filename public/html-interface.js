@@ -62,6 +62,7 @@ class HTMLInterface {
     this.be = new BNGLExtractor(this.mm);
     this.canvasHTMLGraphicMap = {};
     this.idManager = new IDManager();
+    this.currentBlob;
 
     //set mode to dark mode initially
     this.darkMode = false;
@@ -100,7 +101,8 @@ class HTMLInterface {
   switchDarkMode() {
     this.darkMode = !this.darkMode;
     this.applyDarkMode();
-    this.applyDarkModeCanvases();
+    this.visualize(this.currentBlob);
+    //this.applyDarkModeCanvases();
   }
 
   capitalizeFirstLetter(s) {
@@ -470,6 +472,7 @@ class HTMLInterface {
 
   //render everything in bngl
   visualize(blob) {
+    this.currentBlob = blob;
     //remove all old visualizations
     //remove everything in table
     let oldElms = tableContain.children;

@@ -12,7 +12,7 @@
     <tr>
     <td id="canvas-text">
       <a href=index.html><b>BNGL VISUALIZER</b></a>
-    </td>   
+    </td>
     <td id="canvas-text">
       <a href=bngl.html>BNGL overview</a>
     </td>
@@ -25,7 +25,7 @@
     <td id="canvas-text">
       <a href=about.html>About</a>
     </td>
-  </tr> 
+  </tr>
 </table>
     <hr>
     <h2>Visualize BioNetGen model</h2>
@@ -33,10 +33,7 @@
     <tr>
     <td>
       <input id="bngl-file-input" type="file" oninput="htmlInterface.visualize(fileInput.files[0]);" onclick="inputClick();">
-      <!--<button onclick="switchDarkMode();">Toggle DarkMode</button>-->
-    </td>
-    <td id="canvas-cell">
-      <canvas id="testCanvas" class="bngl-canvas"></canvas>
+      <button id="dark-button" onclick="htmlInterface.switchDarkMode();">Toggle DarkMode</button>
     </td>
     <td id="canvas-text">
       Molecule is shown as an oval ...
@@ -50,7 +47,6 @@
 <script src="public/html-interface.js"></script>
 <script>
   //get major elements
-  const testCanvas = document.getElementById("testCanvas");
   const canvContain = document.getElementById("canvas-container");
   const tableContain = document.getElementById("table-container");
   const fileInput = document.getElementById("bngl-file-input");
@@ -58,11 +54,6 @@
 
   //connect interface
   var htmlInterface = new HTMLInterface();
-
-  //draw test canvas
-  testCanvas.width = htmlInterface.maxWidth;
-  testCanvas.height = htmlInterface.maxHeight;
-  htmlInterface.drawBNGL('@EC:EGF(rb)', testCanvas);
 
   //function to reset input element value when it is clicked
   //this is needed because chrome doesn't trigger onchange if filename is same
