@@ -9,10 +9,10 @@ begin molecule types
 end molecule types
 
 begin species
-ICN(location~ER,Nbind,CSLbind,MAMLbind)
 end species
 
 begin reaction rules
+A -> B
 end reaction rules
 
 begin observables
@@ -22,3 +22,4 @@ end observables
 generate_network();
 writeSBML();
 simulate_ode({t_end=>50,n_steps=>20});
+#end comment

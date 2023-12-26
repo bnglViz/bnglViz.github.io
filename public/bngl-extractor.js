@@ -332,7 +332,7 @@ window.BNGLExtractor = class BNGLExtractor {
 
   extractComments(bnglStr, sectionTokenList) {
     //helper function to get lines between sections
-    function removeSection(bnglStr, firstTokens, lastTokens) {
+    function removeSection(bnglStr, firstTokens, lastTokens, returnString=false) {
       let firstIndex, lastIndex;
       if (firstTokens != -1) {
         for (let i = 0; i < firstTokens.length; i++) {
@@ -362,15 +362,28 @@ window.BNGLExtractor = class BNGLExtractor {
           return "";
         }
       }
-      if (lastTokens == -1) {
-        if (firstIndex >= 0) {
-          return bnglStr.slice(firstIndex, bnglStr.length);
-        } else {
-          return "";
+      if (!returnString) {
+        if (lastTokens == -1) {
+          if (firstIndex >= 0) {
+            return bnglStr.slice(firstIndex, bnglStr.length);
+          } else {
+            return "";
+          }
         }
+        return bnglStr.slice(firstIndex, lastIndex);
+      } else {
+        if (lastTokens == -1) {
+          if (firstIndex >= 0) {
+            return bnglStr.slice(0, lastIndex);
+          } else {
+            return "";
+          }
+        }
+        return bnglStr.slice(0, lastIndex) + bnglStr.slice(firstIndex, bnglStr.length);
       }
-      return bnglStr.slice(firstIndex, lastIndex);
     }
+    //remove parameters and commends after last end block
+    bnglStr = removeSection(bnglStr, ["parameters"], ["parameters"], true);
     //remove sections that don't exist
     let firstExantSectionIndex;
     for (let i = 0; i < sectionTokenList.length; i++) {
@@ -396,7 +409,7 @@ window.BNGLExtractor = class BNGLExtractor {
     //compile cleaned strings between sections
     let cleanStrings = [];
     let len = sectionTokenList.length;
-    for (let j = 0; j <= len; j++) {
+    for (let j = 0; j <= len - 1; j++) {
       let firstTokens = ((j ==  0) ? -1: sectionTokenList[j - 1]);
       let lastTokens = ((j ==  len) ? -1: sectionTokenList[j]);
       cleanStrings.push(removeSection(bnglStr, firstTokens, lastTokens));

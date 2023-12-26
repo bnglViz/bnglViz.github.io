@@ -412,60 +412,62 @@ class HTMLInterface {
 
   //render 1 entire type (molecules, species, etc)
   visualizeType(type, list) {
-    //add new table
-    let newTable = document.createElement("table");
-    this.addElmLast(newTable, tableContain);
-    //render header
-    if (type != "header comments" || list.length > 0) {
-      this.addToTable([[document.createElement("hr")]], newTable, 5);
-      const newDivider = document.createElement("p");
-      if (type != "header comments") {
-        newDivider.innerHTML = this.capitalizeFirstLetter(type);
-      }
-      newDivider.classList.add("table-divider");
-      this.addToTable([[newDivider]], newTable, 5);
-      if (type == "observables") {
-        this.addToTable(
-          [['Type', 'Name', 'Visualization', 'BNGL code', 'Comment']],
-          newTable
-        );
-      } else if (type == "molecules") {
-        this.addToTable(
-          [['Name', 'Visualization', 'BNGL code', 'Comment']],
-          newTable
-        );
-      } else if (type == "reactions") {
-        this.addToTable(
-          [['Visualization', 'BNGL code', 'Rate', 'Comment']],
-          newTable
-        );
-      } else if (type == "compartments") {
-        this.addToTable(
-          [['Name', 'Dimension', 'Size', 'Comment']],
-          newTable
-        );
-      } else if (type != "header comments") {
-        this.addToTable(
-          [['Name', 'Visualization', 'BNGL code', 'Concentration', 'Comment']],
-          newTable
-        );
-      }
-      //render rows
-      if (list.length > 0) {
-        let output = [];
-        for (let i = 0; i < list.length; i++) {
-          let item = list[i];
-          //normal row
-          if (typeof item == "object") {
-            this.addToTable([this.prepareRow(item, type)], newTable);
-          }
-          //full line comment
-          else if (typeof item == "string") {
-            this.addToTable([[item]], newTable, 5);
-          }
+    if (list.length > 0) {
+      //add new table
+      let newTable = document.createElement("table");
+      this.addElmLast(newTable, tableContain);
+      //render header
+      if (type != "header comments" || list.length > 0) {
+        this.addToTable([[document.createElement("hr")]], newTable, 5);
+        const newDivider = document.createElement("p");
+        if (type != "header comments") {
+          newDivider.innerHTML = this.capitalizeFirstLetter(type);
         }
-      } else {
-        this.addToTable([["None", "", "", ""]], newTable);
+        newDivider.classList.add("table-divider");
+        this.addToTable([[newDivider]], newTable, 5);
+        if (type == "observables") {
+          this.addToTable(
+            [['Type', 'Name', 'Visualization', 'BNGL code', 'Comment']],
+            newTable
+          );
+        } else if (type == "molecules") {
+          this.addToTable(
+            [['Name', 'Visualization', 'BNGL code', 'Comment']],
+            newTable
+          );
+        } else if (type == "reactions") {
+          this.addToTable(
+            [['Visualization', 'BNGL code', 'Rate', 'Comment']],
+            newTable
+          );
+        } else if (type == "compartments") {
+          this.addToTable(
+            [['Name', 'Dimension', 'Size', 'Comment']],
+            newTable
+          );
+        } else if (type != "header comments") {
+          this.addToTable(
+            [['Name', 'Visualization', 'BNGL code', 'Concentration', 'Comment']],
+            newTable
+          );
+        }
+        //render rows
+        if (list.length > 0) {
+          let output = [];
+          for (let i = 0; i < list.length; i++) {
+            let item = list[i];
+            //normal row
+            if (typeof item == "object") {
+              this.addToTable([this.prepareRow(item, type)], newTable);
+            }
+            //full line comment
+            else if (typeof item == "string") {
+              this.addToTable([[item]], newTable, 5);
+            }
+          }
+        } else {
+          this.addToTable([["None", "", "", ""]], newTable);
+        }
       }
     }
   }
@@ -518,6 +520,7 @@ class HTMLInterface {
       intrObj.visualizeType("header comments", comments[comments.length - 1]);
       //make arrows bigger
       let pElms = document.querySelectorAll("p");
+      console.log(pElms);
       for (let i = 0; i < pElms.length; i++) {
         let elm = pElms[i];
         elm.innerHTML = elm.innerHTML.replace("&lt;-&gt;", ' <span class="big-arrow">&#8596;</span> ');
