@@ -472,6 +472,10 @@ window.BNGLExtractor = class BNGLExtractor {
     let toDelete = [];
     let specialType = type == "reactions" || type == "observables";
     let isCompartment = type == "compartments";
+    bnglStr = bnglStr.replaceAll("+", " + ")
+      .replaceAll("<->", " <-> ")
+      .replaceAll("->", " -> ")
+      .replaceAll("<-", " <- ");
     for (let i = 0; i < elmStrList.length; i++) {
       let elmStr = elmStrList[i];
       let beginToken = "begin " + elmStr;
@@ -489,9 +493,6 @@ window.BNGLExtractor = class BNGLExtractor {
           }
           c++;
         }
-        for (let n = 0; n < newLineIndexes.length; n++) {
-          bnglStr = bnglStr.slice(0, n) + "\\\n" + bnglStr.slice(n + 1);
-        }
         //find first new line
         let nlDist = 0;
         while (bnglStr[startIndex + beginToken.length + nlDist] != "\n") {
@@ -504,15 +505,6 @@ window.BNGLExtractor = class BNGLExtractor {
           endIndex
         );
         bngls = bngls.concat(sliced.split("\n"));
-        //manage reaction titles
-        for (let u = 0; u < bngls.length; u++) {
-          let bngl = bngls[u];
-          let title;
-          if (this.isReactionTitle(bngl)) {
-            [title, bngl] = bngl.split(":");
-          }
-          bngls[u] = bngl;
-        }
         //manage multi line definitions
         let newArr = [];
         for (let u = 0; u < bngls.length; u++) {
@@ -636,6 +628,10 @@ window.BNGLExtractor = class BNGLExtractor {
     let condensedList = reactants.concat([sign]).concat(products);
     for (let i = 0; i < newLines.length; i++) {
       condensedList.splice(newLines[i].index + i, 0, "\\\n");
+    }
+    //remove trailing new lines
+    while (condensedList[condensedList.length - 1] === "\\\n") {
+      condensedList.pop();
     }
     //add "+" signs
     let len = condensedList.length;

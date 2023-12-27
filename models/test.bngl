@@ -1,25 +1,52 @@
 begin parameters
 end parameters
 
-begin compartments
-EC	3	1
-end compartments
-
 begin molecule types
 end molecule types
 
 begin species
+S(NSH2~C,CSH2,PTP~C)				S_tot
 end species
 
 begin reaction rules
-A -> B
+# 9 Intra-complex binding: PTP bound, association of NSH2 with other receptor
+R(Y1~P!1).R(Y2~P).S(NSH2~O,CSH2,PTP~O!1) <-> \
+R(Y1~P!1).R(Y2~P!2).S(NSH2~O!2,CSH2,PTP~O!1)  chi_r4*kon_NSH2,koff_NSH2
+
+# 10 Intra-complex binding: PTP bound, association of NSH2 with same receptor
+R(Y1~P!1,Y2~P).S(NSH2~O,CSH2,PTP~O!1) <-> \
+R(Y1~P!1,Y2~P!2).S(NSH2~O!2,CSH2,PTP~O!1)  chi_r5*kon_NSH2,koff_NSH2
+
+# 11 Intra-complex binding: CSH2 & NSH2 bound, assoc. of PTP with same receptor as CSH2
+R(Y1~P,Y2~P!1).R(Y2~P!2).S(NSH2~O!2,CSH2!1,PTP~O) <-> \
+R(Y1~P!3,Y2~P!1).R(Y2~P!2).S(NSH2~O!2,CSH2!1,PTP~O!3) \
+chi_r6*kon_PTP,koff_PTP
+
+# 12 Intra-complex binding: CSH2 & NSH2 bound, assoc. of PTP with same receptor as NSH2
+R(Y1~P,Y2~P!1).R(Y2~P!2).S(NSH2~O!1,CSH2!2,PTP~O) <-> \
+R(Y1~P!3,Y2~P!1).R(Y2~P!2).S(NSH2~O!1,CSH2!2,PTP~O!3) \
+chi_r7*kon_PTP,koff_PTP
+
+# 13 Intra-complex binding: CSH2 & PTP bound to the same receptor, assoc. of NSH2
+R(Y1~P!1,Y2~P!2).R(Y2~P).S(NSH2~O,CSH2!2,PTP~O!1) <-> \
+R(Y1~P!1,Y2~P!2).R(Y2~P!3).S(NSH2~O!3,CSH2!2,PTP~O!1) \
+chi_r8*kon_NSH2,koff_NSH2
+
+# 14 Intra-complex binding: CSH2 & PTP bound to different receptors, assoc. of NSH2
+R(Y2~P!1).R(Y1~P!2,Y2~P).S(NSH2~O,CSH2!1,PTP~O!2) <-> \
+R(Y2~P!1).R(Y1~P!2,Y2~P!3).S(NSH2~O!3,CSH2!1,PTP~O!2) \
+chi_r9*kon_NSH2,koff_NSH2
+
+# 15 Intra-complex binding: PTP & NSH2 bound to different receptors, assoc. of CSH2
+R(Y2~P!1).R(Y1~P!2,Y2~P).S(NSH2~O!1,CSH2,PTP~O!2) <-> \
+R(Y2~P!1).R(Y1~P!2,Y2~P!3).S(NSH2~O!1,CSH2!3,PTP~O!2) \
+chi_r10*kon_CSH2,koff_CSH2
+
+# 16 Intra-complex binding: PTP & NSH2 bound to same receptor, assoc. of CSH2
+R(Y1~P!1,Y2~P!2).R(Y2~P).S(NSH2~O!2,CSH2,PTP~O!1) <-> \
+R(Y1~P!1,Y2~P!2).R(Y2~P!3).S(NSH2~O!2,CSH2!3,PTP~O!1) \
+chi_r11*kon_CSH2,koff_CSH2
 end reaction rules
 
 begin observables
 end observables
-
-
-generate_network();
-writeSBML();
-simulate_ode({t_end=>50,n_steps=>20});
-#end comment

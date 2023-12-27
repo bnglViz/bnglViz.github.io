@@ -520,7 +520,6 @@ class HTMLInterface {
       intrObj.visualizeType("header comments", comments[comments.length - 1]);
       //make arrows bigger
       let pElms = document.querySelectorAll("p");
-      console.log(pElms);
       for (let i = 0; i < pElms.length; i++) {
         let elm = pElms[i];
         elm.innerHTML = elm.innerHTML.replace("&lt;-&gt;", ' <span class="big-arrow">&#8596;</span> ');
