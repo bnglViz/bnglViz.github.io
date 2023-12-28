@@ -6,6 +6,46 @@ class BNGLNewLineIndex {
   }
 }
 
+//unfortunitley these need to be outside of any classes bec of var semantics
+function isBondPlus(s, c) {
+  let exclamation = c - 1 >= 0 && s[c - 1] == "!";
+  return s[c] == "+" && exclamation;
+}
+
+function isBondMinus(s, c) {
+  let exclamation = c - 1 >= 0 && s[c - 1] == "!";
+  return s[c] == "-" && exclamation;
+}
+
+function isReactionPlus(s, c) {
+  return s[c] == "+" && !isBondPlus(s, c);
+}
+
+function isReactionForward(s, c) {
+  let forward = c + 1 <= s.length && s[c + 1] == ">";
+  return s[c] == "-" && forward && !isBondMinus(s, c);
+}
+
+function isReactionBack(s, c) {
+  let forward = c + 1 <= s.length && s[c + 1] == "-";
+  return s[c] == "<" && forward;
+}
+
+function isReactionEquib(s, c) {
+  let mid = c + 1 <= s.length && s[c + 1] == "-";
+  let forward = c + 2 <= s.length && s[c + 2] == ">";
+  return s[c] == "<" && mid && forward;
+}
+
+function isSign(s, c) {
+  return isReactionForward(s, c) || isReactionBack(s, c) || isReactionEquib(s, c);
+}
+
+//returns index of first whitespace OR # OR + OR reaction sign
+function isWhitespace(s, c) {
+  return /\s/.test(s[c]) || s[c] === "#" || isReactionPlus(s, c) || isSign(s, c);
+}
+
 //assumes:
 //nothing starts with a number except first term
 //"\" is only used to denote multi line definitions
@@ -16,20 +56,20 @@ window.BNGLExtractor = class BNGLExtractor {
 
   constructor(mm) {
     this.mm = mm;
-  }
-
-  //name is misleading, returns index of first whitespace OR # character
-  isWhitespace(s) {
-    return (/\s/.test(s) || s === "#");
+    //these funcs are defined above bec of var semantics
+    this.isWhitespace = isWhitespace;
+    this.isBondPlus = isBondPlus;
+    this.isBondMinus = isBondMinus;
+    this.isReactionPlus = isReactionPlus;
+    this.isReactionForward = isReactionForward;
+    this.isReactionBack = isReactionBack;
+    this.isReactionEquib = isReactionEquib;
+    this.isSign = isSign;
   }
 
   //doen't include special case for comments like isWhitespace
-  isNotWhitespace(s) {
-    return !/\s/.test(s);
-  }
-
-  isCommaOrWhitespace(s) {
-    return (/\s/.test(s) || s === ",");
+  isNotWhitespace(s, c) {
+    return !/\s/.test(s[c]);
   }
 
   isNewLine(s, c) {
@@ -37,6 +77,18 @@ window.BNGLExtractor = class BNGLExtractor {
       return false;
     } else {
       return (s[c] == "\\" && /\s/.test(s[c + 1]));
+    }
+  }
+
+  getSign(s, c) {
+    if (this.isReactionEquib(s, c)) {
+      return "<->";
+    } else if (this.isReactionForward(s, c)) {
+      return "->";
+    } else if (this.isReactionBack(s, c)) {
+      return "<-";
+    } else {
+      throw "error: unrecognised reaction sign";
     }
   }
 
@@ -64,11 +116,12 @@ window.BNGLExtractor = class BNGLExtractor {
   }
 
   getNewLineIndex(reactants, products, sign) {
-    return  ((sign != undefined) ? 1: 0) + reactants.length + products.length;
+    return ((sign != undefined) ? 1: 0) + reactants.length + products.length;
   }
 
   //next occurance of char in string
   nextOccur(string, index, boolExpr, backwards = false, mod = 0) {
+    index++;
     let len = string.length;
     let direction;
     if (backwards) {
@@ -77,7 +130,7 @@ window.BNGLExtractor = class BNGLExtractor {
       direction = 1;
     }
     while (index < len && index >= 0) {
-      if (boolExpr(string[index])) {
+      if (boolExpr(string.slice(index, string.length), 0)) {
         return index + mod;
       }
       index += direction;
@@ -108,19 +161,19 @@ window.BNGLExtractor = class BNGLExtractor {
         continue;
       }
       //is whitespace
-      if (this.isWhitespace(char)) {
+      if (this.isWhitespace(s, c)) {
         c = this.nextOccur(s, c, this.isNotWhitespace);
         continue;
       }
       //is non-whitespace and non-comment
-      if ((!bngl) && this.isNotWhitespace(char)) {
+      if ((!bngl) && this.isNotWhitespace(s, c)) {
         let n = this.nextOccur(s, c, this.isWhitespace, false, -1);
         bngl = s.slice(c, n + 1);
         c = n + 1;
         continue;
       }
       //start concentration
-      if (bngl && this.isNotWhitespace(char)) {
+      if (bngl && this.isNotWhitespace(s, c)) {
         let n = this.nextOccur(s, c, this.isWhitespace, false, -1);
         conc = s.slice(c, n + 1);
         c = n;
@@ -154,6 +207,7 @@ window.BNGLExtractor = class BNGLExtractor {
     let isObservable = type == "observables";
     let hasReadType = !isObservable;
     //parse
+    let iter = -1;
     while (c < len) {
       char = s[c];
       //is comment
@@ -166,10 +220,23 @@ window.BNGLExtractor = class BNGLExtractor {
         c = this.nextOccur(s, c, this.isWhitespace);
         continue;
       }
-      //is plus
-      if (char === "+") {
+      //is reaction plus
+      if (this.isReactionPlus(s, c)) {
         c = this.nextOccur(s, c, this.isWhitespace);
         wasPlus = true;
+        continue;
+      }
+      //is bond plus
+      if (this.isBondPlus(s, c)) {
+        //c = this.nextOccur(s, c, this.isWhitespace);
+        let n = this.nextOccur(s, c, this.isWhitespace);
+        let molcEnd = s.slice(c, n);
+        if (!sign) {
+          reactants[reactants.length - 1] = reactants[reactants.length - 1] + molcEnd;
+        } else {
+          products[products.length - 1] = products[products.length - 1] + molcEnd;
+        }
+        c = n;
         continue;
       }
       //is new line
@@ -189,13 +256,20 @@ window.BNGLExtractor = class BNGLExtractor {
         c = this.nextOccur(s, c, this.isWhitespace);
         continue;
       }
+      //is sign
+      if (this.isSign(s, c)) {
+        sign = this.getSign(s, c);
+        c += sign.length;
+        wasPlus = true;
+        continue;
+      }
       //is whitespace
-      if (this.isWhitespace(char)) {
+      if (this.isWhitespace(s, c)) {
         c = this.nextOccur(s, c, this.isNotWhitespace);
         continue;
       }
       //is observable type
-      if (!hasReadType && reactants.length == 0 && sign == undefined && this.isNotWhitespace(char)) {
+      if (!hasReadType && reactants.length == 0 && sign == undefined && this.isNotWhitespace(s, c)) {
         let n = this.nextOccur(s, c, this.isWhitespace);
         observType = s.slice(c, n);
         if (observType.toLowerCase() != "molecules" && observType.toLowerCase() != "species") {
@@ -205,16 +279,8 @@ window.BNGLExtractor = class BNGLExtractor {
         c = n;
         continue;
       }
-      //is sign
-      if ((char === "-" || char === "<") && !this.wordHasParenthesis(s, c)) {
-        let n = this.nextOccur(s, c, this.isWhitespace);
-        sign = s.slice(c, n);
-        c = n;
-        wasPlus = true;
-        continue;
-      }
       //is product or reactant
-      if (this.isNotWhitespace(char) && wasPlus || isObservable) {
+      if (this.isNotWhitespace(s, c) && wasPlus || isObservable) {
         if (isObservable && reactants.length > 1) {
           newLines.push(
             new BNGLNewLineIndex(
@@ -236,7 +302,7 @@ window.BNGLExtractor = class BNGLExtractor {
         continue;
       }
       //is rate
-      if (this.isNotWhitespace(char) && !wasPlus) {
+      if (this.isNotWhitespace(s, c) && !wasPlus) {
         let n = this.nextOccur(s, c, this.isWhitespace, false, -1);
         rate += " " + s.slice(c, n + 1);
         c = n;
@@ -289,12 +355,12 @@ window.BNGLExtractor = class BNGLExtractor {
         continue;
       }
       //is whitespace
-      if (this.isWhitespace(char)) {
+      if (this.isWhitespace(s, c)) {
         c = this.nextOccur(s, c, this.isNotWhitespace);
         continue;
       }
       //is non-whitespace and non-comment
-      if (this.isNotWhitespace(char)) {
+      if (this.isNotWhitespace(s, c)) {
         let n = this.nextOccur(s, c, this.isWhitespace, false, -1);
         if (!name) {
           name = s.slice(c, n + 1);
@@ -472,10 +538,6 @@ window.BNGLExtractor = class BNGLExtractor {
     let toDelete = [];
     let specialType = type == "reactions" || type == "observables";
     let isCompartment = type == "compartments";
-    bnglStr = bnglStr.replaceAll("+", " + ")
-      .replaceAll("<->", " <-> ")
-      .replaceAll("->", " -> ")
-      .replaceAll("<-", " <- ");
     for (let i = 0; i < elmStrList.length; i++) {
       let elmStr = elmStrList[i];
       let beginToken = "begin " + elmStr;
@@ -627,17 +689,17 @@ window.BNGLExtractor = class BNGLExtractor {
     //add new lines
     let condensedList = reactants.concat([sign]).concat(products);
     for (let i = 0; i < newLines.length; i++) {
-      condensedList.splice(newLines[i].index + i, 0, "\\\n");
+      condensedList.splice(newLines[i].index + i, 0, "\n");
     }
     //remove trailing new lines
-    while (condensedList[condensedList.length - 1] === "\\\n") {
+    while (condensedList[condensedList.length - 1] === "\n") {
       condensedList.pop();
     }
     //add "+" signs
     let len = condensedList.length;
     for (let i = 0; i < len; i++) {
       let elm = condensedList[i];
-      if (!(elm.includes("-") || elm === "\\\n")) {
+      if (!(elm.includes("-") || elm === "\n")) {
         condensedList.splice(i + 1, 0, "+");
         i++;
       }
