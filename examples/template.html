@@ -80,7 +80,7 @@ const fileInput = document.getElementById("bngl-file-input");
 const body = document.body;
 
 //connect interface
-var htmlInterface = new HTMLInterface();
+var htmlInterface = new HTMLInterface(body, canvContain, tableContain, fileInput);
 
 //templating then bngl file
 var blob = new Blob([bngl], {type: "text/plain"});

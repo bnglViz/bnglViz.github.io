@@ -1,16 +1,18 @@
 begin parameters
 end parameters
 
+begin compartments
+c0	3	1
+end compartments
+
 begin molecule types
 end molecule types
 
 begin species
+1 @c0:A(b1,b2,c) 300.0
 end species
 
 begin reaction rules
-1 A -> B
-2 B -> C
-3 C -> A
 end reaction rules
 
 begin observables

@@ -673,8 +673,8 @@ window.BNGLExtractor = class BNGLExtractor {
     reactants.forEach((item, i) => {
       if (this.mm.hasMoleculeWithCompartment(item)) {
         reactants[i] = "@" + this.mm.getCompartment(item) + ":" + reactants[i];
-        if (type == "observables" && mm.hasPolymer(observName)) {
-          reactants[i] += mm.getPolymer(observName);
+        if (type == "observables" && this.mm.hasPolymer(observName)) {
+          reactants[i] += this.mm.getPolymer(observName);
         }
       }
     });

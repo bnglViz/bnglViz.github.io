@@ -11,7 +11,12 @@ class IDManager {
 }
 
 class HTMLInterface {
-  constructor() {
+  constructor(htmlBody, canvasDiv, tableDiv, fileInput) {
+    //declare html elms
+    this.htmlBody = htmlBody;
+    this.canvasDiv = canvasDiv;
+    this.tableDiv = tableDiv;
+    this.fileInput = fileInput;
     //set max dimensions for canvases (normally 4000, 180)
     this.maxWidth = 10000;
     this.maxHeight = 250;
@@ -160,6 +165,7 @@ class HTMLInterface {
         compartment = compartmentMap[bngl];
         parameters["compartment"] = compartment;
       }
+      parameters["manager"] = this.mm;
       drawObj = new Graphic(bngl, parameters);
       numberMolecules = 1;
     } else {
@@ -383,7 +389,7 @@ class HTMLInterface {
         {
           type: type,
           compartmentMap: molcCompMap,
-          drawExtraPlus: hasNewLines && i < bngls.length - 1
+          drawExtraPlus: hasNewLines && i < bngls.length - 1,
         }
       );
     }
@@ -415,7 +421,7 @@ class HTMLInterface {
     if (list.length > 0) {
       //add new table
       let newTable = document.createElement("table");
-      this.addElmLast(newTable, tableContain);
+      this.addElmLast(newTable, this.tableDiv);
       //render header
       if (type != "header comments" || list.length > 0) {
         this.addToTable([[document.createElement("hr")]], newTable, 5);
@@ -477,13 +483,13 @@ class HTMLInterface {
     this.currentBlob = blob;
     //remove all old visualizations
     //remove everything in table
-    let oldElms = tableContain.children;
+    let oldElms = this.tableDiv.children;
     let numOldElms = oldElms.length;
     for(let i = 0; i < numOldElms; i++) {
       oldElms[0].remove();
     }
     //remove everything in canvas div
-    oldElms = canvContain.children;
+    oldElms = this.canvasDiv.children;
     numOldElms = oldElms.length;
     for(let i = 0; i < numOldElms; i++) {
       oldElms[0].remove();
@@ -536,7 +542,7 @@ class HTMLInterface {
     if (typeof blob == "string") {
       read(blob, this);
     } else if (typeof blob == "object") {
-      if (fileInput.value) {
+      if (this.fileInput.value) {
         reader.readAsText(blob);
       }
     }

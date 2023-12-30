@@ -37,7 +37,7 @@
     </td>
     <td id="canvas-text">
       Molecule is shown as an oval ...
-    </td> 
+    </td>
     -->
   </tr>
 </table>
@@ -54,7 +54,7 @@
   const body = document.body;
 
   //connect interface
-  var htmlInterface = new HTMLInterface();
+  var htmlInterface = new HTMLInterface(body, canvContain, tableContain, fileInput);
 
   //function to reset input element value when it is clicked
   //this is needed because chrome doesn't trigger onchange if filename is same

@@ -23,7 +23,7 @@ button {
 input::file-selector-button {
   border: 1px solid grey;
   border-radius: 2px;
-  font-family: "Andale Mono";
+  /*font-family: "Andale Mono";*/
   background-color: white;
 }
 
@@ -38,7 +38,8 @@ input::file-selector-button {
 }
 
 .big-arrow {
-  font-size: 35px;
+  font-size: 25px;
+
 }
 
 .main-td {
@@ -47,6 +48,9 @@ input::file-selector-button {
 
 .main-td > p {
   white-space: pre-wrap;
+  font-family: courier, monospace;
+  border-radius: 3px;
+  padding: 0 3px;
 }
 
 .divider-td {
@@ -63,10 +67,4 @@ input::file-selector-button {
   font-size: 30px;
   text-align: left;
   margin: 0px;
-}
-code {
-  background-color: #eee;
-  border-radius: 3px;
-  font-family: courier, monospace;
-  padding: 0 3px;
 }
