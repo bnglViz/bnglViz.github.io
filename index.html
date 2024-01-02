@@ -25,22 +25,14 @@
     <td id="canvas-text">
       <a href=about.html>About</a>
     </td>
+    <td>
+      <button id="dark-button" onclick="htmlInterface.switchDarkMode();">Toggle DarkMode</button>
+    </td>
   </tr>
 </table>
     <hr>
-    <h2>Visualize BioNetGen model</h2>
-    <table>
-    <tr>
-    <td>
-      <input id="bngl-file-input" type="file" oninput="htmlInterface.visualize(fileInput.files[0]);" onclick="inputClick();">
-      <button id="dark-button" onclick="htmlInterface.switchDarkMode();">Toggle DarkMode</button>
-    </td>
-    <td id="canvas-text">
-      Molecule is shown as an oval ...
-    </td>
-    -->
-  </tr>
-</table>
+    <h2>Visualize BioNetGen model: <input id="bngl-file-input" type="file" oninput="htmlInterface.visualize(fileInput.files[0]);" onclick="inputClick();"></h2>
+    
 <div id="canvas-container"></div>
 <div id="table-container"></div>
 <script src="public/model-graphics.js"></script>
