@@ -703,11 +703,13 @@ window.BNGLExtractor = class BNGLExtractor {
         condensedList.splice(i + 1, 0, "+");
         i++;
       }
+      //this was causing bug when there are no products
+      //idk if its needed
       //remove trailing "+" signs
-      if (elm.includes("-")) {
+      /*if (elm.includes("-")) {
         condensedList.splice(i - 1, 1);
         i--;
-      }
+      }*/
     }
     //remove last "+" sign
     if (condensedList[condensedList.length - 1] == "+") {

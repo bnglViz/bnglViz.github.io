@@ -9,11 +9,11 @@ begin molecule types
 end molecule types
 
 begin species
-1 @c0:A(b1,b2,c) 300.0
 end species
 
 begin reaction rules
 end reaction rules
 
 begin observables
+	Species V2 B==2
 end observables
