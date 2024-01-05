@@ -571,7 +571,7 @@ window.BNGLExtractor = class BNGLExtractor {
         let newArr = [];
         for (let u = 0; u < bngls.length; u++) {
           let bngl = bngls[u];
-          let cutIndex = bngl.indexOf("\\");
+          let cutIndex = ((typeof bngl == "string")? bngl.indexOf("\\"): -1);
           if (cutIndex >= 0) {
             newArr.push(
               {str: bngl, toAppend: true, cutIndex: cutIndex}

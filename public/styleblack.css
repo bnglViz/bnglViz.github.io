@@ -68,3 +68,7 @@ input::file-selector-button {
   text-align: left;
   margin: 0px;
 }
+
+#limitation-div {
+  display: block;
+}

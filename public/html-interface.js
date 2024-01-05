@@ -26,15 +26,23 @@ class HTMLInterface {
       "molecule types",
       "molecular types",
       "molecule_types",
-      "molecular_types"
+      "molecular_types",
+      "molecules",
+      "molecule"
     ];
     this.speciesTokens = [
       "species",
       "seed species",
-      "seed_species"
+      "seed_species",
+      "seeds"
     ];
     this.observablesTokens = ["observables"];
-    this.reactionTokens = ["reaction rules", "reaction_rules"];
+    this.reactionTokens = [
+      "reaction rules",
+      "reaction_rules",
+      "reactions",
+      "rules"
+    ];
     this.polymerTokens = ["<", "<=", ">", ">="];
     this.sectionTokens = [
       this.compartmentTokens,
@@ -339,6 +347,7 @@ class HTMLInterface {
           if (bngl.includes(token)) {
             polymerIndex = bngl.indexOf(token);
             polymer = bngl.slice(polymerIndex, bngl.length);
+            //if this line removed observables breaks, see test.bngl
             bngl = bngl.slice(0, polymerIndex);
           }
         }
@@ -351,6 +360,7 @@ class HTMLInterface {
         molcCompMap[bngl] = compartment;
       });
       var bngls = this.separateBNGLNewLines(reactants, products, sign, newLines);
+      console.log(bngls);
     } else if (type === "reactions") {
       [reactants, products, sign, rate, comment, newLines] = Object.values(data);
       //add paranthesis if there are none
@@ -374,7 +384,6 @@ class HTMLInterface {
     let newCans = [];
     for(let i = 0; i < bngls.length; i++) {
       bngl = bngls[i];
-      bngl = bngl;
       //create new canvas
       let newCan = document.createElement("canvas");
       newCans.push(newCan);
@@ -478,10 +487,7 @@ class HTMLInterface {
     }
   }
 
-  //render everything in bngl
-  visualize(blob) {
-    this.currentBlob = blob;
-    //remove all old visualizations
+  clear() {
     //remove everything in table
     let oldElms = this.tableDiv.children;
     let numOldElms = oldElms.length;
@@ -496,6 +502,12 @@ class HTMLInterface {
     }
     //reset molecule manager
     this.mm.reset();
+  }
+
+  //render everything in bngl
+  visualize(blob) {
+    this.clear();
+    this.currentBlob = blob;
     //render new file
     function read(bngl, intrObj) {
       //sort tokens
