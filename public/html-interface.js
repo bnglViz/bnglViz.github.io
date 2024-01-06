@@ -43,7 +43,7 @@ class HTMLInterface {
       "reactions",
       "rules"
     ];
-    this.polymerTokens = ["<", "<=", ">", ">="];
+    this.polymerTokens = ["<", "<=", ">", ">=", "=="];
     this.sectionTokens = [
       this.compartmentTokens,
       this.moleculeTokens,
@@ -152,7 +152,26 @@ class HTMLInterface {
       darkMode: this.darkMode,
       compartmentMap: compartmentMap
     };
-    if (type === "observables") {
+    if (type === "compartments") {
+      parameters["manager"] = this.mm;
+      parameters["compDimension"] = this.mm.getDimension(bngl);
+      parameters["compartment"] = bngl;
+      drawObj = new Graphic("()", parameters);
+      //draw graphic
+      drawObj.drawCompartment(ctx, 0, 0);
+      //get dimensions
+      let dims = getCanvasDimentions(ctx, numberMolecules, this.maxWidth, this.maxHeight);
+      //resize canvas
+      canvas.width = dims[0];
+      canvas.height = dims[1];
+      //have to redraw
+      ctx.clearRect(0, 0, 1000000, 10000);
+      drawObj.drawCompartment(ctx, 0, 0);
+      //map html elm and graphic instance
+      let id = this.idManager.getID();
+      canvas.id = id;
+      this.canvasHTMLGraphicMap[id] = [drawObj, ctx];
+    } else if (type === "observables") {
       if (compartmentMap) {
         compartment = compartmentMap[bngl[0][0]];
         parameters["compDimension"] = this.mm.getDimension(compartment);
@@ -335,7 +354,6 @@ class HTMLInterface {
     } else if (type == "compartments") {
       //add compartments to molecule manager
       this.mm.addCompartment(data.name, data.dimension);
-      return Object.values(data);
     } else if (type == "observables") {
       [reactants, products, sign, observData, comment, newLines] = Object.values(data);
       //add paranthesis if there are none
@@ -347,7 +365,6 @@ class HTMLInterface {
           if (bngl.includes(token)) {
             polymerIndex = bngl.indexOf(token);
             polymer = bngl.slice(polymerIndex, bngl.length);
-            //if this line removed observables breaks, see test.bngl
             bngl = bngl.slice(0, polymerIndex);
           }
         }
@@ -360,7 +377,6 @@ class HTMLInterface {
         molcCompMap[bngl] = compartment;
       });
       var bngls = this.separateBNGLNewLines(reactants, products, sign, newLines);
-      console.log(bngls);
     } else if (type === "reactions") {
       [reactants, products, sign, rate, comment, newLines] = Object.values(data);
       //add paranthesis if there are none
@@ -378,8 +394,12 @@ class HTMLInterface {
       var bngls = this.separateBNGLNewLines(reactants, products, sign, newLines);
     }
     //handle new line special case
-    let hasNewLines = ((bngls.length > 1) ? true : false);
-
+    let hasNewLines;
+    if (type != "compartments") {
+      hasNewLines = ((bngls.length > 1) ? true : false);
+    } else {//setup compartment visualization
+      bngls = [data.name];
+    }
     //make canvases
     let newCans = [];
     for(let i = 0; i < bngls.length; i++) {
@@ -420,6 +440,10 @@ class HTMLInterface {
         rate.trim(),
         comment
       ];
+    } else if (type == "compartments") {
+      let output = Object.values(data);
+      output.splice(3, 0, newCans);
+      return output;
     } else {
       return [name, newCans, bngl, comment];
     }
@@ -457,7 +481,7 @@ class HTMLInterface {
           );
         } else if (type == "compartments") {
           this.addToTable(
-            [['Name', 'Dimension', 'Size', 'Comment']],
+            [['Name', 'Dimension', 'Size', 'Visualization', 'Comment']],
             newTable
           );
         } else if (type != "header comments") {

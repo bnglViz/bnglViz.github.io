@@ -15,6 +15,6 @@ begin reaction rules
 end reaction rules
 
 begin observables
-#	Species V2 B==2
+	Species V2 B==2
   Species Agreaterthan10 @c0:A()>10
 end observables
