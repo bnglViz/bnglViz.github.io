@@ -72,3 +72,7 @@ input::file-selector-button {
 #limitation-div {
   display: block;
 }
+
+#loading-p {
+  display: none;
+}

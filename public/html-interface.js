@@ -11,12 +11,13 @@ class IDManager {
 }
 
 class HTMLInterface {
-  constructor(htmlBody, canvasDiv, tableDiv, fileInput) {
+  constructor(htmlBody, canvasDiv, tableDiv, fileInput, loadingText) {
     //declare html elms
     this.htmlBody = htmlBody;
     this.canvasDiv = canvasDiv;
     this.tableDiv = tableDiv;
     this.fileInput = fileInput;
+    this.loadingText = loadingText;
     //set max dimensions for canvases (normally 4000, 180)
     this.maxWidth = 10000;
     this.maxHeight = 250;
@@ -157,20 +158,18 @@ class HTMLInterface {
       parameters["compDimension"] = this.mm.getDimension(bngl);
       parameters["compartment"] = bngl;
       drawObj = new Graphic("()", parameters);
-      //draw graphic
-      drawObj.drawCompartment(ctx, 0, 0);
-      //get dimensions
-      let dims = getCanvasDimentions(ctx, numberMolecules, this.maxWidth, this.maxHeight);
+      //setup draw func
+      let dims = drawObj.drawCompartment(ctx, 0, 0);
       //resize canvas
       canvas.width = dims[0];
       canvas.height = dims[1];
-      //have to redraw
-      ctx.clearRect(0, 0, 1000000, 10000);
-      drawObj.drawCompartment(ctx, 0, 0);
+      //draw
+      drawObj.doDrawList();
       //map html elm and graphic instance
       let id = this.idManager.getID();
       canvas.id = id;
       this.canvasHTMLGraphicMap[id] = [drawObj, ctx];
+      return 0;
     } else if (type === "observables") {
       if (compartmentMap) {
         compartment = compartmentMap[bngl[0][0]];
@@ -340,11 +339,7 @@ class HTMLInterface {
       comment = data.comment.trim();
       let observType = data.observType;
       [bngl, compartment] = this.mm.processMoleculeCompartment(bngl.trim());
-      if (compartment) {
-        bngl = "@" + compartment + ":" + addBNGLParenthesis(bngl);
-      } else {
-        bngl = addBNGLParenthesis(bngl);
-      }
+      bngl = addBNGLParenthesis(bngl);
       molcCompMap[bngl] = compartment;
       name = bngl.split("(")[0];
       if (name.includes(":")) {
@@ -573,6 +568,7 @@ class HTMLInterface {
     let reader = new FileReader();
     reader.onload = () => {
       read(reader.result, this);
+      this.loadingText.style.display = "none";
     }
     //read if file present
     if (typeof blob == "string") {

@@ -768,6 +768,7 @@ window.Graphic = class Graphic {
         ctx.closePath();
         ctx.fillText(this.comp, xPos + 2, y - 5);
       }, params: [textWidth]});
+      return [textWidth + 10, y];
     }
   }
 

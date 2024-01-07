@@ -33,23 +33,24 @@
 <hr>
 <h3>
   Visualize BioNetGen model: &nbsp; &nbsp;
-  <input id="bngl-file-input" type="file" oninput="htmlInterface.visualize(fileInput.files[0]); limitsDiv.style.display='none';" onclick="inputClick();">
+  <input id="bngl-file-input" type="file" oninput="loadingText.style.display='block'; htmlInterface.visualize(fileInput.files[0]); limitsDiv.style.display='none';" onclick="inputClick();">
   <button onclick="htmlInterface.clear(); inputClick(); limitsDiv.style.display='block';">Clear</button>
 </h3>
+<p id="loading-p">Loading...</p>
 <div id="limitation-div">
-<hr>
-<b>Usage and limitations:</b>
-<ul>
-  <li>Non-visual parts of BNGL code such as parameter's block and actions are omitted in visualization for clarity, but all comments for molecules, species,
-  rules and observables are displayed. </li>
-  <li>No code validation is provided: the BNGL is visualized as is. There are rare instances when we note some errors in the code and
-      provide guidance, but users should not rely on it. </li>
-  <li>cBNGL is not supported, but compartmental export from VCell is supported. In VCell, a compartment is assigned to the whole
-  reactant or product, while in cBNGL a compartment can be assigned to different sites of a molecule. </li>
-  <li>There are many extensions and undocumented/semi-documented features in BNGL. We do not guarantee that all of them are supported.
-  Please email <a href="mailto:blinov@uchc.edu">Michael Blinov</a> and we'll try to accommodate the visualization of more features.</li>
-</ul>
-<hr>
+  <hr>
+  <b>Usage and limitations:</b>
+  <ul>
+    <li>Non-visual parts of BNGL code such as parameter's block and actions are omitted in visualization for clarity, but all comments for molecules, species,
+    rules and observables are displayed. </li>
+    <li>No code validation is provided: the BNGL is visualized as is. There are rare instances when we note some errors in the code and
+        provide guidance, but users should not rely on it. </li>
+    <li>cBNGL is not supported, but compartmental export from VCell is supported. In VCell, a compartment is assigned to the whole
+    reactant or product, while in cBNGL a compartment can be assigned to different sites of a molecule. </li>
+    <li>There are many extensions and undocumented/semi-documented features in BNGL. We do not guarantee that all of them are supported.
+    Please email <a href="mailto:blinov@uchc.edu">Michael Blinov</a> and we'll try to accommodate the visualization of more features.</li>
+  </ul>
+  <hr>
 </div>
 
 
@@ -65,9 +66,10 @@
   const fileInput = document.getElementById("bngl-file-input");
   const body = document.body;
   const limitsDiv = document.getElementById("limitation-div");
+  const loadingText = document.getElementById("loading-p");
 
   //connect interface
-  var htmlInterface = new HTMLInterface(body, canvContain, tableContain, fileInput);
+  var htmlInterface = new HTMLInterface(body, canvContain, tableContain, fileInput, loadingText);
 
   //function to reset input element value when it is clicked
   //this is needed because chrome doesn't trigger onchange if filename is same
