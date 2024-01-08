@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>BNGL Visualizer</title>
+    <link rel="stylesheet" type="text/css" href="../public/styleblack.css"/>
+</head>
+<body>
+<p><h1>BioNetGenLanguage (BNGL) code visualizer</h1></p>
+<table cellpadding="30">
+ <tr>
+     </tr>
+    <tr>
+    <td id="canvas-text">
+      <a href=../index.html><b>BNGL VISUALIZER</b></a>
+    </td>
+    <td id="canvas-text">
+      <a href=../bngl.html>BNGL overview</a>
+    </td>
+    <td id="canvas-text">
+      <a href=../viz.html>Visualization conventions</a>
+    </td>
+    <td id="canvas-text">
+      <a href=../examples.html>Examples</a>
+    </td>
+    <td id="canvas-text">
+      <a href=../about.html>About</a>
+    </td>
+    <td>
+      <button id="dark-button" onclick="htmlInterface.switchDarkMode();">Toggle Light/Dark Mode</button>
+    </td>
+  </tr>
+</table>
+    <hr>
+    <h3>A model of trivalent ligand - bivalent receptor, used for testing of rule-based models in 
+      <a href="https://pubmed.ncbi.nlm.nih.gov/19213740/">Colvin et al., 2009</a> and 
+      <a href="https://pubmed.ncbi.nlm.nih.gov/24314076/">Falkenberg et al., 2013</h3>
+
+<div id="canvas-container"></div>
+<div id="table-container"></div>
+<script src="../public/model-graphics.js"></script>
+<script src="../public/bngl-extractor.js"></script>
+<script src="../public/html-interface.js"></script>
+<script>
+//template bngl text
+const bngl = `
+begin parameters
+ kp1 1
+ km1 1
+ kp2 1
+ km2 1
+ kp3 1
+ km3 1
+ R0  3e5
+ L0  3e5
+end parameters
+
+begin species
+  R(r,r) R0
+  L(l,l) L0
+end species
+
+begin observables
+Molecules R R()
+Molecules L L()
+Molecules R_once R(r!+)         # must be connected at least once
+Molecules R_middle R(r!+,r!+)  # middle of a chain, 
+Molecules R_end_1 R(r!-)   # end of a chain
+Molecules R_end_2 R(r)    # end of a chain
+Molecules Monomer R(r!-,r!-) #just a monomer
+
+end observables
+
+begin reaction rules
+# Ligand addition
+R(r) + L(l,l) <-> R(r!1).L(l!1,l) kp1,km1
+
+# Chain elongation
+R(r) + L(l,l!2) <-> R(r!1).L(l!1,l!2) kp2,km2
+
+# Ring closure
+R(r).L(l) <-> R(r!1).L(l!1) kp3,km3
+
+end reaction rules
+
+generate_network({overwrite=>1,check_iso=>0,max_stoich=>{R=>10,L=>10}});
+
+`;
+//get major elements
+const canvContain = document.getElementById("canvas-container");
+const tableContain = document.getElementById("table-container");
+const fileInput = document.getElementById("bngl-file-input");
+const body = document.body;
+
+//connect interface
+var htmlInterface = new HTMLInterface(body, canvContain, tableContain, fileInput);
+
+//templating then bngl file
+var blob = new Blob([bngl], {type: "text/plain"});
+let reader = new FileReader();
+reader.onload = () => {htmlInterface.visualize(reader.result);};
+reader.readAsText(blob);
+
+//function to reset input element value when it is clicked
+//this is needed because chrome doesn't trigger onchange if filename is same
+function inputClick() {
+  fileInput.value = "";
+}
+</script>
+</body>
+</html>
