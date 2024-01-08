@@ -31,9 +31,8 @@
   </tr>
 </table>
     <hr>
-    <h3>A model of bivalent ligand - bivalent receptor, used for testing of rule-based models in 
-      <a href="https://pubmed.ncbi.nlm.nih.gov/19213740/">Colvin et al., 2009</a> and 
-      <a href="https://pubmed.ncbi.nlm.nih.gov/24314076/">Falkenberg et al., 2013</h3>
+    <h3>A model of T cell receptor proximal signaling reveals emergent ultrasensitivity
+(<a href="https://pubmed.ncbi.nlm.nih.gov/23555234/">Mukhopadhyay et al., 2013</a>)</h3>
 
 <div id="canvas-container"></div>
 <div id="table-container"></div>
@@ -43,46 +42,114 @@
 <script>
 //template bngl text
 const bngl = `
+	#Enzymatic modifications of TCR zeta and ZAP-70 binding to fully phosphorylate ITAMs.
 begin parameters
- kp1 1
- km1 1
- kp2 1
- km2 1
- kp3 1
- km3 1
- R0  3e5
- L0  3e5
+	#Kinase-substrate on rates
+	ek_on 1e-4
+	#Kinase-substrate off rates
+	ek_off 10.0
+	#Kinase catalysis rates
+	ek_cat 10.0
+	#Phosphatase-substrate on rates
+	fk_on 1e-4
+	#Phosphatase-substrate off rates
+	fk_off 10.0
+	#Phosphatase catalysis rates
+	fk_cat 10.0
+	#Binding parameters for ZAP-70 binding
+	zap_on 1.0
+	zap_off1 10
+	zap_off2 1
+	zap_off3 0.1
+	#Total substrate (S_T), kinase (E_T), phosphatase (F_T), and ZAP-70 (Z_T) concentrations
+	E_T 100
+	F_T 100
+	S_T 100
+	Z_T 5000
 end parameters
 
-begin species
-  R(r,r) R0
-  L(l,l) L0
-end species
+begin molecule types
+	#Substrate
+	#Attribute b˜1 indicates that an enzyme is bound to substrate and b˜0 indicates no enzyme is bound
+	#Attributes Y1, Y2, and Y3 each refer to individual ITAMs.
+	#Each ITAM can be unphosphorylated (Y˜U), phosphorylated on one tyrosine (Y˜P), or doubly phosphorylated (Y˜2P)
+	S(b~0~1,Y1~U~P~2P,Y2~U~P~2P,Y3~U~P~2P)
+	#Kinase
+	E(b)
+	#Phosphatase
+	F(b)
+	#ZAP-70
+	Z(b)
+end molecule types
 
-begin observables
-Molecules R R()
-Molecules L L()
-Molecules R_once R(r!+)         # must be connected at least once
-Molecules R_middle R(r!+,r!+)  # middle of a chain, 
-Molecules R_end_1 R(r!-)   # end of a chain
-Molecules R_end_2 R(r)    # end of a chain
-Molecules Monomer R(r!-,r!-) #just a monomer
-
-end observables
+begin seed species
+	S(b~0,Y1~U,Y2~U,Y3~U)	S_T
+	E(b)	E_T
+	F(b)	F_T
+	Z(b)	Z_T
+end seed species
 
 begin reaction rules
-# Ligand addition
-R(r) + L(l,l) <-> R(r!1).L(l!1,l) kp1,km1
 
-# Chain elongation
-R(r) + L(l,l!2) <-> R(r!1).L(l!1,l!2) kp2,km2
+# ITAM 1
+E(b) + S(b~0,Y1~U,Y2~U,Y3~U) <-> E(b!1).S(b~1,Y1~U!1,Y2~U,Y3~U) ek_on, ek_off
+E(b!1).S(b~1,Y1~U!1,Y2~U,Y3~U) -> E(b)+S(b~0,Y1~P,Y2~U,Y3~U) ek_cat
 
-# Ring closure
-R(r).L(l) <-> R(r!1).L(l!1) kp3,km3
+F(b) + S(b~0,Y1~P,Y2~U,Y3~U) <-> F(b!1).S(b~1,Y1~P!1,Y2~U,Y3~U) fk_on, fk_off
+F(b!1).S(b~1,Y1~P!1,Y2~U,Y3~U) ->F(b)+S(b~0,Y1~U,Y2~U,Y3~U) fk_cat
 
+E(b) + S(b~0,Y1~P,Y2~U,Y3~U) <-> E(b!1).S(b~1,Y1~P!1,Y2~U,Y3~U) ek_on, ek_off
+E(b!1).S(b~1,Y1~P!1,Y2~U,Y3~U) -> E(b)+S(b~0,Y1~2P,Y2~U,Y3~U) ek_cat
+
+F(b) + S(b~0,Y1~2P,Y2~U,Y3~U) <-> F(b!1).S(b~1,Y1~2P!1,Y2~U,Y3~U) fk_on, fk_off
+F(b!1).S(b~1,Y1~2P!1,Y2~U,Y3~U) ->F(b)+S(b~0,Y1~P,Y2~U,Y3~U) fk_cat
+
+# ITAM 2
+E(b) + S(b~0,Y2~U,Y1~2P,Y3~U) <-> E(b!1).S(b~1,Y2~U!1,Y1~2P,Y3~U) ek_on, ek_off
+E(b!1).S(b~1,Y2~U!1,Y1~2P,Y3~U) -> E(b)+S(b~0,Y2~P,Y1~2P,Y3~U) ek_cat
+
+F(b) + S(b~0,Y2~P,Y1~2P,Y3~U) <-> F(b!1).S(b~1,Y2~P!1,Y1~2P,Y3~U) fk_on, fk_off
+F(b!1).S(b~1,Y2~P!1,Y1~2P,Y3~U) ->F(b)+S(b~0,Y2~U,Y1~2P,Y3~U) fk_cat
+
+E(b) + S(b~0,Y2~P,Y1~2P,Y3~U) <-> E(b!1).S(b~1,Y2~P!1,Y1~2P,Y3~U) ek_on, ek_off
+E(b!1).S(b~1,Y2~P!1,Y1~2P,Y3~U) -> E(b)+S(b~0,Y2~2P,Y1~2P,Y3~U) ek_cat
+
+F(b) + S(b~0,Y2~2P,Y1~2P,Y3~U) <-> F(b!1).S(b~1,Y2~2P!1,Y1~2P,Y3~U) fk_on, fk_off
+F(b!1).S(b~1,Y2~2P!1,Y1~2P,Y3~U) ->F(b)+S(b~0,Y2~P,Y1~2P,Y3~U) fk_cat
+
+# ITAM 3
+E(b) + S(b~0,Y3~U,Y2~2P,Y1~2P) <-> E(b!1).S(b~1,Y3~U!1,Y2~2P,Y1~2P) ek_on, ek_off
+E(b!1).S(b~1,Y3~U!1,Y2~2P,Y1~2P) -> E(b)+S(b~0,Y3~P,Y2~2P,Y1~2P) ek_cat
+
+F(b) + S(b~0,Y3~P,Y2~2P,Y1~2P) <-> F(b!1).S(b~1,Y3~P!1,Y2~2P,Y1~2P) fk_on, fk_off
+F(b!1).S(b~1,Y3~P!1,Y2~2P,Y1~2P) ->F(b)+S(b~0,Y3~U,Y2~2P,Y1~2P) fk_cat
+
+E(b) + S(b~0,Y3~P,Y2~2P,Y1~2P) <-> E(b!1).S(b~1,Y3~P!1,Y2~2P,Y1~2P) ek_on, ek_off
+E(b!1).S(b~1,Y3~P!1,Y2~2P,Y1~2P) -> E(b)+S(b~0,Y3~2P,Y2~2P,Y1~2P) ek_cat
+
+F(b) + S(b~0,Y3~2P,Y2~2P,Y1~2P) <-> F(b!1).S(b~1,Y3~2P!1,Y2~2P,Y1~2P) fk_on, fk_off
+F(b!1).S(b~1,Y3~2P!1,Y2~2P,Y1~2P) ->F(b)+S(b~0,Y3~P,Y2~2P,Y1~2P) fk_cat
+
+# ZAP70 binding
+Z(b) + S(Y1~2P) <-> Z(b!1).S(Y1~2P!1)	zap_on, zap_off1
+Z(b) + S(Y2~2P) <-> Z(b!1).S(Y2~2P!1)	zap_on, zap_off2
+Z(b) + S(Y3~2P) <-> Z(b!1).S(Y3~2P!1)	zap_on, zap_off3
 end reaction rules
 
-generate_network({overwrite=>1,check_iso=>0,max_stoich=>{R=>10,L=>10}});
+begin observables
+	Molecules Bound_ZAP	Z(b!+)
+	Molecules Szero S(b~?,Y1~U!?,Y2~U!?,Y3~U!?)
+	Molecules Sone S(b~?,Y1~P!?,Y2~U!?,Y3~U!?)
+	Molecules Stwo S(b~?,Y1~2P!?,Y2~U!?,Y3~U!?)
+	Molecules Sthree S(b~?,Y1~2P!?,Y2~P!?,Y3~U!?)
+	Molecules Sfour S(b~?,Y1~2P!?,Y2~2P!?,Y3~U!?)
+	Molecules Sfive S(b~?,Y1~2P!?,Y2~2P!?,Y3~P!?)
+	Molecules Ssix S(b~?,Y1~2P!?,Y2~2P!?,Y3~2P!?)
+end observables
+
+generate_network({overwrite=>1});
+writeMfile({});
+
 
 `;
 //get major elements
