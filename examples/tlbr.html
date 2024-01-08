@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>BNGL Visualizer</title>
+    <link rel="stylesheet" type="text/css" href="../public/styleblack.css"/>
+</head>
+<body>
+<p><h1>BioNetGenLanguage (BNGL) code visualizer</h1></p>
+<table cellpadding="30">
+ <tr>
+     </tr>
+    <tr>
+    <td id="canvas-text">
+      <a href=../index.html><b>BNGL VISUALIZER</b></a>
+    </td>
+    <td id="canvas-text">
+      <a href=../bngl.html>BNGL overview</a>
+    </td>
+    <td id="canvas-text">
+      <a href=../viz.html>Visualization conventions</a>
+    </td>
+    <td id="canvas-text">
+      <a href=../examples.html>Examples</a>
+    </td>
+    <td id="canvas-text">
+      <a href=../about.html>About</a>
+    </td>
+    <td>
+      <button id="dark-button" onclick="htmlInterface.switchDarkMode();">Toggle Light/Dark Mode</button>
+    </td>
+  </tr>
+</table>
+    <hr>
+    <h3>A model of trivalent ligand - bivalent receptor, used for testing of rule-based models in 
+      <a href="https://pubmed.ncbi.nlm.nih.gov/19213740/">Colvin et al., 2009</a> and 
+      <a href="https://pubmed.ncbi.nlm.nih.gov/24314076/">Falkenberg et al., 2013</h3>
+
+<div id="canvas-container"></div>
+<div id="table-container"></div>
+<script src="../public/model-graphics.js"></script>
+<script src="../public/bngl-extractor.js"></script>
+<script src="../public/html-interface.js"></script>
+<script>
+//template bngl text
+const bngl = `
+# Trivalent ligand - bivalent receptor
+# Used to perform scaling and validation tests
+# No rings
+# Colvin et al., (2009) Bioinformatics
+
+begin parameters
+t_end		1000
+n_steps     	1000
+
+Fx		1.0
+
+Lig_tot		4200/Fx
+Rec_tot		300/Fx
+kp1		Fx*3.0e-07
+km1		0.01
+kp2		Fx*3.0e-03
+km2		0.01
+end parameters
+
+begin molecule types
+L(r,r,r)
+R(l,l)
+end molecule types
+
+begin species
+L(r,r,r)	Lig_tot
+R(l,l)		Rec_tot
+end species
+
+begin reaction rules
+L(r,r,r) + R(l) <-> L(r!1,r,r).R(l!1) kp1,km1
+L(r,r,r!+) + R(l) <-> L(r!1,r,r!+).R(l!1) kp2,km2
+L(r,r!+,r!+) + R(l) <-> L(r!1,r!+,r!+).R(l!1) kp2,km2
+end reaction rules
+
+begin observables
+Species Ligfree   L(r,r,r)
+Species Ligbnd1   L(r!+,r,r)
+Species Ligbnd2   L(r!+,r!+,r)
+Molecules Ligbnd3   L(r!+,r!+,r!+)
+end observables
+simulate_rm({t_end=>t_end,n_steps=>n_steps});
+
+
+`;
+//get major elements
+const canvContain = document.getElementById("canvas-container");
+const tableContain = document.getElementById("table-container");
+const fileInput = document.getElementById("bngl-file-input");
+const body = document.body;
+
+//connect interface
+var htmlInterface = new HTMLInterface(body, canvContain, tableContain, fileInput);
+
+//templating then bngl file
+var blob = new Blob([bngl], {type: "text/plain"});
+let reader = new FileReader();
+reader.onload = () => {htmlInterface.visualize(reader.result);};
+reader.readAsText(blob);
+
+//function to reset input element value when it is clicked
+//this is needed because chrome doesn't trigger onchange if filename is same
+function inputClick() {
+  fileInput.value = "";
+}
+</script>
+</body>
+</html>
