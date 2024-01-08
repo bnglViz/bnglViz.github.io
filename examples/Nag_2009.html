@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>BNGL Visualizer</title>
+    <link rel="stylesheet" type="text/css" href="../public/styleblack.css"/>
+</head>
+<body>
+<p><h1>BioNetGenLanguage (BNGL) code visualizer</h1></p>
+<table cellpadding="30">
+ <tr>
+     </tr>
+    <tr>
+    <td id="canvas-text">
+      <a href=../index.html><b>BNGL VISUALIZER</b></a>
+    </td>
+    <td id="canvas-text">
+      <a href=../bngl.html>BNGL overview</a>
+    </td>
+    <td id="canvas-text">
+      <a href=../viz.html>Visualization conventions</a>
+    </td>
+    <td id="canvas-text">
+      <a href=../examples.html>Examples</a>
+    </td>
+    <td id="canvas-text">
+      <a href=../about.html>About</a>
+    </td>
+    <td>
+      <button id="dark-button" onclick="htmlInterface.switchDarkMode();">Toggle Light/Dark Mode</button>
+    </td>
+  </tr>
+</table>
+    <hr>
+    <h3>A model of aggregation of membrane proteins by cytosolic LAT-Grb2-SOS1 system
+(<a href="https://pubmed.ncbi.nlm.nih.gov/19348745/">Nag et al., 2009</a>)</h3>
+
+<div id="canvas-container"></div>
+<div id="table-container"></div>
+<script src="../public/model-graphics.js"></script>
+<script src="../public/bngl-extractor.js"></script>
+<script src="../public/html-interface.js"></script>
+<script>
+//template bngl text
+const bngl = `
+# Nag, Monine, Faeder, Goldstein 2009
+# Cross-linking of LAT in LAT-Grb2-SOS1 system
+
+
+begin parameters
+
+Fx    100
+
+kpLAT 1.000000e-03
+kpsLAT  1.000000e-04
+kmLAT 1.000000e+02
+kcatU 1.000000e+03
+kcatP 1.000000e+05
+
+Lig_tot         1000000
+Rec_tot         400000
+Lyn_tot         28000
+Syk_tot         400000
+
+ kp1  1.33e-10
+ km1  0
+ kp2  2.5e-4
+ km2  0
+ kpL  5e-5
+ kmL  20
+kpLs  5e-5 
+kmLs  0.12
+ kpS  6e-5
+ kmS  0.13
+kpSs  6e-5
+kmSs  0.13
+ pLb  30
+pLbs  100
+ pLg    1
+pLgs    3
+ pLS   30
+pLSs  100
+ pSS  100
+pSSs  200 
+  dm   20
+  dc   20
+
+# parameters of LAT-GRB-SOS interactions
+Lat_tot   100000
+Grb_tot   750000
+Sos_tot   375000
+kglp    4.86568e-06
+kglm    0.31 
+kxglp     1.08975e-04
+kxglm     kglm 
+kgsp    4.37911e-07
+kgsm    0.034412
+sigma     0.5
+kxgsp     sigma*kgsp
+kxgsm     kgsm
+kxgspsr   sigma*kgsp*kxglp/kglp
+kxgsmsr   kgsm
+end parameters
+
+begin species
+Lig(l,l)      Lig_tot/Fx
+Lyn(U,SH2)      Lyn_tot/Fx
+Syk(tSH2,l~Y,a~Y,s) Syk_tot/Fx
+Rec(a,b~Y,g~Y)    Rec_tot/Fx
+LAT(s~Y)      Lat_tot/Fx
+Grb(SH2,SH3)    Grb_tot/Fx
+Sos(g,g)      Sos_tot/Fx
+end species
+
+begin reaction rules
+# ********************************************************************************************
+# ****** Basic FceRI model *******************************************************************
+# ********************************************************************************************
+Rec(a) + Lig(l,l) <-> Rec(a!1).Lig(l!1,l) Fx*kp1, km1
+Rec(a) + Lig(l,l!+) <-> Rec(a!1).Lig(l!1,l!+) Fx*kp2,km2
+Rec(b~Y) + Lyn(U,SH2) <-> Rec(b~Y!1).Lyn(U!1,SH2) Fx*kpL, kmL
+Rec(b~pY) + Lyn(U,SH2) <-> Rec(b~pY!1).Lyn(U,SH2!1) Fx*kpLs, kmLs
+Rec(g~pY) + Syk(tSH2) <-> Rec(g~pY!1).Syk(tSH2!1) Fx*kpS, kmS
+Lig(l!1,l!2).Lyn(U!3,SH2).Rec(a!2,b~Y!3).Rec(a!1,b~Y) -> \
+    Lig(l!1,l!2).Lyn(U!3,SH2).Rec(a!2,b~Y!3).Rec(a!1,b~pY) pLb
+Lig(l!1,l!2).Lyn(U!3,SH2).Rec(a!2,b~Y!3).Rec(a!1,g~pY!4).Syk(tSH2!4,l~Y) -> \
+    Lig(l!1,l!2).Lyn(U!3,SH2).Rec(a!2,b~Y!3).Rec(a!1,g~pY!4).Syk(tSH2!4,l~pY) pLS
+Lig(l!1,l!2).Lyn(U,SH2!3).Rec(a!2,b~pY!3).Rec(a!1,b~Y) -> \
+    Lig(l!1,l!2).Lyn(U,SH2!3).Rec(a!2,b~pY!3).Rec(a!1,b~pY) pLbs
+Lig(l!1,l!2).Lyn(U,SH2!3).Rec(a!2,b~pY!3).Rec(a!1,g~pY!4).Syk(tSH2!4,l~Y) -> \
+    Lig(l!1,l!2).Lyn(U,SH2!3).Rec(a!2,b~pY!3).Rec(a!1,g~pY!4).Syk(tSH2!4,l~pY) pLSs
+Lig(l!1,l!2).Lyn(U!3,SH2).Rec(a!2,b~Y!3).Rec(a!1,g~Y) -> \
+    Lig(l!1,l!2).Lyn(U!3,SH2).Rec(a!2,b~Y!3).Rec(a!1,g~pY) pLg
+Lig(l!1,l!2).Syk(tSH2!3,a~Y).Rec(a!2,g~pY!3).Rec(a!1,g~pY!4).Syk(tSH2!4,a~Y) -> \
+    Lig(l!1,l!2).Syk(tSH2!3,a~Y).Rec(a!2,g~pY!3).Rec(a!1,g~pY!4).Syk(tSH2!4,a~pY) pSS
+Lig(l!1,l!2).Lyn(U,SH2!3).Rec(a!2,b~pY!3).Rec(a!1,g~Y) -> \
+    Lig(l!1,l!2).Lyn(U,SH2!3).Rec(a!2,b~pY!3).Rec(a!1,g~pY) pLgs
+Lig(l!1,l!2).Syk(tSH2!3,a~pY).Rec(a!2,g~pY!3).Rec(a!1,g~pY!4).Syk(tSH2!4,a~Y) -> \
+    Lig(l!1,l!2).Syk(tSH2!3,a~pY).Rec(a!2,g~pY!3).Rec(a!1,g~pY!4).Syk(tSH2!4,a~pY) pSSs
+Rec(b~pY)-> Rec(b~Y) dm
+Rec(g~pY)-> Rec(g~Y) dm
+Syk(tSH2!+,l~pY)-> Syk(tSH2!+,l~Y) dm
+Syk(tSH2!+,a~pY)-> Syk(tSH2!+,a~Y) dm
+Syk(tSH2,l~pY)-> Syk(tSH2,l~Y) dc
+Syk(tSH2,a~pY)-> Syk(tSH2,a~Y) dc
+# ********************************************************************************************
+# ****** Phosphorylation of LAT by Syk *******************************************************
+# ********************************************************************************************
+Rec(a,g~pY!1).Syk(tSH2!1,s) + LAT(s~Y) -> Rec(a,g~pY!1).Syk(tSH2!1,s!5).LAT(s~Y!5) Fx*kpLAT
+
+Lig(l,l!2).Rec(a!2,g~pY!1).Syk(tSH2!1,s) + LAT(s~Y) -> \
+    Lig(l,l!2).Rec(a!2,g~pY!1).Syk(tSH2!1,s!5).LAT(s~Y!5) Fx*kpLAT
+
+Rec(a!3,g).Lig(l!3,l!2).Rec(a!2,g~pY!1).Syk(tSH2!1,s) + LAT(s~Y) -> \
+    Rec(a!3,g).Lig(l!3,l!2).Rec(a!2,g~pY!1).Syk(tSH2!1,s!5).LAT(s~Y!5) Fx*kpsLAT
+
+Syk(tSH2!6,s).Rec(a!3,g~pY!6).Lig(l!3,l!2).Rec(a!2,g~pY!1).Syk(tSH2!1,s) + LAT(s~Y) -> \
+    Syk(tSH2!6,s).Rec(a!3,g~pY!6).Lig(l!3,l!2).Rec(a!2,g~pY!1).Syk(tSH2!1,s!7).LAT(s~Y!7) Fx*2*kpsLAT
+
+LAT(s~Y!9).Syk(tSH2!6,s!9).Rec(a!3,g~pY!6).Lig(l!3,l!2).Rec(a!2,g~pY!1).Syk(tSH2!1,s) + LAT(s~Y) -> \
+  LAT(s~Y!9).Syk(tSH2!6,s!9).Rec(a!3,g~pY!6).Lig(l!3,l!2).Rec(a!2,g~pY!1).Syk(tSH2!1,s!7).LAT(s~Y!7) Fx*kpsLAT
+
+Syk(s!5).LAT(s~Y!5) -> Syk(s) + LAT(s~Y) kmLAT
+
+Syk(tSH2!+,a~Y,s!5).LAT(s~Y!5) -> Syk(tSH2!+,a~Y,s) + LAT(s~pY) kcatU
+
+Syk(tSH2!+,a~pY,s!5).LAT(s~Y!5) -> Syk(tSH2!+,a~pY,s) + LAT(s~pY) kcatP
+# ********************************************************************************************
+# ******  LAT + GRB + SOS interactions *******************************************************
+# ********************************************************************************************
+Grb(SH2,SH3) + Sos(g,g) <-> Grb(SH2,SH3!1).Sos(g!1,g)   Fx*kgsp, kgsm
+
+Grb(SH2,SH3) + Sos(g,g!1).Grb(SH2,SH3!1) <-> Grb(SH2,SH3!2).Sos(g!2,g!1).Grb(SH2,SH3!1)   Fx*kxgsp, kxgsm
+
+Grb(SH2,SH3) + Sos(g,g!1).Grb(SH2!+,SH3!1) <-> Grb(SH2,SH3!2).Sos(g!2,g!1).Grb(SH2!+,SH3!1)   Fx*kxgsp,kxgsm
+
+Grb(SH2!+,SH3) + Sos(g,g) <-> Grb(SH2!+,SH3!1).Sos(g!1,g)   Fx*kgsp, kgsm
+
+Grb(SH2!+,SH3) + Sos(g,g!1).Grb(SH2,SH3!1) <-> Grb(SH2!+,SH3!2).Sos(g!2,g!1).Grb(SH2,SH3!1)   Fx*kxgsp, kxgsm
+
+Grb(SH2!+,SH3) + Sos(g,g!1).Grb(SH2!+,SH3!1) <-> \
+    Grb(SH2!+,SH3!2).Sos(g!2,g!1).Grb(SH2!+,SH3!1)   Fx*kxgspsr, kxgsmsr
+
+LAT(s~pY) + Grb(SH2,SH3) <-> LAT(s~pY!1).Grb(SH2!1,SH3)  Fx*kglp, kglm
+
+LAT(s~pY) + Grb(SH2,SH3!1).Sos(g!1,g) <-> LAT(s~pY!2).Grb(SH2!2,SH3!1).Sos(g!1,g)  Fx*kglp, kglm
+
+LAT(s~pY) + Grb(SH2,SH3!1).Sos(g!1,g!2).Grb(SH2,SH3!2) <-> \
+    LAT(s~pY!3).Grb(SH2!3,SH3!1).Sos(g!1,g!2).Grb(SH2,SH3!2)  Fx*kglp, kglm
+
+LAT(s~pY) + Grb(SH2,SH3!1).Sos(g!1,g!2).Grb(SH2!3,SH3!2).LAT(s~pY!3) <-> \
+    LAT(s~pY!4).Grb(SH2!4,SH3!1).Sos(g!1,g!2).Grb(SH2!3,SH3!2).LAT(s~pY!3) Fx*kxglp, kxglm
+# ********************************************************************************************
+# ********************************************************************************************
+end reaction rules
+
+begin observables
+#Molecules  RSu_and_LRSu  Rec(a,g~pY!1).Syk(tSH2!1,a~Y,s) Lig(l,l!2).Rec(a!2,g~pY!1).Syk(tSH2!1,a~Y,s)
+#Molecules  RSp_and_LRSp  Rec(a,g~pY!1).Syk(tSH2!1,a~pY,s) Lig(l,l!2).Rec(a!2,g~pY!1).Syk(tSH2!1,a~pY,s)
+#Molecules  R_L_R_Su    Rec(a!3,g).Lig(l!3,l!2).Rec(a!2,g~pY!1).Syk(tSH2!1,a~Y,s)
+#Molecules  R_L_R_Sp    Rec(a!3,g).Lig(l!3,l!2).Rec(a!2,g~pY!1).Syk(tSH2!1,a~pY,s)
+#Molecules  uS_R_L_R_Su   Syk(tSH2!4,a~Y,s).Rec(a!3,g~pY!4).Lig(l!3,l!2).Rec(a!2,g~pY!1).Syk(tSH2!1,a~Y,s)
+#Molecules  pS_R_L_R_Sp   Syk(tSH2!4,a~pY,s).Rec(a!3,g~pY!4).Lig(l!3,l!2).Rec(a!2,g~pY!1).Syk(tSH2!1,a~pY,s)
+#Molecules  uS_R_L_R_Sp   Syk(tSH2!4,a~Y,s).Rec(a!3,g~pY!4).Lig(l!3,l!2).Rec(a!2,g~pY!1).Syk(tSH2!1,a~pY,s)
+
+Species   FreeUnLAT   LAT(s~Y)
+Species   BoundUnLAT    LAT(s~Y!+)
+Species   FreePhosLAT   LAT(s~pY)
+Species   Grbfree     Grb(SH2,SH3)
+Species   Sosfree     Sos(g,g)
+end observables
+
+writeXML()
+#generate_network({overwrite=>1});
+#simulate_ode({t_end=>200,n_steps=>1000,atol=>1e-8,rtol=>1e-8});
+#simulate_ps({t_end=>200,n_steps=>1000});
+
+
+`;
+//get major elements
+const canvContain = document.getElementById("canvas-container");
+const tableContain = document.getElementById("table-container");
+const fileInput = document.getElementById("bngl-file-input");
+const body = document.body;
+
+//connect interface
+var htmlInterface = new HTMLInterface(body, canvContain, tableContain, fileInput);
+
+//templating then bngl file
+var blob = new Blob([bngl], {type: "text/plain"});
+let reader = new FileReader();
+reader.onload = () => {htmlInterface.visualize(reader.result);};
+reader.readAsText(blob);
+
+//function to reset input element value when it is clicked
+//this is needed because chrome doesn't trigger onchange if filename is same
+function inputClick() {
+  fileInput.value = "";
+}
+</script>
+</body>
+</html>
