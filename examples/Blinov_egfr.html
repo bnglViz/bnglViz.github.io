@@ -31,9 +31,8 @@
   </tr>
 </table>
     <hr>
-    <h3>A model of bivalent ligand - bivalent receptor, used for testing of rule-based models in 
-      <a href="https://pubmed.ncbi.nlm.nih.gov/19213740/">Colvin et al., 2009</a> and 
-      <a href="https://pubmed.ncbi.nlm.nih.gov/24314076/">Falkenberg et al., 2013</h3>
+    <h3>A compartmental model of EGFR signaling, used as a tutorial in 
+(<a href="https://pubmed.ncbi.nlm.nih.gov/28978431/">Blinov et al., 2017</a>)</h3>
 
 <div id="canvas-container"></div>
 <div id="table-container"></div>
@@ -43,46 +42,67 @@
 <script>
 //template bngl text
 const bngl = `
+begin model
+
+begin compartments
+Cyt	3	1
+EC	3	1
+M	2	1
+end compartments
+
 begin parameters
- kp1 1
- km1 1
- kp2 1
- km2 1
- kp3 1
- km3 1
- R0  3e5
- L0  3e5
 end parameters
 
-begin species
-  R(r,r) R0
-  L(l,l) L0
-end species
+begin molecule types
+EGFR(ecd,tmd,y1068~u~p,y1173~u~p)
+EGF(rb)
+Grb2(sh2,sos)
+Shc(sh3,Y773~p~u)
+end molecule types
+
+begin anchors
+EGFR(M)
+EGF(M,EC)
+end anchors
+
+begin seed species
+1 @EC:EGF(rb) 680.0
+2 @M:EGFR(ecd,tmd,y1068~u,y1173~u) 602.0
+3 @Cyt:Shc(sh3,Y773~u) 150.0
+end seed species
 
 begin observables
-Molecules R R()
-Molecules L L()
-Molecules R_once R(r!+)         # must be connected at least once
-Molecules R_middle R(r!+,r!+)  # middle of a chain, 
-Molecules R_end_1 R(r!-)   # end of a chain
-Molecules R_end_2 R(r)    # end of a chain
-Molecules Monomer R(r!-,r!-) #just a monomer
-
+Molecules EGFR_tot @M:EGFR()
+Molecules EGF_EC @EC:EGF()
+Molecules Shc_cyt @Cyt:Shc()
+Molecules Dimers @M:EGFR(tmd!+)
+Molecules Y1068_phosp @M:EGFR(y1068~p!?)
+Molecules Y1173_phosp @M:EGFR(y1173~p!?)
+Molecules Total_phosp @M:EGFR(y1068~p!?) @M:EGFR(y1173~p!?)
+Molecules ShcP_Cyt @Cyt:Shc(Y773~p!?)
 end observables
 
+begin functions
+end functions
+
 begin reaction rules
-# Ligand addition
-R(r) + L(l,l) <-> R(r!1).L(l!1,l) kp1,km1
-
-# Chain elongation
-R(r) + L(l,l!2) <-> R(r!1).L(l!1,l!2) kp2,km2
-
-# Ring closure
-R(r).L(l) <-> R(r!1).L(l!1) kp3,km3
-
+r00_lig_bind:	@EC:EGF(rb) + @M:EGFR(ecd,tmd) <-> @M:EGF(rb!1).EGFR(ecd!1,tmd)		0.003, 0.06
+r01_dimer:	@M:EGFR(ecd!+,tmd)%1 + @M:EGFR(ecd!+,tmd)%2 <-> @M:EGFR(ecd!+,tmd!1)%1.EGFR(ecd!+,tmd!1)%2		0.001, 0.01
+r04_dephosp:	@M:EGFR(y1173~p) -> @M:EGFR(y1173~u)		4.505
+r03_phosp:	@M:EGFR(tmd!+,y1068~u) -> @M:EGFR(tmd!+,y1068~p)		0.01
+r02_phosp:	@M:EGFR(tmd!+,y1173~u) -> @M:EGFR(tmd!+,y1173~p)		0.01
+r05_deposp:	@M:EGFR(y1068~p) -> @M:EGFR(y1068~u)		4.505
+r08_shcU_bind:	@M:EGFR(y1173~p) + @Cyt:Shc(sh3,Y773~u) <-> @M:EGFR(y1173~p!1).Shc(sh3!1,Y773~u)		0.045, 0.6
+r09_shc_phosp:	@M:EGFR(y1173~p!1).Shc(sh3!1,Y773~u) <-> @M:EGFR(y1173~p!1).Shc(sh3!1,Y773~p)		3.0, 0.03
+r14_shc_dephosp:	@Cyt:Shc(sh3,Y773~p) -> @Cyt:Shc(sh3,Y773~u)		0.005
+r08_shcP_bind:	@M:EGFR(y1173~p) + @Cyt:Shc(sh3,Y773~p) <-> @M:EGFR(y1173~p!1).Shc(sh3!1,Y773~p)		4.5E-4, 0.3
 end reaction rules
 
-generate_network({overwrite=>1,check_iso=>0,max_stoich=>{R=>10,L=>10}});
+end model
+
+simulate_nf({t_end=>120.0,n_steps=>240})
+
+
 
 `;
 //get major elements
