@@ -31,9 +31,8 @@
   </tr>
 </table>
     <hr>
-    <h3>A model of bivalent ligand - bivalent receptor, used for testing of rule-based models in 
-      <a href="https://pubmed.ncbi.nlm.nih.gov/19213740/">Colvin et al., 2009</a> and 
-      <a href="https://pubmed.ncbi.nlm.nih.gov/24314076/">Falkenberg et al., 2013</h3>
+    <h3>A compartmental model of EGFR signaling, used as a tutorial in 
+(<a href="https://pubmed.ncbi.nlm.nih.gov/28978431/">Blinov et al., 2017</a>)</h3>
 
 <div id="canvas-container"></div>
 <div id="table-container"></div>
@@ -43,46 +42,62 @@
 <script>
 //template bngl text
 const bngl = `
+begin model
+
+begin compartments
+nuc	3	1
+cyt	3	1
+EC	3	1
+pm	2	1
+nm	2	1
+end compartments
+
 begin parameters
- kp1 1
- km1 1
- kp2 1
- km2 1
- kp3 1
- km3 1
- R0  3e5
- L0  3e5
 end parameters
 
-begin species
-  R(r,r) R0
-  L(l,l) L0
-end species
+begin molecule types
+Ran(cargo)
+C(site,Y1~u~p,Y2~u~p,Y3~u~p)
+RCC1(site)
+end molecule types
+
+begin anchors
+RCC1(nuc)
+end anchors
+
+begin seed species
+1 @nuc:Ran(cargo!1).C(site!1,Y1~u,Y2~u,Y3~u) 1000.0
+2 @nuc:RCC1(site) 1000.0
+end seed species
 
 begin observables
-Molecules R R()
-Molecules L L()
-Molecules R_once R(r!+)         # must be connected at least once
-Molecules R_middle R(r!+,r!+)  # middle of a chain, 
-Molecules R_end_1 R(r!-)   # end of a chain
-Molecules R_end_2 R(r)    # end of a chain
-Molecules Monomer R(r!-,r!-) #just a monomer
-
+Molecules Ran_cyt @cyt:Ran()
+Molecules Cargo_cyt @cyt:C()
+Molecules RCC1_nuc @nuc:RCC1()
+Molecules Cargo_phosp_cyt_total @nuc:C(Y1~p!?) @nuc:C(Y2~p!?) @nuc:C(Y3~p!?)
+Molecules Cargo_nuc @nuc:C()
+Molecules Cargo_phosp_cyt @cyt:C(Y1~p!?,Y2~p!?,Y3~p!?)
+Molecules Ran_bound_cyt @cyt:Ran(cargo!+)
 end observables
 
+begin functions
+end functions
+
 begin reaction rules
-# Ligand addition
-R(r) + L(l,l) <-> R(r!1).L(l!1,l) kp1,km1
-
-# Chain elongation
-R(r) + L(l,l!2) <-> R(r!1).L(l!1,l!2) kp2,km2
-
-# Ring closure
-R(r).L(l) <-> R(r!1).L(l!1) kp3,km3
-
+Transport:	@nuc:Ran(cargo!+) <-> @cyt:Ran(cargo!+)		2.0 * 602.0, 0.0
+Ran_C_bind_cyt:	@cyt:Ran(cargo!1).C(site!1) <-> @cyt:Ran(cargo) + @cyt:C(site)		1.0, 100.0
+C_p1:	@cyt:C(Y3~u!?) <-> @cyt:C(Y3~p!?)		10.0, 1.0
+C_p2:	@cyt:C(Y2~u!?) <-> @cyt:C(Y2~p!?)		10.0, 1.0
+C_p3:	@cyt:C(Y1~u!?) <-> @cyt:C(Y1~p!?)		10.0, 1.0
+Ran_RCC1_bind:	@nuc:Ran(cargo) + @nuc:RCC1(site) <-> @nuc:Ran(cargo!1).RCC1(site!1)		1.0, 100.0
+Ran_C_bind_nuc:	@nuc:Ran(cargo!1).C(site!1) <-> @nuc:Ran(cargo) + @nuc:C(site)		1.0, 100.0
 end reaction rules
 
-generate_network({overwrite=>1,check_iso=>0,max_stoich=>{R=>10,L=>10}});
+end model
+
+simulate_nf({t_end=>10.0,n_steps=>200})
+
+
 
 `;
 //get major elements
