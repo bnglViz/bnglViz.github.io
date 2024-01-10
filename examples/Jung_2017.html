@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>BNGL Visualizer</title>
+    <link rel="stylesheet" type="text/css" href="../public/styleblack.css"/>
+</head>
+<body>
+<p><h1>BioNetGenLanguage (BNGL) code visualizer</h1></p>
+<table cellpadding="30">
+ <tr>
+     </tr>
+    <tr>
+    <td id="canvas-text">
+      <a href=../index.html><b>BNGL VISUALIZER</b></a>
+    </td>
+    <td id="canvas-text">
+      <a href=../bngl.html>BNGL overview</a>
+    </td>
+    <td id="canvas-text">
+      <a href=../viz.html>Visualization conventions</a>
+    </td>
+    <td id="canvas-text">
+      <a href=../examples.html>Examples</a>
+    </td>
+    <td id="canvas-text">
+      <a href=../about.html>About</a>
+    </td>
+    <td>
+      <button id="dark-button" onclick="htmlInterface.switchDarkMode();">Toggle Light/Dark Mode</button>
+    </td>
+  </tr>
+</table>
+    <hr>
+    <h3>A model of muscarinic receptor regulating extracellular signaling
+(<a href="https://pubmed.ncbi.nlm.nih.gov/24324544/">Jung et al., 2017</a>)</h3>
+
+<div id="canvas-container"></div>
+<div id="table-container"></div>
+<script src="../public/model-graphics.js"></script>
+<script src="../public/bngl-extractor.js"></script>
+<script src="../public/html-interface.js"></script>
+<script>
+//template bngl text
+const bngl = `
+begin model
+
+begin compartments
+cytoplasm	3	1
+EC	3	1
+PM	2	1
+end compartments
+
+begin parameters
+start 60.0
+end 540.0
+time 60.0
+on_set 1.0
+converting_factor 0.0
+Dephos_factor 0.1
+end parameters
+
+begin molecule types
+M1R(L,S228~u~p,S273~u~p,Arr,GRK,PP1,CK2)
+Oxo(R)
+Arrestin(RLP,MEK,PP2A)
+MEK(Arr,ERK)
+ERK(MEK,s~u,PP2A,PP1)
+pERK(MEK,s~p,PP2A,PP1)
+Oxo_EC()
+PP2A(Arrestin,ERK)
+probe(site~u)
+phos_probe(Site0~p)
+GRK(RL)
+PP1(RL)
+CK2(RL)
+end molecule types
+
+begin seed species
+1 @EC:Oxo_EC() 100.0
+2 @PM:M1R(L,S228~u,S273~u,Arr,GRK,PP1,CK2) 3500.0
+3 @PM:Oxo(R!1).M1R(L!1,S228~u,S273~u,Arr,GRK,PP1,CK2) 0.0
+4 @cytoplasm:Arrestin(RLP,MEK,PP2A) 15.0
+5 @PM:Oxo(R!1).M1R(L!1,S228~p,S273~p,Arr!2,GRK,PP1,CK2).Arrestin(RLP!2,MEK,PP2A) 0.0
+6 @PM:Oxo(R!1).M1R(L!1,S228~p,S273~p,Arr!2,GRK,PP1,CK2).Arrestin(RLP!2,MEK!3,PP2A).MEK(Arr!3,ERK) 0.0
+7 @cytoplasm:ERK(MEK,s~u,PP2A,PP1) 1.0
+8 @cytoplasm:MEK(Arr,ERK) 1.0
+9 @cytoplasm:PP2A(Arrestin,ERK) 5.0
+10 @cytoplasm:pERK(MEK,s~p,PP2A,PP1) 0.1
+11 @PM:Oxo(R!1).M1R(L!1,S228~p,S273~p,Arr!2,GRK,PP1,CK2).Arrestin(RLP!2,MEK!3,PP2A).MEK(Arr!3,ERK!4).ERK(MEK!4,s~u,PP2A,PP1) 0.0
+12 @PM:Oxo(R!1).M1R(L!1,S228~p,S273~p,Arr!2,GRK,PP1,CK2).Arrestin(RLP!2,MEK!3,PP2A).MEK(Arr!3,ERK!4).pERK(MEK!4,s~p,PP2A,PP1) 0.0
+13 @PM:Oxo(R!1).M1R(L!1,S228~u,S273~u,Arr!2,GRK,PP1,CK2).Arrestin(RLP!2,MEK,PP2A) 0.0
+14 @PM:Oxo(R!1).M1R(L!1,S228~u,S273~u,Arr!2,GRK,PP1,CK2).Arrestin(RLP!2,MEK,PP2A!3).PP2A(Arrestin!3,ERK) 0.0
+15 @cytoplasm:probe(site~u) 5.0
+16 @cytoplasm:phos_probe(Site0~p) 5.0
+17 @PM:GRK(RL) 10.0
+18 @PM:Oxo(R!1).M1R(L!1,S228~u,S273~u,Arr,GRK!2,PP1,CK2).GRK(RL!2) 0.0
+19 @PM:Oxo(R!1).M1R(L!1,S228~p,S273~p,Arr,GRK!2,PP1,CK2).GRK(RL!2) 0.0
+20 @PM:Oxo(R!1).M1R(L!1,S228~p,S273~p,Arr,GRK,PP1,CK2) 0.0
+21 @PM:Oxo(R!1).M1R(L!1,S228~u,S273~u,Arr!2,GRK,PP1,CK2).Arrestin(RLP!2,MEK,PP2A!3).PP2A(Arrestin!3,ERK!4).pERK(MEK,s~p,PP2A!4,PP1) 0.0
+22 @PM:Oxo(R!1).M1R(L!1,S228~u,S273~u,Arr!2,GRK,PP1,CK2).Arrestin(RLP!2,MEK,PP2A!3).PP2A(Arrestin!3,ERK!4).ERK(MEK,s~u,PP2A!4,PP1) 0.0
+23 @PM:Oxo(R!1).M1R(L!1,S228~u,S273~u,Arr,GRK,PP1!2,CK2).PP1(RL!2) 0.0
+24 @cytoplasm:PP1(RL) 1.0
+25 @cytoplasm:CK2(RL) 1.0
+26 @PM:Oxo(R!1).M1R(L!1,S228~u,S273~u,Arr,GRK,PP1,CK2!2).CK2(RL!2) 0.0
+27 @PM:Oxo(R!1).M1R(L!1,S228~p,S273~p,Arr,GRK,PP1,CK2!2).CK2(RL!2) 0.0
+end seed species
+
+begin observables
+Molecules O0_M1R_tot @PM:M1R(L,S228,S273,Arr,GRK,PP1,CK2)
+Molecules O0_Oxo_EC @EC:Oxo(R)
+Molecules O0_Arrestin @cytoplasm:Arrestin(RLP,MEK,PP2A)
+Molecules O0_RLPPA @PM:Oxo(R!1).M1R(L!1,S228~p,S273~p,Arr!2,GRK,PP1,CK2).Arrestin(RLP!2,MEK,PP2A)
+Molecules O0_MEK @cytoplasm:MEK(Arr,ERK)
+Molecules O0_ERK @cytoplasm:ERK(MEK,s~u,PP2A,PP1)
+Molecules O0_pERK @cytoplasm:pERK(MEK,s~p,PP2A,PP1)
+Molecules O0_RLPPA_M @PM:Oxo(R!1).M1R(L!1,S228~p,S273~p,Arr!2,GRK,PP1,CK2).Arrestin(RLP!2,MEK!3,PP2A).MEK(Arr!3,ERK)
+Molecules O0_RLPP @PM:Oxo(R!1).M1R(L!1,S228~p,S273~p,Arr,GRK,PP1,CK2)
+Molecules O0_RLA @PM:Oxo(R!1).M1R(L!1,S228~u,S273~u,Arr!2,GRK,PP1,CK2).Arrestin(RLP!2,MEK,PP2A)
+Molecules O0_Oxo_EC_tot @cytoplasm:Oxo_EC()
+Molecules O0_PP2A_tot @cytoplasm:PP2A(Arrestin,ERK)
+Molecules O0_RLAPP2A @PM:Oxo(R!1).M1R(L!1,S228~u,S273~u,Arr!2,GRK,PP1,CK2).Arrestin(RLP!2,MEK,PP2A!3).PP2A(Arrestin!3,ERK)
+Molecules O0_RLppAME @PM:Oxo(R!1).M1R(L!1,S228~p,S273~p,Arr!2,GRK,PP1,CK2).Arrestin(RLP!2,MEK!3,PP2A).MEK(Arr!3,ERK!4).ERK(MEK!4,s~u)
+Molecules O0_RLppAMpE @PM:Oxo(R!1).M1R(L!1,S228~p,S273~p,Arr!2,GRK,PP1,CK2).Arrestin(RLP!2,MEK!3,PP2A).MEK(Arr!3,ERK!4).pERK(MEK!4,s~p)
+Molecules O0_probe_tot @cytoplasm:probe()
+Molecules O0_phos_probe_tot @cytoplasm:phos_probe()
+Molecules O0_GRK_tot @EC:GRK()
+Molecules O0_PP1_tot @cytoplasm:PP1()
+Molecules O0_CK2_tot @cytoplasm:CK2()
+end observables
+
+begin functions
+washing_agonist()	=	(1.0 * (t > 60.0)) && (t < 540.0)
+off_set()	=	0.0 * (t > 480.0)
+end functions
+
+begin reaction rules
+R_L_PM:	@EC:Oxo(R) + @PM:M1R(L,S228~u,S273~u,Arr,GRK,PP1,CK2) <-> @PM:Oxo(R!1).M1R(L!1,S228~u,S273~u,Arr,GRK,PP1,CK2)		20.0 * washing_agonist, 4.0
+RLppA:	@PM:Oxo(R!1).M1R(L!1,S228~p,S273~p,Arr,GRK,PP1,CK2) + @cytoplasm:Arrestin(RLP,MEK,PP2A) <-> @PM:Oxo(R!1).M1R(L!1,S228~p,S273~p,Arr!2,GRK,PP1,CK2).Arrestin(RLP!2,MEK,PP2A)		1.0 * RLpp_arrestin_binding_factor, 10.0 * RLpp_arrestin_binding_factor
+RLA:	@PM:Oxo(R!1).M1R(L!1,S228~u,S273~u,Arr,GRK,PP1,CK2) + @cytoplasm:Arrestin(RLP,MEK,PP2A) <-> @PM:Oxo(R!1).M1R(L!1,S228~u,S273~u,Arr!2,GRK,PP1,CK2).Arrestin(RLP!2,MEK,PP2A)		0.24 * negative_arrestin_binding, 2.8 * negative_arrestin_binding
+DeP_RLGRK_pp:	@PM:Oxo(R!1).M1R(L!1,S228~p,S273~p,Arr,GRK,PP1,CK2) -> @PM:Oxo(R!1).M1R(L!1,S228~u,S273~u,Arr,GRK,PP1,CK2)		0.5 * dephosphorylation_factor
+RLGRK_pp:	@PM:Oxo(R!1).M1R(L!1,S228~u,S273~u,Arr,GRK!2,PP1,CK2).GRK(RL!2) -> @PM:Oxo(R!1).M1R(L!1,S228~p,S273~p,Arr,GRK!2,PP1,CK2).GRK(RL!2)		0.9 * phos_factor_PP
+RLppAM:	@PM:Oxo(R!1).M1R(L!1,S228~p,S273~p,Arr!2,GRK,PP1,CK2).Arrestin(RLP!2,MEK,PP2A) + @cytoplasm:MEK(Arr,ERK) <-> @PM:Oxo(R!1).M1R(L!1,S228~p,S273~p,Arr!2,GRK,PP1,CK2).Arrestin(RLP!2,MEK!3,PP2A).MEK(Arr!3,ERK)		0.1, 5.0E-5
+RLppAME:	@PM:Oxo(R!1).M1R(L!1,S228~p,S273~p,Arr!2,GRK,PP1,CK2).Arrestin(RLP!2,MEK!3,PP2A).MEK(Arr!3,ERK) + @cytoplasm:ERK(MEK,s~u,PP2A,PP1) <-> @PM:Oxo(R!1).M1R(L!1,S228~p,S273~p,Arr!2,GRK,PP1,CK2).Arrestin(RLP!2,MEK!3,PP2A).MEK(Arr!3,ERK!4).ERK(MEK!4,s~u,PP2A,PP1)		2.0, 2.5
+Oxo_conversion:	@EC:Oxo_EC() -> @EC:Oxo(R)		50.0
+RLAPP2A:	@PM:Oxo(R!1).M1R(L!1,S228~u,S273~u,Arr!2,GRK,PP1,CK2).Arrestin(RLP!2,MEK,PP2A) + @cytoplasm:PP2A(Arrestin,ERK) <-> @PM:Oxo(R!1).M1R(L!1,S228~u,S273~u,Arr!2,GRK,PP1,CK2).Arrestin(RLP!2,MEK,PP2A!3).PP2A(Arrestin!3,ERK)		3.0E-5, 6.0E-5
+DeP_pERK_PP2A:	@PM:Oxo(R!1).M1R(L!1,S228~u,S273~u,Arr!2,GRK,PP1,CK2).Arrestin(RLP!2,MEK,PP2A!3).PP2A(Arrestin!3,ERK) + @cytoplasm:pERK(MEK,s~p,PP2A,PP1) <-> @PM:Oxo(R!1).M1R(L!1,S228~u,S273~u,Arr!2,GRK,PP1,CK2).Arrestin(RLP!2,MEK,PP2A!3).PP2A(Arrestin!3,ERK) + @cytoplasm:ERK(MEK,s~u,PP2A,PP1)		9.0 * PP2A_dephos_factor, 0.0
+RLppAMpE:	@PM:Oxo(R!1).M1R(L!1,S228~p,S273~p,Arr!2,GRK,PP1,CK2).Arrestin(RLP!2,MEK!3,PP2A).MEK(Arr!3,ERK!4).ERK(MEK!4,s~u,PP2A,PP1) <-> @PM:Oxo(R!1).M1R(L!1,S228~p,S273~p,Arr!2,GRK,PP1,CK2).Arrestin(RLP!2,MEK!3,PP2A).MEK(Arr!3,ERK!4).pERK(MEK!4,s~p,PP2A,PP1)		9.0 * MEK_effect, 0.36 * MEK_effect
+RLppAMpE_dissociation:	@PM:Oxo(R!1).M1R(L!1,S228~p,S273~p,Arr!2,GRK,PP1,CK2).Arrestin(RLP!2,MEK!3,PP2A).MEK(Arr!3,ERK!4).pERK(MEK!4,s~p,PP2A,PP1) <-> @PM:Oxo(R!1).M1R(L!1,S228~p,S273~p,Arr!2,GRK,PP1,CK2).Arrestin(RLP!2,MEK!3,PP2A).MEK(Arr!3,ERK) + @cytoplasm:pERK(MEK,s~p,PP2A,PP1)		2.0, 0.0
+RL_GRK:	@PM:Oxo(R!1).M1R(L!1,S228~u,S273~u,Arr,GRK,PP1,CK2) + @PM:GRK(RL) <-> @PM:Oxo(R!1).M1R(L!1,S228~u,S273~u,Arr,GRK!2,PP1,CK2).GRK(RL!2)		4.0 * GRK_binding_factor, 4.0
+RLGRK_pp_dissociation:	@PM:Oxo(R!1).M1R(L!1,S228~p,S273~p,Arr,GRK!2,PP1,CK2).GRK(RL!2) <-> @PM:Oxo(R!1).M1R(L!1,S228~p,S273~p,Arr,GRK,PP1,CK2) + @PM:GRK(RL)		2.0 * RLGRK_pp_dissociation, 2.0 * RLGRK_pp_dissociation
+ERK_balancing:	@cytoplasm:ERK(MEK,s~u,PP2A,PP1) <-> @cytoplasm:pERK(MEK,s~p,PP2A,PP1)		0.1, 1.0
+P_probe:	@cytoplasm:pERK(MEK,s~p,PP2A,PP1) + @cytoplasm:probe(site~u) <-> @cytoplasm:pERK(MEK,s~p,PP2A,PP1) + @cytoplasm:phos_probe(Site0~p)		2.0, 2.0
+RL_CK2_binding:	@PM:Oxo(R!1).M1R(L!1,S228~u,S273~u,Arr,GRK,PP1,CK2) + @cytoplasm:CK2(RL) <-> @PM:Oxo(R!1).M1R(L!1,S228~u,S273~u,Arr,GRK,PP1,CK2!2).CK2(RL!2)		5.0E-5, 1.0
+RL_CK2_phos:	@PM:Oxo(R!1).M1R(L!1,S228~u,S273~u,Arr,GRK,PP1,CK2!2).CK2(RL!2) -> @PM:Oxo(R!1).M1R(L!1,S228~p,S273~p,Arr,GRK,PP1,CK2!2).CK2(RL!2)		0.01
+RL_CK2_phos_dissociation:	@PM:Oxo(R!1).M1R(L!1,S228~p,S273~p,Arr,GRK,PP1,CK2!2).CK2(RL!2) <-> @PM:Oxo(R!1).M1R(L!1,S228~p,S273~p,Arr,GRK,PP1,CK2) + @cytoplasm:CK2(RL)		10.0, 10.0
+end reaction rules
+
+end model
+
+generate_network({max_iter=>6,max_agg=>10,max_stoich=>{M1R=>100,Oxo=>100,Arrestin=>100,MEK=>100,ERK=>100,pERK=>100,Oxo_EC=>100,PP2A=>100,probe=>100,phos_probe=>100,GRK=>100,PP1=>100,CK2=>100},overwrite=>1})
+
+
+
+`;
+//get major elements
+const canvContain = document.getElementById("canvas-container");
+const tableContain = document.getElementById("table-container");
+const fileInput = document.getElementById("bngl-file-input");
+const body = document.body;
+
+//connect interface
+var htmlInterface = new HTMLInterface(body, canvContain, tableContain, fileInput);
+
+//templating then bngl file
+var blob = new Blob([bngl], {type: "text/plain"});
+let reader = new FileReader();
+reader.onload = () => {htmlInterface.visualize(reader.result);};
+reader.readAsText(blob);
+
+//function to reset input element value when it is clicked
+//this is needed because chrome doesn't trigger onchange if filename is same
+function inputClick() {
+  fileInput.value = "";
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>BNGL Visualizer</title>
+    <link rel="stylesheet" type="text/css" href="../public/styleblack.css"/>
+</head>
+<body>
+<p><h1>BioNetGenLanguage (BNGL) code visualizer</h1></p>
+<table cellpadding="30">
+ <tr>
+     </tr>
+    <tr>
+    <td id="canvas-text">
+      <a href=../index.html><b>BNGL VISUALIZER</b></a>
+    </td>
+    <td id="canvas-text">
+      <a href=../bngl.html>BNGL overview</a>
+    </td>
+    <td id="canvas-text">
+      <a href=../viz.html>Visualization conventions</a>
+    </td>
+    <td id="canvas-text">
+      <a href=../examples.html>Examples</a>
+    </td>
+    <td id="canvas-text">
+      <a href=../about.html>About</a>
+    </td>
+    <td>
+      <button id="dark-button" onclick="htmlInterface.switchDarkMode();">Toggle Light/Dark Mode</button>
+    </td>
+  </tr>
+</table>
+    <hr>
+    <h3>A compartmental model of EGFR signaling, used as a tutorial in 
+(<a href="https://pubmed.ncbi.nlm.nih.gov/28978431/">Blinov et al., 2017</a>)</h3>
+
+<div id="canvas-container"></div>
+<div id="table-container"></div>
+<script src="../public/model-graphics.js"></script>
+<script src="../public/bngl-extractor.js"></script>
+<script src="../public/html-interface.js"></script>
+<script>
+//template bngl text
+const bngl = `
+begin model
+
+begin compartments
+Cyt	3	1
+EC	3	1
+M	2	1
+end compartments
+
+begin parameters
+end parameters
+
+begin molecule types
+EGFR(ecd,tmd,y1068~u~p,y1173~u~p)
+EGF(rb)
+Grb2(sh2,sos)
+Shc(sh3,Y773~p~u)
+end molecule types
+
+begin anchors
+EGFR(M)
+EGF(M,EC)
+end anchors
+
+begin seed species
+1 @EC:EGF(rb) 680.0
+2 @M:EGFR(ecd,tmd,y1068~u,y1173~u) 602.0
+3 @Cyt:Shc(sh3,Y773~u) 150.0
+end seed species
+
+begin observables
+Molecules EGFR_tot @M:EGFR()
+Molecules EGF_EC @EC:EGF()
+Molecules Shc_cyt @Cyt:Shc()
+Molecules Dimers @M:EGFR(tmd!+)
+Molecules Y1068_phosp @M:EGFR(y1068~p!?)
+Molecules Y1173_phosp @M:EGFR(y1173~p!?)
+Molecules Total_phosp @M:EGFR(y1068~p!?) @M:EGFR(y1173~p!?)
+Molecules ShcP_Cyt @Cyt:Shc(Y773~p!?)
+end observables
+
+begin functions
+end functions
+
+begin reaction rules
+r00_lig_bind:	@EC:EGF(rb) + @M:EGFR(ecd,tmd) <-> @M:EGF(rb!1).EGFR(ecd!1,tmd)		0.003, 0.06
+r01_dimer:	@M:EGFR(ecd!+,tmd)%1 + @M:EGFR(ecd!+,tmd)%2 <-> @M:EGFR(ecd!+,tmd!1)%1.EGFR(ecd!+,tmd!1)%2		0.001, 0.01
+r04_dephosp:	@M:EGFR(y1173~p) -> @M:EGFR(y1173~u)		4.505
+r03_phosp:	@M:EGFR(tmd!+,y1068~u) -> @M:EGFR(tmd!+,y1068~p)		0.01
+r02_phosp:	@M:EGFR(tmd!+,y1173~u) -> @M:EGFR(tmd!+,y1173~p)		0.01
+r05_deposp:	@M:EGFR(y1068~p) -> @M:EGFR(y1068~u)		4.505
+r08_shcU_bind:	@M:EGFR(y1173~p) + @Cyt:Shc(sh3,Y773~u) <-> @M:EGFR(y1173~p!1).Shc(sh3!1,Y773~u)		0.045, 0.6
+r09_shc_phosp:	@M:EGFR(y1173~p!1).Shc(sh3!1,Y773~u) <-> @M:EGFR(y1173~p!1).Shc(sh3!1,Y773~p)		3.0, 0.03
+r14_shc_dephosp:	@Cyt:Shc(sh3,Y773~p) -> @Cyt:Shc(sh3,Y773~u)		0.005
+r08_shcP_bind:	@M:EGFR(y1173~p) + @Cyt:Shc(sh3,Y773~p) <-> @M:EGFR(y1173~p!1).Shc(sh3!1,Y773~p)		4.5E-4, 0.3
+end reaction rules
+
+end model
+
+simulate_nf({t_end=>120.0,n_steps=>240})
+
+
+
+`;
+//get major elements
+const canvContain = document.getElementById("canvas-container");
+const tableContain = document.getElementById("table-container");
+const fileInput = document.getElementById("bngl-file-input");
+const body = document.body;
+
+//connect interface
+var htmlInterface = new HTMLInterface(body, canvContain, tableContain, fileInput);
+
+//templating then bngl file
+var blob = new Blob([bngl], {type: "text/plain"});
+let reader = new FileReader();
+reader.onload = () => {htmlInterface.visualize(reader.result);};
+reader.readAsText(blob);
+
+//function to reset input element value when it is clicked
+//this is needed because chrome doesn't trigger onchange if filename is same
+function inputClick() {
+  fileInput.value = "";
+}
+</script>
+</body>
+</html>

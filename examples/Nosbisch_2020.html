@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>BNGL Visualizer</title>
+    <link rel="stylesheet" type="text/css" href="../public/styleblack.css"/>
+</head>
+<body>
+<p><h1>BioNetGenLanguage (BNGL) code visualizer</h1></p>
+<table cellpadding="30">
+ <tr>
+     </tr>
+    <tr>
+    <td id="canvas-text">
+      <a href=../index.html><b>BNGL VISUALIZER</b></a>
+    </td>
+    <td id="canvas-text">
+      <a href=../bngl.html>BNGL overview</a>
+    </td>
+    <td id="canvas-text">
+      <a href=../viz.html>Visualization conventions</a>
+    </td>
+    <td id="canvas-text">
+      <a href=../examples.html>Examples</a>
+    </td>
+    <td id="canvas-text">
+      <a href=../about.html>About</a>
+    </td>
+    <td>
+      <button id="dark-button" onclick="htmlInterface.switchDarkMode();">Toggle Light/Dark Mode</button>
+    </td>
+  </tr>
+</table>
+    <hr>
+    <h3>A model of PLC/PKC signaling
+(<a href="https://pubmed.ncbi.nlm.nih.gov/32255775/">Nosbisch et al., 2020</a>)</h3>
+
+<div id="canvas-container"></div>
+<div id="table-container"></div>
+<script src="../public/model-graphics.js"></script>
+<script src="../public/bngl-extractor.js"></script>
+<script src="../public/html-interface.js"></script>
+<script>
+//template bngl text
+const bngl = `
+begin model
+
+begin compartments
+cell	3	1
+end compartments
+
+begin parameters
+end parameters
+
+begin molecule types
+RTK(pY)
+PLCgamma1(nSH2,Tyr783~u~p,cSH2,core~inactive~active)
+end molecule types
+
+begin seed species
+1 @cell:RTK(pY) 0.05
+2 @cell:PLCgamma1(nSH2,Tyr783~u,cSH2!1,core~inactive!1) 0.02
+end seed species
+
+begin observables
+Molecules O0_RTK_tot @cell:RTK()
+Molecules O0_PLCgamma1_tot @cell:PLCgamma1()
+Molecules O0_PLCgamma1_active @cell:PLCgamma1(core~active!?)
+Molecules O0_PLCgamma1_inactive @cell:PLCgamma1(core~inactive!?)
+Molecules O0_PLCgamma1_pTyr783 @cell:PLCgamma1(Tyr783~p!?)
+Molecules O0_PLCgamma1_dpTyr783 @cell:PLCgamma1(Tyr783~u!?)
+Molecules O0_PLCgamma1_RTK_bound_inactive @cell:RTK(pY!1).PLCgamma1(nSH2!1,core~inactive!?)
+Molecules O0_PLCgamma1_RTK_bound @cell:RTK(pY!1).PLCgamma1(nSH2!1)
+Molecules O0_PLCgamma1_cytosol @cell:PLCgamma1(nSH2,core~inactive!?)
+end observables
+
+begin functions
+end functions
+
+begin reaction rules
+r02:	@cell:RTK(pY) + @cell:PLCgamma1(nSH2,core~active) -> @cell:RTK(pY!1).PLCgamma1(nSH2!1,core~active)		1000.0
+r01:	@cell:RTK(pY) + @cell:PLCgamma1(nSH2,core~inactive!?) -> @cell:RTK(pY!1).PLCgamma1(nSH2!1,core~inactive!?)		(1.0 * t) < 5000.0
+r03:	@cell:RTK(pY!1).PLCgamma1(nSH2!1) -> @cell:RTK(pY) + @cell:PLCgamma1(nSH2)		1.0
+r04:	@cell:RTK(pY!1).PLCgamma1(nSH2!1,Tyr783~u!?) -> @cell:RTK(pY!1).PLCgamma1(nSH2!1,Tyr783~p!?)		1.0
+r05:	@cell:PLCgamma1(Tyr783~p) -> @cell:PLCgamma1(Tyr783~u)		1.0
+r06:	@cell:PLCgamma1(cSH2!1,core~inactive!1) -> @cell:PLCgamma1(cSH2,core~inactive)		1.0
+r07:	@cell:PLCgamma1(cSH2,core~inactive) -> @cell:PLCgamma1(cSH2!1,core~inactive!1)		100.0
+r08:	@cell:PLCgamma1(Tyr783~p,cSH2) -> @cell:PLCgamma1(Tyr783~p!1,cSH2!1)		100.0
+r10:	@cell:RTK(pY!1).PLCgamma1(nSH2!1,core~inactive) -> @cell:RTK(pY!1).PLCgamma1(nSH2!1,core~active)		10.0
+r11:	@cell:PLCgamma1(nSH2,core~inactive) -> @cell:PLCgamma1(nSH2,core~active)		((1.0 * t) < 5000.0) * kact_p
+r12:	@cell:PLCgamma1(core~active) -> @cell:PLCgamma1(core~inactive)		0.1
+r09:	@cell:PLCgamma1(Tyr783~p!1,cSH2!1) -> @cell:PLCgamma1(Tyr783~p,cSH2)		1.0
+end reaction rules
+
+end model
+
+generate_network({max_iter=>7,max_agg=>10,max_stoich=>{RTK=>100,PLCgamma1=>100},overwrite=>1})
+
+
+
+`;
+//get major elements
+const canvContain = document.getElementById("canvas-container");
+const tableContain = document.getElementById("table-container");
+const fileInput = document.getElementById("bngl-file-input");
+const body = document.body;
+
+//connect interface
+var htmlInterface = new HTMLInterface(body, canvContain, tableContain, fileInput);
+
+//templating then bngl file
+var blob = new Blob([bngl], {type: "text/plain"});
+let reader = new FileReader();
+reader.onload = () => {htmlInterface.visualize(reader.result);};
+reader.readAsText(blob);
+
+//function to reset input element value when it is clicked
+//this is needed because chrome doesn't trigger onchange if filename is same
+function inputClick() {
+  fileInput.value = "";
+}
+</script>
+</body>
+</html>
