@@ -116,8 +116,6 @@ class Site {
     //color from name
     if (color == null) {
       this.color = this.name.rgb();
-    } else if (this.bondName === "-") {
-      this.color = "ffffff";
     } else {
       this.color = color;
     }
