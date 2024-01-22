@@ -1,0 +1,126 @@
+begin parameters
+
+Na  6.02e23    # Avogadro's number (molecues/mol)
+Vol  1e-15      # Volume in Litres
+
+ 
+ 
+# Reagents Concentration in nM
+R0_conc  20000
+T0_conc  6250
+ 
+ 
+# Receptor's interactions
+
+# Convert from nanomolar to number of molecules in volume Vol
+# BioNetGen uses number of molecules and NOT concentration
+
+R0_tot (R0_conc)*(1e-9)*Na*Vol
+T0_tot (T0_conc)*(1e-9)*Na*Vol
+
+koff 0.01
+
+# values of constants in nM
+
+Kp 200
+Ka 200
+
+K1 10  
+K2 100 
+K3 1000
+
+# Convert macroscopic (Molar; volume indenpendent constant) to microscopic (events per second) constant
+# BioNetGen uses microscopic constants
+
+kp koff /(Kp*1e-9*Na*Vol)
+ka koff /(Ka*1e-9*Na*Vol)
+k1 koff /(K1*1e-9*Na*Vol)
+k2 koff /(K2*1e-9*Na*Vol)
+k3 koff /(K3*1e-9*Na*Vol)
+
+end parameters
+ 
+begin molecule types
+R(p,a)
+T(1,2,3)
+end molecule types
+ 
+begin seed species
+
+R(p,a) R0_tot
+T(1,2,3) T0_tot
+end seed species
+ 
+ 
+ 
+begin observables
+ 
+Molecules MonomerReceptor R(p,a)
+#Molecules DimerReceptor R(p!0,a).R(p!0,a), R(a!0,p).R(a!0,p)
+#Molecules AggregatedReceptor R(p!0,a!0)
+ 
+ 
+Molecules freeTNF T(1,2,3)
+Molecules TNF1R  T(1!+,2,3),  T(1,2!+,3), T(1,2,3!+)
+Molecules TNF2R  T(1!+,2!+,3), T(1!+,2,3!+), T(1,2!+,3!+)
+Molecules TNF3R  T(1!+,2!+,3!+)
+
+ 
+ 
+ 
+#Molecules Aggregate2TNF T(1!+,2!+,3).R(p!+).R(p!+), T(1!+,2,3!+).R(p!+).R(p!+), T(1,2!+,3!+).R(p!+).R(p!+)
+#Molecules Aggregate3TNF T(1!+,2!+,3!+).R(p!+).R(p!+).R(p!+)
+#Molecules NoAggregate3TNF T(1!+,2!+,3!+).R(p).R(p).R(p)
+ 
+end observables
+ 
+begin reaction rules
+ 
+# Receptor dimerization parallel
+#1: R(p) + R(p) <-> R(p!0).R(p!0)       kp, koff
+ 
+# Receptor dimerization antiparallel
+#2: R(a) + R(a)   <-> R(a!0).R(a!0)     ka, koff
+ 
+ 
+ 
+#########################################################
+# TNF reactions
+#########################################################
+ 
+#  First  TNF binding event
+ 
+3: T(1,2,3) + R(a) <->  T(1!1,2,3).R(a!1)   k1, koff     
+4: T(1,2,3) + R(a) <->  T(1,2!1,3).R(a!1)   k1, koff   
+5: T(1,2,3) + R(a) <->  T(1,2,3!1).R(a!1)   k1, koff 
+ 
+#  Second  TNF binding event
+ 
+6: T(1!+,2,3) + R(a) <->  T(1!+,2!1,3).R(a!1)  k2, koff  
+7: T(1!+,2,3) + R(a) <->  T(1!+,2,3!1).R(a!1)  k2, koff 
+8: T(1,2!+,3) + R(a) <->  T(1!1,2!+,3).R(a!1)  k2, koff  
+9: T(1,2!+,3) + R(a) <->  T(1,2!+,3!1).R(a!1)  k2, koff  
+10: T(1,2,3!+) + R(a) <-> T(1!1,2,3!+).R(a!1)  k2, koff  
+11: T(1,2,3!+) + R(a) <-> T(1,2!1,3!+).R(a!1)  k2, koff  
+ 
+ 
+#  Third  TNF binding event
+ 
+12: T(1!+,2!+,3) + R(a) <-> T(1!+,2!+,3!1).R(a!1) k3, koff 
+13: T(1!+,2,3!+) + R(a) <-> T(1!+,2!1,3!+).R(a!1) k3, koff 
+14: T(1,2!+,3!+) + R(a) <-> T(1!1,2!+,3!+).R(a!1) k3, koff 
+ 
+ 
+ 
+ 
+end reaction rules
+ 
+#actions
+ 
+# Simulation of a truncated network
+#generate_network({overwrite=>1,max_iter=>1});
+#simulate_nf({suffix=>nf,t_end=>500,n_steps=>5, param=>"-v -cb -dump [500]"});
+generate_network({overwrite=>1});
+simulate_ode({suffix=>ode,n_steps=>5,t_end=>10000});
+
+
