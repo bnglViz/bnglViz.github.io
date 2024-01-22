@@ -1,1 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>BNGL Visualizer</title>
+    <link rel="stylesheet" type="text/css" href="../public/styleblack.css"/>
+</head>
+<body>
+<p><h1>BioNetGenLanguage (BNGL) code visualizer</h1></p>
+<table cellpadding="30">
+ <tr>
+     </tr>
+    <tr>
+    <td id="canvas-text">
+      <a href=../index.html><b>BNGL VISUALIZER</b></a>
+    </td>
+    <td id="canvas-text">
+      <a href=../bngl.html>BNGL overview</a>
+    </td>
+    <td id="canvas-text">
+      <a href=../viz.html>Visualization conventions</a>
+    </td>
+    <td id="canvas-text">
+      <a href=../examples.html>Examples</a>
+    </td>
+    <td id="canvas-text">
+      <a href=../about.html>About</a>
+    </td>
+    <td>
+      <button id="dark-button" onclick="htmlInterface.switchDarkMode();">Toggle Light/Dark Mode</button>
+    </td>
+  </tr>
+</table>
+    <hr>
+    <h3>Pharmacodynamic model of PARP1 inhibition and global sensitivity analyses
+        (<a href="https://www.biorxiv.org/content/10.1101/2023.02.08.527527v1">Mertins et al., 2023</a>)</h3>
+
+<div id="canvas-container"></div>
+<div id="table-container"></div>
+<script src="../public/model-graphics.js"></script>
+<script src="../public/bngl-extractor.js"></script>
+<script src="../public/html-interface.js"></script>
+<script>
+//template bngl text
+const bngl = `
+begin parameters 
+s1   1e-2  #Basal BaxmRNA synthesis rate
+s2   3e-2  #p53 regulated BaxmRNA synthesis rate due to activation by DNA Damage
+s3   2e1   #Pro-caspase synthesis rate
+s4   2e-1  #BAX protein synthesis rate
+d1   1e-3  #1/s; BaxmRNA degradation rate
+d2   1e-4  #1/s: BAX protein degradation rate
+d3   2e-4  #1/s: Pro-caspase and caspase degradation rate
+M    1.0e5  #Michaelis Menten Constant for p53 transcription rate
+b1   3e-5  #molecules-1 sec-1:  BAX-BCLXL on rate
+b2   3e-3  #molecules-1 sec-1:  BCLXL-BAD on rate
+b3   3e-3  #molecules-1 sec-1:  phosphoBAD-Fourteen-three-three on rate
+b4   3e-5  #molecules-1 sec-1:  p53-DNA PARP-DNA on rate
+u1   1e-4  #1/s:  BAX-BCLXL off rate
+u2   1e-4  #1/s:  BCLXL-BAD off rate
+u3   1e-4  #1/s:  phosphoBAD-Fourteen-three-three off rate
+u4   1e-4  #1/s:  p53-DNA and PARP-DNA off rate
+p1   3e-10 #1/s:  Kinase activity of AKT for BAD
+q1   3e-5  #1/s:  Dephosphorylation rate for phosphoBAD
+a1   2e-10 #molecules-1 sec-1:  Procaspase activation rate by BAX
+a2   1e-12 #molecules-1 sec-1:  Procaspase autoactiavtion rate
+kf1  1e-3  #molecules-1 sec-1: on rate for NAD binding
+kr1  3.79  #1/s:  off rate for NAD based on reported Kd
+IC50 0.001    #in uM; IC50 will vary as an input
+kf2  1e-3     #in competition with NAD, therefore adjusted as above
+kr2  IC50*3.79
+kcat1  1   # Catalytic activity for PARylation is reported (BindingDB.org)
+kcat2  1   # Catalytic activity for de-PARylation is reported (BindingDB.org)
+DNADSBtot 1.74e5  #Adjusted for this model
+AKTtot    0       #Value represents amount of active (phosphorylated) AKT
+p53tot    8.5e4   #This value is critical to demonstrated competition with PARP-DNA binding
+BADtot    0.6e5   #This level of BAD is found in the AND logic gate (Bogdal, BMC Sys Biol 2013)
+BCLXLtot  1e5     #This level of BCLXL is required for AND logic gate (Bogdal, BMC Sys Biol 2013)
+SCAFtot   2e5     #Found in Lipniaki PLoS Comp Biol 2016, SCAF = Fourteen-three-three
+PARPtot   1.07e5  #Estimage PARP concentration (Geiger et al.)
+NADtot    1.07e6  #estimated on PARP concentration (i.e. one log higher than PARP)
+XRCC1tot  1.07e5  #estimated on PARP concentration
+PARGtot   1.07e4  #relative to PARP as defined in vivo
+Inhtot    0.52e5  #estimated as 0.5 of PARPtot
+
+begin molecule types
+DNADSB(br)
+p53(dna)
+mRNA_Bax()
+Bax(b)
+BclXL(b)
+Bad(S75_S99~0~PP,b)
+Fourteen_3_3(b)
+Caspase(csp~Pro~Act)
+PARP(DNA,CD~inact~act,NAD)
+NAD(sub)
+XRCC1(Glu~uPAR~PAR)
+PARG(CD)
+Inh(isub)
+end molecule types
+
+begin seed species
+DNADSB(br)   DNADSBtot
+p53(dna)  p53tot
+BclXL(b)  BCLXtot
+Bad(S75_S99~0,b)  BADtot
+Fourteen_3_3(b)  SCAFtot
+PARP(DNA,CD~inact,NAD)  PARPtot
+NAD(sub)  NADPtot
+XRCC1(Glu~uPAR)  XRCC1tot
+PARG(CD)  PARGtot
+Inh(isub)  Inhtot
+end seed species
+
+begin observables
+Molecules mRNA_Bax mRNA_Bax()
+Molecules Bax_free Bax(b)
+Molecules Caspase_act Caspase(csp~Act)
+Molecules p53_DNAbound p53(dna!+)
+Molecules PARP_Inhbound PARP(DNA,CD~act,NAD!4).Inh(isub!4)
+end observables
+
+begin reactions
+
+p53(dna) + DNADSB(br) <-> p53(dna!1).DNADSB(br!1) b4, u4
+  # PARP binds DNADSB per function
+  PARP(DNA,CD~inact,NAD) + DNADSB(br) <-> PARP(DNA!2,CD~act,NAD).DNADSB(br!2) b4, u4
+  # PARP binds substrate NAD
+  PARP(DNA!2,CD~act,NAD).DNADSB(br!2) + NAD(sub) <-> \
+  PARP(DNA!2,CD~act,NAD!3).DNADSB(br!2).NAD(sub!3) kf1, kr1
+  # PARP PARylates XRCC1 as a representative substrate
+  PARP(DNA!2,CD~act,NAD!3).DNADSB(br!2).NAD(sub!3) + XRCC1(Glu~uPAR) -> PARP(DNA!2,CD~act,NAD).DNADSB(br!2) + NAD(sub) + XRCC1(Glu~PAR) kcat1
+  # PARG de-PARylates XRCC1
+  PARG(CD) + XRCC1(Glu~PAR) -> PARG(CD) + XRCC1(Glu~uPAR) kcat2
+  # Inhibitor binds to NAD pocket and PARP falls off DNA.
+  Inh(isub) + PARP(DNA!2,CD~act,NAD).DNADSB(br!2) <-> \
+  Inh(isub!4).PARP(DNA,CD~act,NAD!4) + DNADSB(br) kf2,kr2
+  # Baseline transcription and degradation of BAX mRNA
+  0 <-> mRNA_Bax() s1, d1
+  # p53 regulated BAX transcription via Hill function, typical rule for transcription
+  0 -> mRNA_Bax() s2*(p53_DNAbound^2/(M^2 + p53_DNAbound^2))
+  # Bax translation, protein degradation
+  0 <-> Bax(b)  s4*mRNA_Bax, d2
+  # Bax--BclXL binding, unbinding
+  Bax(b) + BclXL(b) <-> Bax(b!1).BclXL(b!1)  b1, u1
+  # Bax (complexed) degradation
+  Bax(b!1).BclXL(b!1) -> BclXL(b)  d2
+
+# BclXL and dep'ylated Bad binding, unbinding
+  BclXL(b) + Bad(S75_S99~0,b) <-> BclXL(b!2).Bad(S75_S99~0,b!2)  b2,u2
+
+# Bad p'ylation by AKT, dep'ylation
+Bad(S75_S99~0,b) <->  Bad(S75_S99~PP,b)  p1*AKTtot, q1
+# Bad (p'ylated) and 14-3-3 binding, unbinding
+Bad(S75_S99~PP,b) + Fourteen_3_3(b) <-> Bad(S75_S99~PP,b!3).Fourteen_3_3(b!3)  b3, u3
+  # BclXL unbinding from Bad upon Bad p'ylation by AKT.
+  BclXL(b!2).Bad(S75_S99~0,b!2) -> BclXL(b) + Bad(S75_S99~PP,b) p1*AKTtot
+  # Unbinding of Bad from 14-3-3 upon Bad dep'ylation
+  Bad(S75_S99~PP,b!3).Fourteen_3_3(b!3) -> Bad(S75_S99~0,b) + Fourteen_3_3(b)  q1
+  # Procaspase synthesis
+  0 -> Caspase(csp~Pro)  s3
+  # Caspase and procaspase degradation
+  Caspase() -> 0  d3
+  # Caspase activation by Bax and by other caspases
+  Caspase(csp~Pro) -> Caspase(csp~Act)  a1*Bax_free + a2*Caspase_act^2
+end reaction rules
+
+end reactions
+
+`;
+//get major elements
+const canvContain = document.getElementById("canvas-container");
+const tableContain = document.getElementById("table-container");
+const fileInput = document.getElementById("bngl-file-input");
+const body = document.body;
+
+//connect interface
+var htmlInterface = new HTMLInterface(body, canvContain, tableContain, fileInput);
+
+//templating then bngl file
+var blob = new Blob([bngl], {type: "text/plain"});
+let reader = new FileReader();
+reader.onload = () => {htmlInterface.visualize(reader.result);};
+reader.readAsText(blob);
+
+//function to reset input element value when it is clicked
+//this is needed because chrome doesn't trigger onchange if filename is same
+function inputClick() {
+  fileInput.value = "";
+}
+</script>
+</body>
+</html>
 
