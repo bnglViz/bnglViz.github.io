@@ -31,9 +31,8 @@
   </tr>
 </table>
     <hr>
-    <h3>A model of bivalent ligand - bivalent receptor, used for testing of rule-based models in 
-      <a href="https://pubmed.ncbi.nlm.nih.gov/19213740/">Colvin et al., 2009</a> and 
-      <a href="https://pubmed.ncbi.nlm.nih.gov/24314076/">Falkenberg et al., 2013</h3>
+    <h3>Optimization of Polydisperse Chemical Mixtures using Molecular Descriptors
+        (<a href="https://chemrxiv.org/engage/chemrxiv/article-details/653a018348dad231205e586a">Massole et al., 2023</a>)</h3>
 
 <div id="canvas-container"></div>
 <div id="table-container"></div>
@@ -43,46 +42,31 @@
 <script>
 //template bngl text
 const bngl = `
-begin parameters
- kp1 1
- km1 1
- kp2 1
- km2 1
- kp3 1
- km3 1
- R0  3e5
- L0  3e5
-end parameters
-
-begin species
-  R(r,r) R0
-  L(l,l) L0
-end species
-
-begin observables
-Molecules R R()
-Molecules L L()
-Molecules R_once R(r!+)         # must be connected at least once
-Molecules R_middle R(r!+,r!+)  # middle of a chain, 
-Molecules R_end_1 R(r!-)   # end of a chain
-Molecules R_end_2 R(r)    # end of a chain
-Molecules Monomer R(r!-,r!-) #just a monomer
-
-end observables
+begin model
+begin molecule types
+_EO_(epo,oh~0~1) 
+_EG_(oh~p,oh~p) 
+_PERYT_(oh~p,oh~p,oh~p,oh~p) 
+_PO_(epo,oh~0~1)
+end molecule types
 
 begin reaction rules
-# Ligand addition
-R(r) + L(l,l) <-> R(r!1).L(l!1,l) kp1,km1
-
-# Chain elongation
-R(r) + L(l,l!2) <-> R(r!1).L(l!1,l!2) kp2,km2
-
-# Ring closure
-R(r).L(l) <-> R(r!1).L(l!1) kp3,km3
-
+_EG_(oh~p) + _EO_(epo,oh~0) -> _EG_(oh~p!1)._EO_(epo!1,oh~1) 1.0 
+_EG_(oh~p) + _PO_(epo,oh~0) -> _EG_(oh~p!1)._PO_(epo!1,oh~1) 1.0 
+_PERYT_(oh~p) + _EO_(epo,oh~0) -> _PERYT_(oh~p!1)._EO_(epo!1,oh~1) 1.0 
+_PERYT_(oh~p) + _PO_(epo,oh~0) -> _PERYT_(oh~p!1)._PO_(epo!1,oh~1) 1.0 
+_EO_(epo,oh~0) + _EO_(oh~1) -> _EO_(oh~1!1)._EO_(epo!1,oh~1) 1.0 
+_PO_(epo,oh~0) + _PO_(oh~1) -> _PO_(oh~1!1)._PO_(epo!1,oh~1) 1.0
 end reaction rules
 
-generate_network({overwrite=>1,check_iso=>0,max_stoich=>{R=>10,L=>10}});
+begin seed species
+_PERYT_(oh~p,oh~p,oh~p,oh~p) 1140 
+_EO_(epo,oh~0) 580
+_PO_(epo,oh~0) 70907 
+_EG_(oh~p,oh~p) 27373
+end seed species 
+
+end model
 
 `;
 //get major elements
