@@ -1,0 +1,885 @@
+begin model
+
+begin parameters
+  Volcyto 9.12E-13
+  VolER 3.35E-13
+  fextmolar 1.205E+15
+  cellarea  1400
+  VEGF165a_0  0.0012
+  VEGFR2_0  4.29E+00
+  VEGFR1_0  1.43
+  NRP1_0  2.86E+01
+  TSP1_0  0.00E+00
+  Calcium_0 0.05
+  CaM_0 1
+  eNOS_0  0.1
+  kvron 10.3
+  kvroff  2.36E-01
+  kcVR  0.0045
+  kcRR  1.11
+  kdRR  0.78
+  kvr1on  22
+  kvr1off 0.026
+  kdeltaRR  2.5
+  kdeltaVR  2.05
+  kpr2  30
+  kdps  640
+  kdpi  0.72
+  kdpr  1.00E+01
+  kcd47free_on  100
+  kr2si 0.031
+  kr2rs 17.18
+  kr2NRP1si 0.0014
+  kr2NRP1i2r  48
+  kVEGFNRP1on 2.48
+  kVEGFNRP1off  0.0008
+  kNRP1VEGFR2on 0.15
+  kNRP1VEGFR2off  0.045
+  kNRP1VEGFR1on 5.07
+  kNRP1VEGFR1off  0.016
+  kVEGFR2NRP1on 0.0022
+  kVEGFR2NRP1off  0.014
+  kVEGFR1NRP1on 0.004
+  kVEGFR1NRP1off  0.1
+  PI3K_0  0.1
+  PIP2_0  10
+  kPIP2gen  0.000048
+  kmPIP2PI3K  309.9
+  kcatPI3KPIP2  1764.48
+  PTEN_0  0.1
+  kmPIP3PTEN  6.27
+  kcatPTENPIP3  4767.44
+  konPDK1PIP3 5828.07
+  koffPDK1PIP3  0.64
+  konAKTPIP3  12.48
+  koffAKTPIP3 0.032
+  AKT_0 0.1
+  PDK1_0  0.1
+  kpAKTPDK1 2
+  mTOR_0  0.1
+  kpmTORAKT 2
+  kdp473AKTPPase  0.1
+  kdp308AKTPPase  0.038
+  kpPLCgamma  0.045
+  kdpPLCgamma 0.014
+  PLCgamma_0  0.2
+  kmPIP2PLCgamma  4.34
+  nDAG  2.6
+  kcatPLCgammaDAG 0.1
+  kdeg_ip3  0.47
+  kdeg_DAG  0.11
+  CaER_0  2.00E+03
+  Iip3Ramp  1.31E+05
+  KmIP3R  1.6
+  I_PMCAbar 2.02
+  KmPMCA  0.26
+  vSERCA  0.39
+  KleakER 1.00E-08
+  KmSERCA 0.15
+  KiCa  1
+  KBon  100
+  KBoff 300
+  CaF_0 118
+  CaFbound_0  2
+  koffCaNCaM1 500
+  kdCaNCaM  24
+  koffCaCCaM1 10
+  kdCaCCaM  3.1
+  CSQN_total  15000
+  KCSQN 800
+  kdegi0  2.02E-03
+  kdegr2NRP1i0  7.91E-03
+  kdegi0noP 2.85E+00
+  kdegr2NRP1i0noP 2.22E-04
+  kr2ii2  4.30E-03
+  kr2NRP1ii2  4.80E+00
+  kr2i2i  3.23E-02
+  kr2NRP1i2i  1.00E-03
+  kdegi20 2.43E+02
+  kdegr2NRP1i20 3.76E-02
+  kdegi20noP  4.16E-01
+  kdegr2NRP1i20noP  7.56E+02
+  ksingleR2syn  1.40E-04
+  ksingleR2deg  5.88E-04
+  ksingleR2si 7.56E-04
+  ksingleR2is 8.66E-04
+  ICracamp  5.86E+03
+  Kcrac 169
+  Istim0  0.18
+  tau_stim  4
+  ncrac 4.2
+  Src_0 0.1
+  Axl_0 7.14
+  kpSrc 0.61
+  kdpSrc  136.5
+  kpSrcAxl  3.92
+  kpAxlauto 0.12
+  kdpautoAxl  1291.1
+  kdpSrcAxl 1.79E-03
+  konPI3KAxl  55.91688952
+  koffPI3KAxl 0.6
+  kDCD47TSP1  1.00E-05
+  koffCD47TSP1  0.001
+  CD47free_0  7.14E+00
+  kdpeNOS 5.17E-02
+  konCaMeNOS  9.80E+02
+  koffCaMeNOS 9.73E+00
+  koffeNOScav1  6.875
+  koncaveNOS  81.9375
+  kcateNOSAKT 1000
+  kr2CD47off  1.00E+00
+  f_TSP1deg 1.00E+00
+  fTSP1dp   1.00E+00
+  fTSP1i2r  1.00E+00
+  PKC_0 0.1
+  konCaPKC  0.3
+  koffCaPKC 0.01
+  konDAGPKC 0.029957319
+  koffDAGPKC  0.124096212
+  kon1CaCIB1 0.052631579
+  koff1CaCIB1  0.1
+  kon2CaCIB1 0.185185185
+  koff2CaCIB1  0.1
+  CIB1_0  0.5
+  konCIB1SphK1  17.6028519
+  koffCIB1SphK1 4.403956392
+  SphK_0  0.1
+  Sph_0 10
+  S1P_0 0
+  kcatERK 7.882741692
+  kmERKSK1  1.198236617
+  ktSK1 1
+  koffSK1 1.04E-01
+  ktoffSK1  6.97E-04
+  kcatPKC 10.20798409
+  kmPKCRaf  0.313875333
+  RasGTP_0  0
+  RasGDP_0  0.1
+  Raf_0 0.355471965
+  MEK12_0 0.288919159
+  ERK12_0 0.382329627
+  kdpSK1 0.02182773
+  kdpPKCRaf 0.720296112
+  kSphgen 0.000048
+  kcatSK1Sph  37.23820691
+  KmSK1Sph  0.029430478
+  kdpS1P  1.188017664
+  kS1PRas 1.556423632
+  KmS1PRas 5.899306591
+  kRasGAP 2.941097467
+  konRasRaf 13.10183719
+  koffRasRaf  0.151878139
+  kpRaf 1.67558904
+  kdpRaf 0.894826206
+  kpMEK12Raf1  1.801786102
+  kpMEK12Raf2 1.204676328
+  KmMEK12Raf  0.807388937
+  kdpMEK12_1 0.111827134
+  kdpMEK12_2 0.139705453
+  kpMEK12ERK12_1  12.14930177
+  kmMEKERK12  0.25546079
+  kpMEK12ERK12_2  0.516270813
+  kdpERK12_1 6.06E+00
+  kdpERK12_2 1.053392443
+
+end parameters
+
+begin molecule types 
+  vegf(r,r,nrp1bd,c~s~i~i2~r) #  vegf165a
+  vegfr2(l1,Y1175~Y~pY,CD47bd,dimer,c~s~i~i2~r)
+  vegfr1(l2,dimer,nrp1bd,c~s)
+  NRP1(vegfabd,c~s~i~i2~r)
+  PI(PIsite~3P~4P)
+  PLCgamma(Yplc~Y~pY)
+  DAG(pkcbd)
+  IP3_cyto(ip3rbd)
+  Calcium_cyto(bd)
+  Trash()
+  CaER(bd)
+  CaF(cabd)
+  CSQNF(cabd)
+  CaM(NCaM,NCaM,CCaM,CCaM,CaMtargetbd) 
+  I()
+  Istim()
+  PTEN(PIP3docking)
+  TSADSrc(Y1~Y~pY)
+  Axl(Ysrc~Y~pY,Yaxl~Y~pY)
+  PI3K(state~active~inactive)
+  AKT(PHakt,T308~S~pS,S473~S~pS)
+  PDK1(PHpdk1,aktbd)
+  mTOR(aktbd)
+  CD47SIRPa(VEGFR2bd,TSP1bd,Y1~Y~pY,c~s~i~i2~r)
+  TSP1(CD47bd)
+  eNOS(CaMBD,S1177~S~pS,cav1BD)
+  caveolin1(eNOSbd)
+  PKC(CalciumBD,DAGBD)
+  CIB1(EF1,EF2,sk1bd,location~cytosol~membrane)
+  SphK(CIB1bd,Serk~S~pS)
+  Sph(skbd)
+  S1P(bd)
+  RasGDP(rafbd)
+  RasGTP(rafbd)
+  Raf(mekbd,rasbd,Y1Y2~Y~pY,Spkc~S~pS)
+  MEK12(bd,S1~S~pS,S2~S~pS)
+  ERK1(MEK12bd,S1~S~pS)
+  ERK2(MEK12bd,S2~S~pS)
+
+end molecule types
+    
+begin seed species
+  vegf(r,r,nrp1bd,c~s)                                  VEGF165a_0
+  vegfr1(l2,dimer,nrp1bd,c~s)                       VEGFR1_0
+  vegfr2(l1,Y1175~Y,CD47bd,dimer,c~s)     VEGFR2_0     
+  NRP1(vegfabd,c~s)                         NRP1_0
+  PI(PIsite~3P)                PIP2_0
+  PLCgamma(Yplc~Y)  PLCgamma_0
+  CaER(bd)             CaER_0
+  Calcium_cyto(bd)          Calcium_0   
+  CaF(cabd)          CaF_0
+  Calcium_cyto(bd!1).CaF(cabd!1)  CaFbound_0 
+  CaM(NCaM,NCaM,CCaM,CCaM,CaMtargetbd)    CaM_0   
+  I()                  1
+  Istim()       Istim0
+  PTEN(PIP3docking)            PTEN_0
+  TSADSrc(Y1~Y)   Src_0
+  Axl(Ysrc~Y,Yaxl~Y)  Axl_0
+  PI3K(state~inactive)  PI3K_0
+  AKT(PHakt,T308~S,S473~S)   AKT_0
+  PDK1(PHpdk1,aktbd)    PDK1_0
+  mTOR(aktbd)     mTOR_0
+  TSP1(CD47bd)  TSP1_0
+  CD47SIRPa(VEGFR2bd,TSP1bd,Y1~Y,c~s)    CD47free_0
+  eNOS(CaMBD,S1177~S,cav1BD!1).caveolin1(eNOSbd!1)  eNOS_0
+  PKC(CalciumBD,DAGBD)        PKC_0
+  CIB1(EF1,EF2,sk1bd,location~cytosol)         CIB1_0
+  SphK(CIB1bd,Serk~S)    SphK_0
+  Sph(skbd)     Sph_0
+  S1P(bd)       S1P_0
+  RasGDP(rafbd)    RasGDP_0
+  RasGTP(rafbd)    RasGTP_0
+  Raf(mekbd,rasbd,Y1Y2~Y,Spkc~S)  Raf_0
+  MEK12(bd,S1~S,S2~S)  MEK12_0
+  ERK1(MEK12bd,S1~S)    ERK12_0
+  ERK2(MEK12bd,S2~S)   ERK12_0
+end seed species
+
+begin observables
+  Molecules   vegffrees  vegf(r,r,nrp1bd,c~s)
+  Molecules  VEGFR2total vegfr2()
+  Molecules tsp1frees TSP1(CD47bd) 
+  Molecules cd47tsp1s TSP1(CD47bd!1).CD47SIRPa(TSP1bd!1,Y1~Y,c~s) 
+  Molecules cd47s  CD47SIRPa(TSP1bd,Y1~Y,c~s)
+  Molecules   VEGFR2tots  vegfr2(c~s)
+  Molecules   VEGFR2toti  vegfr2(c~i)
+
+  Molecules vr2s        vegfr2(l1,c~s)
+  Molecules vr2i       vegfr2(l1,c~i)
+  Molecules  vr1s        vegfr1(l2,nrp1bd,c~s)
+
+  Molecules     vegfr2Y1175ps  vegfr2(Y1175~pY!?,c~s) 
+  Molecules     vegfr2Y1175pi  vegfr2(Y1175~pY!?,c~i)
+  Molecules    pr2Y1175total  vegfr2(Y1175~pY!?)
+  Molecules    vegfr1tots       vegfr1(c~s) 
+  Molecules    NRP1VEGFR2s    vegf(r!1,r!2,nrp1bd!+,c~s).vegfr2(l1!1,c~s).vegfr2(l1!2,c~s)
+  Molecules     NRP1VEGFR2i    vegf(r!1,r!2,nrp1bd!+,c~i).vegfr2(l1!1,c~i).vegfr2(l1!2,c~i) 
+  Molecules     freeDAGs       DAG(pkcbd!?)
+  Molecules      activePLCgamma  PLCgamma(Yplc~pY!?)
+  Molecules     PIP2           PI(PIsite~3P)
+  Molecules     PIP3            PI(PIsite~4P)
+  Molecules     freeip3cyto      IP3_cyto(ip3rbd)
+  Molecules     Cac          Calcium_cyto(bd)
+  Molecules     Caer      CaER(bd)
+  Molecules   CaBuf_fer       CaF(cabd!+)
+  Molecules    activePKCs      PKC(CalciumBD!+,DAGBD!1).DAG(pkcbd!1)
+  Molecules   activePKCtot     PKC(CalciumBD!+,DAGBD!+)
+  Molecules SphKpkc  SphK(Serk~pS!?)
+  Molecules S1phosphate S1P(bd)
+  Molecules  NRP1frees    NRP1(vegfabd,c~s)
+  Molecules  NRP1freei    NRP1(vegfabd,c~i)
+  Molecules  NRP1bounds    NRP1(vegfabd!+,c~s)
+  Molecules  NRP1boundi    NRP1(vegfabd!+,c~i)
+  Molecules vr2dimers vegfr2(l1,dimer!1,c~s).vegfr2(l1,dimer!1,c~s)
+  Molecules vr2dimeri vegfr2(l1,dimer!1,c~i).vegfr2(l1,dimer!1,c~i)
+  Molecules NRP1totals  NRP1(c~s)
+  Molecules NRP1totali NRP1(c~i)
+  Molecules singleNRP1totals  NRP1(vegfabd,c~s)
+  Molecules singleNRP1totali NRP1(vegfabd,c~i)
+  Molecules vegfr2total vegf(r!1).vegfr2(l1!1)
+  Molecules vr2Y1175s   vegfr2(Y1175~pY,c~s)
+  Molecules vr2Y1175i   vegfr2(Y1175~pY,c~i)
+  Molecules plcgammafree   PLCgamma(Yplc~Y)
+  Molecules rasgdpfree      RasGDP(rafbd!?) 
+  Molecules rasgtpfree     RasGTP(rafbd!?)  
+  Molecules activeRafbyrastot  Raf(Y1Y2~pY!?)
+  Molecules phosphoMEK12tot MEK12(S1~pS!?,S2~pS!?)
+  Molecules phosphoERK1tot ERK1(S1~pS!?)
+  Molecules phosphoERK2tot ERK2(S2~pS!?)
+  Molecules SphK1 SphK(CIB1bd!+,Serk~S).CIB1(sk1bd!1,location~membrane)
+  Molecules SphK1mempS SphK(CIB1bd!+,Serk~pS).CIB1(sk1bd!1,location~membrane)
+  Molecules SphK1cytosol SphK(CIB1bd!+,Serk~S).CIB1(sk1bd!1,location~cytosol)
+  Molecules activeSphK1 SphK(Serk~pS!?)
+  Molecules freeSK1 SphK(CIB1bd,Serk~S)
+  Molecules freeSK1mem SphK(CIB1bd!1,Serk~S).CIB1(sk1bd!1,location~membrane)
+  Molecules freecib1  CIB1(EF1,EF2,sk1bd)
+  Molecules calciumcib1  CIB1(EF1!+,EF2!+,sk1bd)
+  Molecules sk1bcib1  CIB1(EF1!+,EF2!+,sk1bd!+)
+  Molecules nrp1s NRP1(vegfabd,c~s)
+  Molecules vegfnrp1s  vegf(r,r,nrp1bd!1,c~s).NRP1(vegfabd!1,c~s)
+  Molecules vegfr1s vegf(r!1,r,nrp1bd,c~s).vegfr1(l2!1,c~s)
+  Molecules vegfr2s vegf(r!1,r,nrp1bd,c~s).vegfr2(l1!1,dimer,c~s)
+  Molecules freepip2 PI(PIsite~3P)
+  Molecules freesphingosin Sph(skbd) 
+  Molecules freeraf  Raf(Spkc~S)
+  Molecules activeRafPKC   Raf(Spkc~pS!?)
+  Molecules activeRafPKCERK1  Raf(Spkc~pS!?,Y1Y2~pY!?)
+  Molecules activeRafPKCERK2  Raf(Spkc~pS!?,Y1Y2~Y!?)
+  Molecules activeRafPKCERK3  Raf(Spkc~S!?,Y1Y2~pY!?)
+  Molecules  rafY1Y2pY Raf(Y1Y2~pY,Spkc~S) 
+  Molecules  rafY1Y2pYpS   Raf(Y1Y2~pY,Spkc~pS)
+  Molecules  rafpS    Raf(Y1Y2~Y,Spkc~pS)
+  Molecules erk1s  ERK1(S1~S) 
+  Molecules mek12s   MEK12(S1~S,S2~S)
+  Molecules R2singlei vegfr2(l1,Y1175~Y,dimer,c~i)
+  Molecules pERK1s  ERK1(S1~pS) 
+  Molecules mek12ps   MEK12(S1~pS,S2~S)
+  Molecules pERK2s  ERK2(S2~pS) 
+  Molecules mek12ps1 MEK12(S1~pS)
+  Molecules mek12ps2 MEK12(S2~pS)
+  Molecules erk1ps ERK1(S1~pS)
+  Molecules erk2ps ERK2(S2~pS)
+  Molecules vr2r2py1175s  vegfr2(Y1175~pY,c~s)
+  Molecules vr2r2py1175i  vegfr2(Y1175~pY,c~i)
+  Species  vr2py1175s   vegf(r!1,r,c~s).vegfr2(l1!1,Y1175~pY,c~s)
+  Species  vr2py1175i   vegf(r!1,r,c~i).vegfr2(l1!1,Y1175~pY,c~i)
+  Molecules  r2singlepy1175s vegfr2(l1,Y1175~pY,c~s)
+  Molecules  r2singlepy1175i vegfr2(l1,Y1175~pY,c~i)
+  Molecules  vr1r2pY1165s  vegf(r!1,r!2,c~s).vegfr1(l2!1,c~s).vegfr2(l1!2,Y1175~pY,c~s)
+  Molecules pSK1 SphK(Serk~pS) 
+  Molecules frees1p S1P(bd)
+  Molecules py1y2rafs  Raf(Y1Y2~pY)
+  Molecules vegfnrp1i  vegf(r,r,nrp1bd!1,c~i).NRP1(vegfabd!1,c~i)
+  Species vegfr2i vegf(r!1,r,nrp1bd,c~i).vegfr2(l1!1,c~i)
+  Molecules totalnrp1 NRP1(vegfabd)
+  Molecules pplcgamma PLCgamma(Yplc~pY)
+  Molecules phosphoERKpS1 ERK1(S1~pS!?) 
+  Molecules phosphoERKpS2 ERK2(S2~pS!?)
+  Molecules phosphoMEKpS1 MEK12(S1~pS!?,S2~S) 
+  Molecules phosphoMEKpS2 MEK12(S1~S,S2~pS!?)
+  Molecules freeSphK1  SphK(CIB1bd,Serk~S)
+  Molecules rafpkc Raf(Spkc~pS)
+  Molecules mek12s1 MEK12(S1~S)
+  Molecules mek12s2 MEK12(S2~S)
+  Molecules erk12s1 ERK1(S1~S)
+  Molecules erk12s2 ERK2(S2~S)
+  Molecules yplcgamma PLCgamma(Yplc~Y)
+  Molecules gtpfreeras RasGTP(rafbd)
+  Molecules bvegfr2 vegf(r!1,nrp1bd,c~s).vegfr2(l1!1,c~s)
+  Molecules bnrp1 vegf(nrp1bd!1,c~s).NRP1(vegfabd!1,c~s)
+  Molecules bvegfr1 vegf(r!1,nrp1bd,c~s).vegfr1(l2!1,c~s)
+  Molecules bvegfr1dimer  vegf(r!1,r!2,c~s).vegfr1(l2!1,c~s).vegfr1(l2!2,c~s)
+  Molecules bvegfr2_2 vegf(r!1,c~s).vegfr2(l1!1,c~s)
+  Molecules bvegfr1_2 vegf(r!1,c~s).vegfr1(l2!1,c~s)
+  Molecules vegfbound_1 vegf(r!+,nrp1bd,c~s)
+  Species vegfbound_2 vegf(r,nrp1bd!+,c~s)
+  Molecules vegfbound_3 vegf(r!+,c~s)
+  Species vegfbound_4 vegf(r,r,nrp1bd!1,c~s).NRP1(vegfabd!1,c~s)
+  Molecules Iopenstim    Istim()
+  Molecules nrp1r1s NRP1(vegfabd!1,c~s).vegfr1(nrp1bd!1,c~s)
+  Molecules CIB1mem CIB1(location~membrane)
+  Molecules freepip3 PI(PIsite~4P)
+  Molecules  ps473akt AKT(S473~pS)
+  Molecules  ps308akt AKT(T308~pS)
+  Molecules phosphoAxltotal  Axl(Ysrc~pY!?,Yaxl~pY!?)
+  Molecules phosphoAxlpSrc  Axl(Ysrc~pY!?)
+  Molecules phosphoAxlpauto  Axl(Yaxl~pY!?)
+  Molecules activeSrc   TSADSrc(Y1~pY!?)
+  Molecules phosphoeNOS eNOS(S1177~pS) 
+
+  Molecules ppAkt AKT(S473~pS,T308~pS)
+
+end observables
+
+begin reaction rules
+  # Ligand-independent coupling of the receptors
+  vegfr2(l1,dimer,c~s) + vegfr2(l1,dimer,c~s) <->  \
+  vegfr2(l1,dimer!1,c~s).vegfr2(l1,dimer!1,c~s) kcRR,kdRR
+
+  vegfr2(l1,dimer,c~s) + vegfr1(l2,dimer,c~s) <-> \
+  vegfr2(l1,dimer!1,c~s).vegfr1(l2,dimer!1,c~s) kcRR,kdRR
+
+  vegfr1(l2,dimer,c~s) + vegfr1(l2,dimer,c~s) <-> \
+  vegfr1(l2,dimer!1,c~s).vegfr1(l2,dimer!1,c~s) kcRR,kdRR
+
+  vegf(r!1,r!2,c~s).vegfr2(l1!1,dimer,c~s).vegfr2(l1!2,dimer,c~s) <-> \
+  vegf(r!1,r!2,c~s).vegfr2(l1!1,dimer!3,c~s).vegfr2(l1!2,dimer!3,c~s)   kdeltaRR,kdRR
+
+  vegf(r!1,r!2,c~s).vegfr2(l1!1,dimer,c~s).vegfr1(l2!2,dimer,c~s) <-> \
+  vegf(r!1,r!2,c~s).vegfr2(l1!1,dimer!3,c~s).vegfr1(l2!2,dimer!3,c~s)   kdeltaRR,kdRR
+
+  vegf(r!1,r!2,c~s).vegfr1(l2!1,dimer,c~s).vegfr1(l2!2,dimer,c~s) <-> \
+  vegf(r!1,r!2,c~s).vegfr1(l2!1,dimer!3,c~s).vegfr1(l2!2,dimer!3,c~s)   kdeltaRR,kdRR
+
+  # VEGFR1 binding to NRP1 
+
+  vegfr1(nrp1bd,c~s) + NRP1(vegfabd,c~s) <-> vegfr1(nrp1bd!1,c~s).NRP1(vegfabd!1,c~s) kNRP1VEGFR1on,kNRP1VEGFR1off
+
+  #Binding of VEGF165a to NRP1
+  I() -> I() + vegf(r,r,nrp1bd,c~s)  -(kVEGFNRP1on*cellarea/fextmolar)*vegffrees*nrp1s+(kVEGFNRP1off*cellarea/fextmolar)*vegfnrp1s 
+  vegf(r,r,nrp1bd,c~s) + NRP1(vegfabd,c~s) -> vegf(r,r,nrp1bd,c~s) + vegf(r,r,nrp1bd!1,c~s).NRP1(vegfabd!1,c~s) kVEGFNRP1on
+  vegf(r,r,nrp1bd!1,c~s).NRP1(vegfabd!1,c~s) ->  NRP1(vegfabd,c~s)    kVEGFNRP1off
+
+  vegf(r,r,nrp1bd!+,c~s) + vegfr2(l1,dimer,c~s) <-> \
+  vegf(r!2,r,nrp1bd!+,c~s).vegfr2(l1!2,dimer,c~s) kNRP1VEGFR2on,kNRP1VEGFR2off
+  vegf(r,r,nrp1bd!+,c~s) + vegfr2(l1,dimer!3,c~s).vegfr2(l1,dimer!3,c~s) <-> \
+  vegf(r!2,r,nrp1bd!+,c~s).vegfr2(l1!2,dimer!3,c~s).vegfr2(l1,dimer!3,c~s) kNRP1VEGFR2on,kNRP1VEGFR2off
+  vegf(r,r,nrp1bd!+,c~s) + vegfr2(l1,dimer!3,c~s).vegfr1(l2,dimer!3,c~s) <-> \
+  vegf(r!2,r,nrp1bd!+,c~s).vegfr2(l1!2,dimer!3,c~s).vegfr1(l2,dimer!3,c~s) kNRP1VEGFR2on,kNRP1VEGFR2off
+
+  vegf(r,r,nrp1bd!+,c~s) + vegfr1(l2,dimer,c~s) <-> \
+  vegf(r!2,r,nrp1bd!+,c~s).vegfr1(l2!2,dimer,c~s) kcVR,kvr1off
+  vegf(r,r,nrp1bd!+,c~s) + vegfr1(l2,dimer!3,c~s).vegfr1(l2,dimer!3,c~s) <-> \
+  vegf(r!2,r,nrp1bd!+,c~s).vegfr1(l2!2,dimer!3,c~s).vegfr1(l2,dimer!3,c~s) kcVR,kvr1off
+  vegf(r,r,nrp1bd!+,c~s) + vegfr1(l2,dimer!3,c~s).vegfr2(l1,dimer!3,c~s) <-> \
+  vegf(r!2,r,nrp1bd!+,c~s).vegfr1(l2!2,dimer!3,c~s).vegfr2(l1,dimer!3,c~s) kcVR,kvr1off
+
+
+  # Binding of VEGF165a to VEGFR2 receptors
+
+  I() -> I() + vegf(r,r,nrp1bd,c~s)     -(kvron*cellarea/fextmolar)*vegffrees*vr2s+(kvroff*cellarea/fextmolar)*vegfr2s
+  vegf(r,r,nrp1bd,c~s) + vegfr2(l1,c~s) -> \
+  vegf(r,r,nrp1bd,c~s) + vegf(r!1,r,nrp1bd,c~s).vegfr2(l1!1,c~s) kvron
+  vegf(r!1,r,nrp1bd,c~s).vegfr2(l1!1,c~s) -> vegfr2(l1,c~s) kvroff
+
+  vegf(r!1,r,nrp1bd,c~s).vegfr2(l1!1,dimer,c~s) + vegfr2(l1,dimer,c~s) <-> \
+  vegf(r!1,r!2,nrp1bd,c~s).vegfr2(l1!1,dimer,c~s).vegfr2(l1!2,dimer,c~s) kcVR,kvroff
+  vegf(r!1,r,nrp1bd,c~s).vegfr2(l1!1,dimer,c~s) + vegfr1(l2,dimer,c~s) <-> \
+  vegf(r!1,r!2,nrp1bd,c~s).vegfr2(l1!1,dimer,c~s).vegfr1(l2!2,dimer,c~s) kcVR,kvr1off
+
+  vegf(r!1,r,nrp1bd,c~s).vegfr2(l1!1,dimer!3,c~s).vegfr2(l1,dimer!3,c~s) <-> \
+  vegf(r!1,r!2,nrp1bd,c~s).vegfr2(l1!1,dimer!3,c~s).vegfr2(l1!2,dimer!3,c~s) kdeltaVR,kvroff
+  vegf(r!1,r,nrp1bd,c~s).vegfr2(l1!1,dimer!3,c~s).vegfr1(l2,dimer!3,c~s) <-> \
+  vegf(r!1,r!2,nrp1bd,c~s).vegfr2(l1!1,dimer!3,c~s).vegfr1(l2!2,dimer!3,c~s) kdeltaVR,kvr1off
+
+  vegf(r!1,r,nrp1bd,c~s).vegfr1(l2!1,dimer,c~s) + vegfr1(l2,dimer,c~s) <-> \
+  vegf(r!1,r!2,nrp1bd,c~s).vegfr1(l2!1,dimer,c~s).vegfr1(l2!2,dimer,c~s) kcVR,kvr1off
+  vegf(r!1,r,nrp1bd,c~s).vegfr1(l2!1,dimer,c~s) + vegfr2(l1,dimer,c~s) <-> \
+  vegf(r!1,r!2,nrp1bd,c~s).vegfr1(l2!1,dimer,c~s).vegfr2(l1!2,dimer,c~s) kcVR,kvroff
+  vegf(r!1,r,nrp1bd,c~s).vegfr1(l2!1,dimer!3,c~s).vegfr1(l2,dimer!3,c~s) <-> \
+  vegf(r!1,r!2,nrp1bd,c~s).vegfr1(l2!1,dimer!3,c~s).vegfr1(l2!2,dimer!3,c~s) kdeltaVR,kvr1off
+  vegf(r!1,r,nrp1bd,c~s).vegfr1(l2!1,dimer!3,c~s).vegfr2(l1,dimer!3,c~s) <-> \
+  vegf(r!1,r!2,nrp1bd,c~s).vegfr1(l2!1,dimer!3,c~s).vegfr2(l1!2,dimer!3,c~s) kdeltaVR,kvroff
+
+  vegf(r!1,r,nrp1bd!+,c~s).vegfr2(l1!1,dimer,c~s) + vegfr2(l1,dimer,c~s) <-> \
+  vegf(r!1,r!2,nrp1bd!+,c~s).vegfr2(l1!1,dimer,c~s).vegfr2(l1!2,dimer,c~s) kNRP1VEGFR2on,kNRP1VEGFR2off
+  vegf(r!1,r,nrp1bd!+,c~s).vegfr2(l1!1,dimer,c~s) + vegfr1(l2,dimer,c~s) <-> \
+  vegf(r!1,r!2,nrp1bd!+,c~s).vegfr2(l1!1,dimer,c~s).vegfr1(l2!2,dimer,c~s) kcVR,kvr1off
+
+  vegf(r!1,r,nrp1bd!+,c~s).vegfr2(l1!1,dimer!3,c~s).vegfr2(l1,dimer!3,c~s) <-> \
+  vegf(r!1,r!2,nrp1bd!+,c~s).vegfr2(l1!1,dimer!3,c~s).vegfr2(l1!2,dimer!3,c~s) kdeltaVR,kvroff
+  vegf(r!1,r,nrp1bd!+,c~s).vegfr2(l1!1,dimer!3,c~s).vegfr1(l2,dimer!3,c~s) <-> \
+  vegf(r!1,r!2,nrp1bd!+,c~s).vegfr2(l1!1,dimer!3,c~s).vegfr1(l2!2,dimer!3,c~s) kdeltaVR,kvr1off
+  vegf(r!1,r,nrp1bd!+,c~s).vegfr1(l2!1,dimer,c~s) + vegfr1(l2,dimer,c~s) <-> \
+  vegf(r!1,r!2,nrp1bd!+,c~s).vegfr1(l2!1,dimer,c~s).vegfr1(l2!2,dimer,c~s) kcVR,kvr1off
+
+  vegf(r!1,r,nrp1bd!+,c~s).vegfr1(l2!1,dimer,c~s) + vegfr2(l1,dimer,c~s) <-> \
+  vegf(r!1,r!2,nrp1bd!+,c~s).vegfr1(l2!1,dimer,c~s).vegfr2(l1!2,dimer,c~s) kNRP1VEGFR2on,kNRP1VEGFR2off
+  vegf(r!1,r,nrp1bd!+,c~s).vegfr1(l2!1,dimer!3,c~s).vegfr1(l2,dimer!3,c~s) <-> \
+  vegf(r!1,r!2,nrp1bd!+,c~s).vegfr1(l2!1,dimer!3,c~s).vegfr1(l2!2,dimer!3,c~s) kdeltaVR,kvr1off
+  vegf(r!1,r,nrp1bd!+,c~s).vegfr1(l2!1,dimer!3,c~s).vegfr2(l1,dimer!3,c~s) <-> \
+  vegf(r!1,r!2,nrp1bd!+,c~s).vegfr1(l2!1,dimer!3,c~s).vegfr2(l1!2,dimer!3,c~s) kdeltaVR,kvroff
+
+  vegf(r!1,r!2,nrp1bd,c~s).vegfr2(l1!1,dimer!3,c~s).vegfr2(l1!2,dimer!3,c~s) + NRP1(vegfabd,c~s)  <-> \
+  vegf(r!1,r!2,nrp1bd!4,c~s).vegfr2(l1!1,dimer!3,c~s).vegfr2(l1!2,dimer!3,c~s).NRP1(vegfabd!4,c~s)   kVEGFR2NRP1on,kVEGFR2NRP1off
+
+  vegf(r!1,r!2,nrp1bd,c~s).vegfr1(l2!1,dimer!3,c~s).vegfr1(l2!2,dimer!3,c~s) + NRP1(vegfabd,c~s)  <-> \
+  vegf(r!1,r!2,nrp1bd!4,c~s).vegfr1(l2!1,dimer!3,c~s).vegfr1(l2!2,dimer!3,c~s).NRP1(vegfabd!4,c~s)   kVEGFR2NRP1on,kVEGFR2NRP1off
+
+  vegf(r!1,r!2,nrp1bd,c~s).vegfr2(l1!1,dimer!3,c~s).vegfr1(l2!2,dimer!3,c~s) + NRP1(vegfabd,c~s)  <-> \
+  vegf(r!1,r!2,nrp1bd!4,c~s).vegfr2(l1!1,dimer!3,c~s).vegfr1(l2!2,dimer!3,c~s).NRP1(vegfabd!4,c~s)   kVEGFR2NRP1on,kVEGFR2NRP1off
+
+  vegf(r!1,r!2,nrp1bd,c~s).vegfr2(l1!1,dimer,c~s).vegfr2(l1!2,dimer,c~s) + NRP1(vegfabd,c~s)  <-> \
+  vegf(r!1,r!2,nrp1bd!4,c~s).vegfr2(l1!1,dimer,c~s).vegfr2(l1!2,dimer,c~s).NRP1(vegfabd!4,c~s)   kVEGFR2NRP1on,kVEGFR2NRP1off
+  vegf(r!1,r,nrp1bd,c~s).vegfr2(l1!1,c~s) + NRP1(vegfabd,c~s) <-> vegf(r!1,r,nrp1bd!2,c~s).vegfr2(l1!1,c~s).NRP1(vegfabd!2,c~s)  kVEGFR2NRP1on,kVEGFR2NRP1off
+  vegf(r!1,r,nrp1bd,c~s).vegfr1(l2!1,c~s) + NRP1(vegfabd,c~s) <-> vegf(r!1,r,nrp1bd!2,c~s).vegfr1(l2!1,c~s).NRP1(vegfabd!2,c~s)  kVEGFR1NRP1on,kVEGFR1NRP1off
+
+  ########################
+
+
+  # vegf165a binding to vegfr1
+  I() -> I() + vegf(r,r,nrp1bd,c~s)   -kvr1on*cellarea/fextmolar*vegffrees*vr1s+kvr1off*vegfr1s*(cellarea/fextmolar)
+  vegf(r,r,nrp1bd,c~s) + vegfr1(l2,c~s) -> \
+  vegf(r,r,nrp1bd,c~s) + vegf(r!1,r,nrp1bd,c~s).vegfr1(l2!1,c~s) kvr1on
+  vegf(r!1,r,nrp1bd,c~s).vegfr1(l2!1,c~s) -> vegfr1(l2,c~s) kvr1off
+
+  vegf(r!1,r,c~s).vegfr1(l2!1,dimer,c~s) + vegfr1(l2,dimer,c~s) <-> \
+  vegf(r!1,r!2,c~s).vegfr1(l2!1,dimer,c~s).vegfr1(l2!2,dimer,c~s) kcVR,kvr1off
+  vegf(r!1,r,c~s).vegfr1(l2!1,dimer,c~s) + vegfr2(l1,dimer,c~s) <-> \
+  vegf(r!1,r!2,c~s).vegfr1(l2!1,dimer,c~s).vegfr2(l1!2,dimer,c~s) kcVR,kvroff
+  vegf(r!1,r,c~s).vegfr1(l2!1,dimer!3,c~s).vegfr1(l2,dimer!3,c~s) <-> \
+  vegf(r!1,r!2,c~s).vegfr1(l2!1,dimer!3,c~s).vegfr1(l2!2,dimer!3,c~s) kdeltaVR,kvr1off
+  vegf(r!1,r,c~s).vegfr1(l2!1,dimer!3,c~s).vegfr2(l1,dimer!3,c~s) <-> \
+  vegf(r!1,r!2,c~s).vegfr1(l2!1,dimer!3,c~s).vegfr2(l1!2,dimer!3,c~s) kdeltaVR,kvroff
+
+  #################################
+
+  # Receptor phosphorylation
+
+  vegf(r!1,r!2,c~s).vegfr2(l1!1,c~s).vegfr2(l1!2,Y1175~Y,c~s) -> \
+  vegf(r!1,r!2,c~s).vegfr2(l1!1,c~s).vegfr2(l1!2,Y1175~pY,c~s) kpr2
+
+  vegf(r!1,r!2,c~i).vegfr2(l1!1,c~i).vegfr2(l1!2,Y1175~Y,c~i) -> \
+  vegf(r!1,r!2,c~i).vegfr2(l1!1,c~i).vegfr2(l1!2,Y1175~pY,c~i)  kpr2
+
+  vegf(r!1,r!2,c~i2).vegfr2(l1!1,c~i2).vegfr2(l1!2,Y1175~Y,c~i2) -> \
+  vegf(r!1,r!2,c~i2).vegfr2(l1!1,c~i2).vegfr2(l1!2,Y1175~pY,c~i2)  kpr2
+
+  vegf(r!1,r!2,c~r).vegfr2(l1!1,c~r).vegfr2(l1!2,Y1175~Y,c~r) -> \
+  vegf(r!1,r!2,c~r).vegfr2(l1!1,c~r).vegfr2(l1!2,Y1175~pY,c~r)  kpr2
+
+  # Dephosphorylation of VEGFR2 species
+
+  vegfr2(Y1175~pY,CD47bd,c~s) -> vegfr2(Y1175~Y,CD47bd,c~s)       kdps
+  vegfr2(Y1175~pY,CD47bd!3,c~s).CD47SIRPa(TSP1bd,VEGFR2bd!3,c~s) -> vegfr2(Y1175~Y,CD47bd!3,c~s).CD47SIRPa(TSP1bd,VEGFR2bd!3,c~s)       kdps
+  vegfr2(Y1175~pY,CD47bd!3,c~s).CD47SIRPa(TSP1bd!+,VEGFR2bd!3,c~s) -> vegfr2(Y1175~Y,CD47bd!3,c~s).CD47SIRPa(TSP1bd!+,VEGFR2bd!3,c~s)      kdps*fTSP1dp
+
+  vegfr2(Y1175~pY,CD47bd,c~i) -> vegfr2(Y1175~Y,CD47bd,c~i)      kdpi
+  vegfr2(Y1175~pY,CD47bd!3,c~i).CD47SIRPa(TSP1bd,VEGFR2bd!3,c~i) -> vegfr2(Y1175~Y,CD47bd!3,c~i).CD47SIRPa(TSP1bd,VEGFR2bd!3,c~i)      kdpi
+  vegfr2(Y1175~pY,CD47bd!3,c~i).CD47SIRPa(TSP1bd!+,VEGFR2bd!3,c~i) -> vegfr2(Y1175~Y,CD47bd!3,c~i).CD47SIRPa(TSP1bd!+,VEGFR2bd!3,c~i)      kdpi*fTSP1dp
+
+  vegfr2(Y1175~pY,CD47bd,c~i2) -> vegfr2(Y1175~Y,CD47bd,c~i2)      kdpi
+  vegfr2(Y1175~pY,CD47bd!3,c~i2).CD47SIRPa(TSP1bd,VEGFR2bd!3,c~i2) -> vegfr2(Y1175~Y,CD47bd!3,c~i2).CD47SIRPa(TSP1bd,VEGFR2bd!3,c~i2)      kdpi
+  vegfr2(Y1175~pY,CD47bd!3,c~i2).CD47SIRPa(TSP1bd!+,VEGFR2bd!3,c~i2) -> vegfr2(Y1175~Y,CD47bd!3,c~i2).CD47SIRPa(TSP1bd!+,VEGFR2bd!3,c~i2)      kdpi*fTSP1dp
+
+
+  vegfr2(Y1175~pY,c~r) -> vegfr2(Y1175~Y,c~r)      kdpr
+
+
+  # Internalization s to i
+
+  vegf(r!1,r!2,nrp1bd,c~s).vegfr2(l1!1,CD47bd,dimer,c~s).vegfr2(l1!2,CD47bd,dimer,c~s) -> \
+  vegf(r!1,r!2,nrp1bd,c~i).vegfr2(l1!1,CD47bd,dimer,c~i).vegfr2(l1!2,CD47bd,dimer,c~i) kr2si
+  vegf(r!1,r!2,nrp1bd,c~s).vegfr2(l1!1,CD47bd,dimer!6,c~s).vegfr2(l1!2,CD47bd,dimer!6,c~s) -> \
+  vegf(r!1,r!2,nrp1bd,c~i).vegfr2(l1!1,CD47bd,dimer!6,c~i).vegfr2(l1!2,CD47bd,dimer!6,c~i) kr2si
+
+  vegf(r!1,r!2,nrp1bd,c~s).vegfr2(l1!1,CD47bd!3,dimer,c~s).CD47SIRPa(VEGFR2bd!3,c~s).vegfr2(l1!2,CD47bd,dimer,c~s) -> \
+  vegf(r!1,r!2,nrp1bd,c~i).vegfr2(l1!1,CD47bd!3,dimer,c~i).CD47SIRPa(VEGFR2bd!3,c~i).vegfr2(l1!2,CD47bd,dimer,c~i) kr2si
+  vegf(r!1,r!2,nrp1bd,c~s).vegfr2(l1!1,CD47bd!3,dimer!6,c~s).CD47SIRPa(VEGFR2bd!3,c~s).vegfr2(l1!2,CD47bd,dimer!6,c~s) -> \
+  vegf(r!1,r!2,nrp1bd,c~i).vegfr2(l1!1,CD47bd!3,dimer!6,c~i).CD47SIRPa(VEGFR2bd!3,c~i).vegfr2(l1!2,CD47bd,dimer!6,c~i) kr2si
+
+  vegf(r!1,r!2,nrp1bd,c~s).vegfr2(l1!1,CD47bd!3,dimer,c~s).CD47SIRPa(VEGFR2bd!3,c~s).vegfr2(l1!2,CD47bd!4,dimer,c~s).CD47SIRPa(VEGFR2bd!4,c~s) -> \
+  vegf(r!1,r!2,nrp1bd,c~i).vegfr2(l1!1,CD47bd!3,dimer,c~i).CD47SIRPa(VEGFR2bd!3,c~i).vegfr2(l1!2,CD47bd!4,dimer,c~i).CD47SIRPa(VEGFR2bd!4,c~i) kr2si
+  vegf(r!1,r!2,nrp1bd,c~s).vegfr2(l1!1,CD47bd!3,dimer!6,c~s).CD47SIRPa(VEGFR2bd!3,c~s).vegfr2(l1!2,CD47bd!4,dimer!6,c~s).CD47SIRPa(VEGFR2bd!4,c~s) -> \
+  vegf(r!1,r!2,nrp1bd,c~i).vegfr2(l1!1,CD47bd!3,dimer!6,c~i).CD47SIRPa(VEGFR2bd!3,c~i).vegfr2(l1!2,CD47bd!4,dimer!6,c~i).CD47SIRPa(VEGFR2bd!4,c~i) kr2si
+
+  vegf(r!1,r!2,nrp1bd!9,c~s).NRP1(vegfabd!9,c~s).vegfr2(l1!1,CD47bd,dimer,c~s).vegfr2(l1!2,CD47bd,dimer,c~s) -> \
+  vegf(r!1,r!2,nrp1bd!9,c~i).NRP1(vegfabd!9,c~i).vegfr2(l1!1,CD47bd,dimer,c~i).vegfr2(l1!2,CD47bd,dimer,c~i) kr2NRP1si
+  vegf(r!1,r!2,nrp1bd!9,c~s).NRP1(vegfabd!9,c~s).vegfr2(l1!1,CD47bd!3,dimer,c~s).CD47SIRPa(VEGFR2bd!3,c~s).vegfr2(l1!2,CD47bd,dimer,c~s) -> \
+  vegf(r!1,r!2,nrp1bd!9,c~i).NRP1(vegfabd!9,c~i).vegfr2(l1!1,CD47bd!3,dimer,c~i).CD47SIRPa(VEGFR2bd!3,c~i).vegfr2(l1!2,CD47bd,dimer,c~i) kr2NRP1si
+  vegf(r!1,r!2,nrp1bd!9,c~s).NRP1(vegfabd!9,c~s).vegfr2(l1!1,CD47bd!3,dimer,c~s).CD47SIRPa(VEGFR2bd!3,c~s).vegfr2(l1!2,CD47bd!4,dimer,c~s).CD47SIRPa(VEGFR2bd!4,c~s) -> \
+  vegf(r!1,r!2,nrp1bd!9,c~i).NRP1(vegfabd!9,c~i).vegfr2(l1!1,CD47bd!3,dimer,c~i).CD47SIRPa(VEGFR2bd!3,c~i).vegfr2(l1!2,CD47bd!4,dimer,c~i).CD47SIRPa(VEGFR2bd!4,c~i) kr2NRP1si
+
+  vegf(r!1,r!2,nrp1bd!9,c~s).NRP1(vegfabd!9,c~s).vegfr2(l1!1,CD47bd,dimer!6,c~s).vegfr2(l1!2,CD47bd,dimer!6,c~s) -> \
+  vegf(r!1,r!2,nrp1bd!9,c~i).NRP1(vegfabd!9,c~i).vegfr2(l1!1,CD47bd,dimer!6,c~i).vegfr2(l1!2,CD47bd,dimer!6,c~i) kr2NRP1si
+  vegf(r!1,r!2,nrp1bd!9,c~s).NRP1(vegfabd!9,c~s).vegfr2(l1!1,CD47bd!3,dimer!6,c~s).CD47SIRPa(VEGFR2bd!3,c~s).vegfr2(l1!2,CD47bd,dimer!6,c~s) -> \
+  vegf(r!1,r!2,nrp1bd!9,c~i).NRP1(vegfabd!9,c~i).vegfr2(l1!1,CD47bd!3,dimer!6,c~i).CD47SIRPa(VEGFR2bd!3,c~i).vegfr2(l1!2,CD47bd,dimer!6,c~i) kr2NRP1si
+  vegf(r!1,r!2,nrp1bd!9,c~s).NRP1(vegfabd!9,c~s).vegfr2(l1!1,CD47bd!3,dimer!6,c~s).CD47SIRPa(VEGFR2bd!3,c~s).vegfr2(l1!2,CD47bd!4,dimer!6,c~s).CD47SIRPa(VEGFR2bd!4,c~s) -> \
+  vegf(r!1,r!2,nrp1bd!9,c~i).NRP1(vegfabd!9,c~i).vegfr2(l1!1,CD47bd!3,dimer!6,c~i).CD47SIRPa(VEGFR2bd!3,c~i).vegfr2(l1!2,CD47bd!4,dimer!6,c~i).CD47SIRPa(VEGFR2bd!4,c~i) kr2NRP1si
+
+  #From i to i2 compartment
+  vegf(r!1,r!2,nrp1bd,c~i).vegfr2(l1!1,CD47bd,dimer,c~i).vegfr2(l1!2,CD47bd,dimer,c~i) <-> \
+  vegf(r!1,r!2,nrp1bd,c~i2).vegfr2(l1!1,CD47bd,dimer,c~i2).vegfr2(l1!2,CD47bd,dimer,c~i2) kr2ii2,kr2i2i
+  vegf(r!1,r!2,nrp1bd,c~i).vegfr2(l1!1,CD47bd,dimer!6,c~i).vegfr2(l1!2,CD47bd,dimer!6,c~i) <-> \
+  vegf(r!1,r!2,nrp1bd,c~i2).vegfr2(l1!1,CD47bd,dimer!6,c~i2).vegfr2(l1!2,CD47bd,dimer!6,c~i2) kr2ii2,kr2i2i
+
+  vegf(r!1,r!2,nrp1bd,c~i).vegfr2(l1!1,CD47bd!3,dimer,c~i).CD47SIRPa(VEGFR2bd!3,c~i).vegfr2(l1!2,CD47bd,dimer,c~i) <-> \
+  vegf(r!1,r!2,nrp1bd,c~i2).vegfr2(l1!1,CD47bd!3,dimer,c~i2).CD47SIRPa(VEGFR2bd!3,c~i2).vegfr2(l1!2,CD47bd,dimer,c~i2) kr2ii2,kr2i2i
+  vegf(r!1,r!2,nrp1bd,c~i).vegfr2(l1!1,CD47bd!3,dimer!4,c~i).CD47SIRPa(VEGFR2bd!3,c~i).vegfr2(l1!2,CD47bd,dimer!4,c~i) <-> \
+  vegf(r!1,r!2,nrp1bd,c~i2).vegfr2(l1!1,CD47bd!3,dimer!4,c~i2).CD47SIRPa(VEGFR2bd!3,c~i2).vegfr2(l1!2,CD47bd,dimer!4,c~i2) kr2ii2,kr2i2i
+
+  vegf(r!1,r!2,nrp1bd,c~i).vegfr2(l1!1,CD47bd!3,dimer,c~i).CD47SIRPa(VEGFR2bd!3,c~i).vegfr2(l1!2,CD47bd!4,dimer,c~i).CD47SIRPa(VEGFR2bd!4,c~i) <-> \
+  vegf(r!1,r!2,nrp1bd,c~i2).vegfr2(l1!1,CD47bd!3,dimer,c~i2).CD47SIRPa(VEGFR2bd!3,c~i2).vegfr2(l1!2,CD47bd!4,dimer,c~i2).CD47SIRPa(VEGFR2bd!4,c~i2) kr2ii2,kr2i2i
+  vegf(r!1,r!2,nrp1bd,c~i).vegfr2(l1!1,CD47bd!3,dimer!6,c~i).CD47SIRPa(VEGFR2bd!3,c~i).vegfr2(l1!2,CD47bd!4,dimer!6,c~i).CD47SIRPa(VEGFR2bd!4,c~i) <-> \
+  vegf(r!1,r!2,nrp1bd,c~i2).vegfr2(l1!1,CD47bd!3,dimer!6,c~i2).CD47SIRPa(VEGFR2bd!3,c~i2).vegfr2(l1!2,CD47bd!4,dimer!6,c~i2).CD47SIRPa(VEGFR2bd!4,c~i2) kr2ii2,kr2i2i
+
+  vegf(r!1,r!2,nrp1bd!9,c~i).NRP1(vegfabd!9,c~i).vegfr2(l1!1,CD47bd,dimer,c~i).vegfr2(l1!2,CD47bd,dimer,c~i) <-> \
+  vegf(r!1,r!2,nrp1bd!9,c~i2).NRP1(vegfabd!9,c~i2).vegfr2(l1!1,CD47bd,dimer,c~i2).vegfr2(l1!2,CD47bd,dimer,c~i2) kr2NRP1ii2,kr2NRP1i2i
+  vegf(r!1,r!2,nrp1bd!9,c~i).NRP1(vegfabd!9,c~i).vegfr2(l1!1,CD47bd,dimer!6,c~i).vegfr2(l1!2,CD47bd,dimer!6,c~i) <-> \
+  vegf(r!1,r!2,nrp1bd!9,c~i2).NRP1(vegfabd!9,c~i2).vegfr2(l1!1,CD47bd,dimer!6,c~i2).vegfr2(l1!2,CD47bd,dimer!6,c~i2) kr2NRP1ii2,kr2NRP1i2i
+
+  vegf(r!1,r!2,nrp1bd!9,c~i).NRP1(vegfabd!9,c~i).vegfr2(l1!1,CD47bd!3,dimer,c~i).CD47SIRPa(VEGFR2bd!3,c~i).vegfr2(l1!2,CD47bd,dimer,c~i) <-> \
+  vegf(r!1,r!2,nrp1bd!9,c~i2).NRP1(vegfabd!9,c~i2).vegfr2(l1!1,CD47bd!3,dimer,c~i2).CD47SIRPa(VEGFR2bd!3,c~i2).vegfr2(l1!2,CD47bd,dimer,c~i2) kr2NRP1ii2,kr2NRP1i2i
+  vegf(r!1,r!2,nrp1bd!9,c~i).NRP1(vegfabd!9,c~i).vegfr2(l1!1,CD47bd!3,dimer!6,c~i).CD47SIRPa(VEGFR2bd!3,c~i).vegfr2(l1!2,CD47bd,dimer!6,c~i) <-> \
+  vegf(r!1,r!2,nrp1bd!9,c~i2).NRP1(vegfabd!9,c~i2).vegfr2(l1!1,CD47bd!3,dimer!6,c~i2).CD47SIRPa(VEGFR2bd!3,c~i2).vegfr2(l1!2,CD47bd,dimer!6,c~i2) kr2NRP1ii2,kr2NRP1i2i
+
+  vegf(r!1,r!2,nrp1bd!9,c~i).NRP1(vegfabd!9,c~i).vegfr2(l1!1,CD47bd!3,dimer,c~i).CD47SIRPa(VEGFR2bd!3,c~i).vegfr2(l1!2,CD47bd!4,dimer,c~i).CD47SIRPa(VEGFR2bd!4,c~i) <-> \
+  vegf(r!1,r!2,nrp1bd!9,c~i2).NRP1(vegfabd!9,c~i2).vegfr2(l1!1,CD47bd!3,dimer,c~i2).CD47SIRPa(VEGFR2bd!3,c~i2).vegfr2(l1!2,CD47bd!4,dimer,c~i2).CD47SIRPa(VEGFR2bd!4,c~i2) kr2NRP1ii2,kr2NRP1i2i
+  vegf(r!1,r!2,nrp1bd!9,c~i).NRP1(vegfabd!9,c~i).vegfr2(l1!1,CD47bd!3,dimer!6,c~i).CD47SIRPa(VEGFR2bd!3,c~i).vegfr2(l1!2,CD47bd!4,dimer!6,c~i).CD47SIRPa(VEGFR2bd!4,c~i) <-> \
+  vegf(r!1,r!2,nrp1bd!9,c~i2).NRP1(vegfabd!9,c~i2).vegfr2(l1!1,CD47bd!3,dimer!6,c~i2).CD47SIRPa(VEGFR2bd!3,c~i2).vegfr2(l1!2,CD47bd!4,dimer!6,c~i2).CD47SIRPa(VEGFR2bd!4,c~i2) kr2NRP1ii2,kr2NRP1i2i
+
+  #From internalized compartment to the recycling compartment
+
+  vegf(r!1,r!2,nrp1bd!9,c~i2).NRP1(vegfabd!9,c~i2).vegfr2(l1!1,CD47bd,dimer,c~i2).vegfr2(l1!2,CD47bd,dimer,c~i2) -> \
+  vegf(r!1,r!2,nrp1bd!9,c~r).NRP1(vegfabd!9,c~r).vegfr2(l1!1,CD47bd,dimer,c~r).vegfr2(l1!2,CD47bd,dimer,c~r) kr2NRP1i2r
+  vegf(r!1,r!2,nrp1bd!9,c~i2).NRP1(vegfabd!9,c~i2).vegfr2(l1!1,CD47bd,dimer!6,c~i2).vegfr2(l1!2,CD47bd,dimer!6,c~i2) -> \
+  vegf(r!1,r!2,nrp1bd!9,c~r).NRP1(vegfabd!9,c~r).vegfr2(l1!1,CD47bd,dimer!6,c~r).vegfr2(l1!2,CD47bd,dimer!6,c~r) kr2NRP1i2r
+
+  vegf(r!1,r!2,nrp1bd!9,c~i2).NRP1(vegfabd!9,c~i2).vegfr2(l1!1,CD47bd!3,dimer,c~i2).CD47SIRPa(TSP1bd,VEGFR2bd!3,c~i2).vegfr2(l1!2,CD47bd,dimer,c~i2) -> \
+  vegf(r!1,r!2,nrp1bd!9,c~r).NRP1(vegfabd!9,c~r).vegfr2(l1!1,CD47bd!3,dimer,c~r).CD47SIRPa(TSP1bd,VEGFR2bd!3,c~r).vegfr2(l1!2,CD47bd,dimer,c~r) kr2NRP1i2r
+  vegf(r!1,r!2,nrp1bd!9,c~i2).NRP1(vegfabd!9,c~i2).vegfr2(l1!1,CD47bd!3,dimer!6,c~i2).CD47SIRPa(TSP1bd,VEGFR2bd!3,c~i2).vegfr2(l1!2,CD47bd,dimer!6,c~i2) -> \
+  vegf(r!1,r!2,nrp1bd!9,c~r).NRP1(vegfabd!9,c~r).vegfr2(l1!1,CD47bd!3,dimer!6,c~r).CD47SIRPa(TSP1bd,VEGFR2bd!3,c~r).vegfr2(l1!2,CD47bd,dimer!6,c~r) kr2NRP1i2r
+
+  vegf(r!1,r!2,nrp1bd!9,c~i2).NRP1(vegfabd!9,c~i2).vegfr2(l1!1,CD47bd!3,dimer,c~i2).CD47SIRPa(TSP1bd,VEGFR2bd!3,c~i2).vegfr2(l1!2,CD47bd!4,dimer,c~i2).CD47SIRPa(TSP1bd,VEGFR2bd!4,c~i2) -> \
+  vegf(r!1,r!2,nrp1bd!9,c~r).NRP1(vegfabd!9,c~r).vegfr2(l1!1,CD47bd!3,dimer,c~r).CD47SIRPa(TSP1bd,VEGFR2bd!3,c~r).vegfr2(l1!2,CD47bd!4,dimer,c~r).CD47SIRPa(TSP1bd,VEGFR2bd!4,c~r) kr2NRP1i2r
+  vegf(r!1,r!2,nrp1bd!9,c~i2).NRP1(vegfabd!9,c~i2).vegfr2(l1!1,CD47bd!3,dimer!6,c~i2).CD47SIRPa(TSP1bd,VEGFR2bd!3,c~i2).vegfr2(l1!2,CD47bd!4,dimer!6,c~i2).CD47SIRPa(TSP1bd,VEGFR2bd!4,c~i2) -> \
+  vegf(r!1,r!2,nrp1bd!9,c~r).NRP1(vegfabd!9,c~r).vegfr2(l1!1,CD47bd!3,dimer!6,c~r).CD47SIRPa(TSP1bd,VEGFR2bd!3,c~r).vegfr2(l1!2,CD47bd!4,dimer!6,c~r).CD47SIRPa(TSP1bd,VEGFR2bd!4,c~r) kr2NRP1i2r
+
+  #####################################################################################################################################################################################################
+  vegf(r!1,r!2,nrp1bd!9,c~i2).NRP1(vegfabd!9,c~i2).vegfr2(l1!1,CD47bd!3,dimer,c~i2).CD47SIRPa(TSP1bd!+,VEGFR2bd!3,c~i2).vegfr2(l1!2,CD47bd,dimer,c~i2) -> \
+  vegf(r!1,r!2,nrp1bd!9,c~r).NRP1(vegfabd!9,c~r).vegfr2(l1!1,CD47bd!3,dimer,c~r).CD47SIRPa(TSP1bd!+,VEGFR2bd!3,c~r).vegfr2(l1!2,CD47bd,dimer,c~r) kr2NRP1i2r*fTSP1i2r
+  vegf(r!1,r!2,nrp1bd!9,c~i2).NRP1(vegfabd!9,c~i2).vegfr2(l1!1,CD47bd!3,dimer!6,c~i2).CD47SIRPa(TSP1bd!+,VEGFR2bd!3,c~i2).vegfr2(l1!2,CD47bd,dimer!6,c~i2) -> \
+  vegf(r!1,r!2,nrp1bd!9,c~r).NRP1(vegfabd!9,c~r).vegfr2(l1!1,CD47bd!3,dimer!6,c~r).CD47SIRPa(TSP1bd!+,VEGFR2bd!3,c~r).vegfr2(l1!2,CD47bd,dimer!6,c~r) kr2NRP1i2r*fTSP1i2r
+
+  vegf(r!1,r!2,nrp1bd!9,c~i2).NRP1(vegfabd!9,c~i2).vegfr2(l1!1,CD47bd!3,dimer,c~i2).CD47SIRPa(TSP1bd!+,VEGFR2bd!3,c~i2).vegfr2(l1!2,CD47bd!4,dimer,c~i2).CD47SIRPa(VEGFR2bd!4,c~i2) -> \
+  vegf(r!1,r!2,nrp1bd!9,c~r).NRP1(vegfabd!9,c~r).vegfr2(l1!1,CD47bd!3,dimer,c~r).CD47SIRPa(TSP1bd!+,VEGFR2bd!3,c~r).vegfr2(l1!2,CD47bd!4,dimer,c~r).CD47SIRPa(VEGFR2bd!4,c~r) kr2NRP1i2r*fTSP1i2r
+  vegf(r!1,r!2,nrp1bd!9,c~i2).NRP1(vegfabd!9,c~i2).vegfr2(l1!1,CD47bd!3,dimer!6,c~i2).CD47SIRPa(TSP1bd!+,VEGFR2bd!3,c~i2).vegfr2(l1!2,CD47bd!4,dimer!6,c~i2).CD47SIRPa(VEGFR2bd!4,c~i2) -> \
+  vegf(r!1,r!2,nrp1bd!9,c~r).NRP1(vegfabd!9,c~r).vegfr2(l1!1,CD47bd!3,dimer!6,c~r).CD47SIRPa(TSP1bd!+,VEGFR2bd!3,c~r).vegfr2(l1!2,CD47bd!4,dimer!6,c~r).CD47SIRPa(VEGFR2bd!4,c~r) kr2NRP1i2r*fTSP1i2r
+
+  ######################################################################################################################################################################################################
+
+  # Recycling r to s
+
+  vegfr2(l1,Y1175~Y,CD47bd,dimer,c~r) -> vegfr2(l1,Y1175~Y,CD47bd,dimer,c~s) kr2rs
+  NRP1(vegfabd,c~r) -> NRP1(vegfabd,c~s)   kr2rs
+  CD47SIRPa(TSP1bd,VEGFR2bd,c~r) -> CD47SIRPa(TSP1bd,VEGFR2bd,c~s) kr2rs
+
+  vegf(r!1,r!2,nrp1bd!9,c~r).NRP1(vegfabd!9,c~r).vegfr2(l1!1,dimer,c~r).vegfr2(l1!2,dimer,c~r) -> NRP1(vegfabd,c~r) + vegfr2(l1,dimer,c~r) + vegfr2(l1,dimer,c~r)  kvroff
+  vegf(r!1,r!2,nrp1bd!9,c~r).NRP1(vegfabd!9,c~r).vegfr2(l1!1,dimer!6,c~r).vegfr2(l1!2,dimer!6,c~r) -> NRP1(vegfabd,c~r) + vegfr2(l1,dimer!6,c~r).vegfr2(l1,dimer!6,c~r) kvroff
+  vegfr2(dimer!6,c~r).vegfr2(dimer!6,c~r) -> vegfr2(dimer,c~r) + vegfr2(dimer,c~r) kdRR
+  vegfr2(CD47bd!3,c~r).CD47SIRPa(VEGFR2bd!3,c~r) -> vegfr2(CD47bd,c~r) + CD47SIRPa(VEGFR2bd,c~r) kr2CD47off
+  CD47SIRPa(TSP1bd!1,c~r).TSP1(CD47bd!1) -> CD47SIRPa(TSP1bd,c~r) koffCD47TSP1
+
+  # Receptor degradation
+
+  vegf(r!1,r!2,nrp1bd,c~i).vegfr2(l1!1,Y1175~pY,CD47bd,c~i).vegfr2(l1!2,CD47bd,c~i) -> Trash() kdegi0
+  vegf(r!1,r!2,nrp1bd,c~i).vegfr2(l1!1,Y1175~Y,CD47bd,c~i).vegfr2(l1!2,Y1175~Y,CD47bd,c~i) -> Trash() kdegi0noP
+  vegf(r!1,r!2,nrp1bd,c~i).vegfr2(l1!1,Y1175~pY,CD47bd!3,c~i).CD47SIRPa(TSP1bd,VEGFR2bd!3,c~i).vegfr2(l1!2,CD47bd,c~i) -> Trash() kdegi0
+  vegf(r!1,r!2,nrp1bd,c~i).vegfr2(l1!1,Y1175~Y,CD47bd!3,c~i).CD47SIRPa(TSP1bd,VEGFR2bd!3,c~i).vegfr2(l1!2,Y1175~Y,CD47bd,c~i) -> Trash() kdegi0noP
+  vegf(r!1,r!2,nrp1bd,c~i).vegfr2(l1!1,Y1175~pY,CD47bd!3,c~i).CD47SIRPa(TSP1bd,VEGFR2bd!3,c~i).vegfr2(l1!2,CD47bd!4,c~i).CD47SIRPa(TSP1bd,VEGFR2bd!4,c~i) -> Trash() kdegi0
+  vegf(r!1,r!2,nrp1bd,c~i).vegfr2(l1!1,Y1175~Y,CD47bd!3,c~i).CD47SIRPa(TSP1bd,VEGFR2bd!3,c~i).vegfr2(l1!2,Y1175~Y,CD47bd!4,c~i).CD47SIRPa(TSP1bd,VEGFR2bd!4,c~i) -> Trash() kdegi0noP
+
+  vegf(r!1,r!2,nrp1bd,c~i2).vegfr2(l1!1,Y1175~pY,CD47bd,c~i2).vegfr2(l1!2,CD47bd,c~i2) -> Trash() kdegi20
+  vegf(r!1,r!2,nrp1bd,c~i2).vegfr2(l1!1,Y1175~Y,CD47bd,c~i2).vegfr2(l1!2,Y1175~Y,CD47bd,c~i2) -> Trash() kdegi20noP
+  vegf(r!1,r!2,nrp1bd,c~i2).vegfr2(l1!1,Y1175~pY,CD47bd!3,c~i2).CD47SIRPa(TSP1bd,VEGFR2bd!3,c~i2).vegfr2(l1!2,CD47bd,c~i2) -> Trash() kdegi20
+  vegf(r!1,r!2,nrp1bd,c~i2).vegfr2(l1!1,Y1175~Y,CD47bd!3,c~i2).CD47SIRPa(TSP1bd,VEGFR2bd!3,c~i2).vegfr2(l1!2,Y1175~Y,CD47bd,c~i2) -> Trash() kdegi20noP
+  vegf(r!1,r!2,nrp1bd,c~i2).vegfr2(l1!1,Y1175~pY,CD47bd!3,c~i2).CD47SIRPa(TSP1bd,VEGFR2bd!3,c~i2).vegfr2(l1!2,CD47bd!4,c~i2).CD47SIRPa(TSP1bd,VEGFR2bd!4,c~i2) -> Trash() kdegi20
+  vegf(r!1,r!2,nrp1bd,c~i2).vegfr2(l1!1,Y1175~Y,CD47bd!3,c~i2).CD47SIRPa(TSP1bd,VEGFR2bd!3,c~i2).vegfr2(l1!2,Y1175~Y,CD47bd!4,c~i2).CD47SIRPa(TSP1bd,VEGFR2bd!4,c~i2) -> Trash() kdegi20noP
+
+  vegf(r!1,r!2,nrp1bd!9,c~i).NRP1(vegfabd!9,c~i).vegfr2(l1!1,Y1175~pY,CD47bd,c~i).vegfr2(l1!2,CD47bd,c~i) -> Trash() kdegr2NRP1i0
+  vegf(r!1,r!2,nrp1bd!9,c~i).NRP1(vegfabd!9,c~i).vegfr2(l1!1,Y1175~Y,CD47bd,c~i).vegfr2(l1!2,Y1175~Y,CD47bd,c~i) -> Trash() kdegr2NRP1i0noP
+  vegf(r!1,r!2,nrp1bd!9,c~i).NRP1(vegfabd!9,c~i).vegfr2(l1!1,Y1175~pY,CD47bd!3,c~i).CD47SIRPa(TSP1bd,VEGFR2bd!3,c~i).vegfr2(l1!2,CD47bd,c~i) -> Trash() kdegr2NRP1i0
+  vegf(r!1,r!2,nrp1bd!9,c~i).NRP1(vegfabd!9,c~i).vegfr2(l1!1,Y1175~Y,CD47bd!3,c~i).CD47SIRPa(TSP1bd,VEGFR2bd!3,c~i).vegfr2(l1!2,Y1175~Y,CD47bd,c~i) -> Trash() kdegr2NRP1i0noP
+  vegf(r!1,r!2,nrp1bd!9,c~i).NRP1(vegfabd!9,c~i).vegfr2(l1!1,Y1175~pY,CD47bd!3,c~i).CD47SIRPa(TSP1bd,VEGFR2bd!3,c~i).vegfr2(l1!2,CD47bd!4,c~i).CD47SIRPa(TSP1bd,VEGFR2bd!4,c~i) -> Trash() kdegr2NRP1i0
+  vegf(r!1,r!2,nrp1bd!9,c~i).NRP1(vegfabd!9,c~i).vegfr2(l1!1,Y1175~Y,CD47bd!3,c~i).CD47SIRPa(TSP1bd,VEGFR2bd!3,c~i).vegfr2(l1!2,Y1175~Y,CD47bd!4,c~i).CD47SIRPa(TSP1bd,VEGFR2bd!4,c~i) -> Trash() kdegr2NRP1i0noP
+
+  vegf(r!1,r!2,nrp1bd!9,c~i2).NRP1(vegfabd!9,c~i2).vegfr2(l1!1,Y1175~pY,CD47bd,c~i2).vegfr2(l1!2,CD47bd,c~i2) -> Trash() kdegr2NRP1i20
+  vegf(r!1,r!2,nrp1bd!9,c~i2).NRP1(vegfabd!9,c~i2).vegfr2(l1!1,Y1175~Y,CD47bd,c~i2).vegfr2(l1!2,Y1175~Y,CD47bd,c~i2) -> Trash() kdegr2NRP1i20noP
+  vegf(r!1,r!2,nrp1bd!9,c~i2).NRP1(vegfabd!9,c~i2).vegfr2(l1!1,Y1175~pY,CD47bd!3,c~i2).CD47SIRPa(TSP1bd,VEGFR2bd!3,c~i2).vegfr2(l1!2,CD47bd,c~i2) -> Trash() kdegr2NRP1i20
+  vegf(r!1,r!2,nrp1bd!9,c~i2).NRP1(vegfabd!9,c~i2).vegfr2(l1!1,Y1175~Y,CD47bd!3,c~i2).CD47SIRPa(TSP1bd,VEGFR2bd!3,c~i2).vegfr2(l1!2,Y1175~Y,CD47bd,c~i2) -> Trash() kdegr2NRP1i20noP
+  vegf(r!1,r!2,nrp1bd!9,c~i2).NRP1(vegfabd!9,c~i2).vegfr2(l1!1,Y1175~pY,CD47bd!3,c~i2).CD47SIRPa(TSP1bd,VEGFR2bd!3,c~i2).vegfr2(l1!2,CD47bd!4,c~i2).CD47SIRPa(TSP1bd,VEGFR2bd!4,c~i2) -> Trash() kdegr2NRP1i20
+  vegf(r!1,r!2,nrp1bd!9,c~i2).NRP1(vegfabd!9,c~i2).vegfr2(l1!1,Y1175~Y,CD47bd!3,c~i2).CD47SIRPa(TSP1bd,VEGFR2bd!3,c~i2).vegfr2(l1!2,Y1175~Y,CD47bd!4,c~i2).CD47SIRPa(TSP1bd,VEGFR2bd!4,c~i2) -> Trash() kdegr2NRP1i20noP
+
+
+  #with TSP1
+
+  vegf(r!1,r!2,nrp1bd,c~i).vegfr2(l1!1,Y1175~pY,CD47bd!3,c~i).CD47SIRPa(TSP1bd!+,VEGFR2bd!3,c~i).vegfr2(l1!2,CD47bd,c~i) -> Trash() kdegi0*f_TSP1deg
+  vegf(r!1,r!2,nrp1bd,c~i).vegfr2(l1!1,Y1175~Y,CD47bd!3,c~i).CD47SIRPa(TSP1bd!+,VEGFR2bd!3,c~i).vegfr2(l1!2,Y1175~Y,CD47bd,c~i) -> Trash() kdegi0noP*f_TSP1deg
+  vegf(r!1,r!2,nrp1bd,c~i).vegfr2(l1!1,Y1175~pY,CD47bd!3,c~i).CD47SIRPa(TSP1bd!+,VEGFR2bd!3,c~i).vegfr2(l1!2,CD47bd!4,c~i).CD47SIRPa(VEGFR2bd!4,c~i) -> Trash() kdegi0*f_TSP1deg
+  vegf(r!1,r!2,nrp1bd,c~i).vegfr2(l1!1,Y1175~Y,CD47bd!3,c~i).CD47SIRPa(TSP1bd!+,VEGFR2bd!3,c~i).vegfr2(l1!2,Y1175~Y,CD47bd!4,c~i).CD47SIRPa(VEGFR2bd!4,c~i) -> Trash() kdegi0noP*f_TSP1deg
+
+  vegf(r!1,r!2,nrp1bd,c~i2).vegfr2(l1!1,Y1175~pY,CD47bd!3,c~i2).CD47SIRPa(TSP1bd!+,VEGFR2bd!3,c~i2).vegfr2(l1!2,CD47bd,c~i2) -> Trash() kdegi20*f_TSP1deg
+  vegf(r!1,r!2,nrp1bd,c~i2).vegfr2(l1!1,Y1175~Y,CD47bd!3,c~i2).CD47SIRPa(TSP1bd!+,VEGFR2bd!3,c~i2).vegfr2(l1!2,Y1175~Y,CD47bd,c~i2) -> Trash() kdegi20noP*f_TSP1deg
+  vegf(r!1,r!2,nrp1bd,c~i2).vegfr2(l1!1,Y1175~pY,CD47bd!3,c~i2).CD47SIRPa(TSP1bd!+,VEGFR2bd!3,c~i2).vegfr2(l1!2,CD47bd!4,c~i2).CD47SIRPa(VEGFR2bd!4,c~i2) -> Trash() kdegi20*f_TSP1deg
+  vegf(r!1,r!2,nrp1bd,c~i2).vegfr2(l1!1,Y1175~Y,CD47bd!3,c~i2).CD47SIRPa(TSP1bd!+,VEGFR2bd!3,c~i2).vegfr2(l1!2,Y1175~Y,CD47bd!4,c~i2).CD47SIRPa(VEGFR2bd!4,c~i2) -> Trash() kdegi20noP*f_TSP1deg
+
+  vegf(r!1,r!2,nrp1bd!9,c~i).NRP1(vegfabd!9,c~i).vegfr2(l1!1,Y1175~pY,CD47bd!3,c~i).CD47SIRPa(TSP1bd!+,VEGFR2bd!3,c~i).vegfr2(l1!2,CD47bd,c~i) -> Trash() kdegr2NRP1i0*f_TSP1deg
+  vegf(r!1,r!2,nrp1bd!9,c~i).NRP1(vegfabd!9,c~i).vegfr2(l1!1,Y1175~Y,CD47bd!3,c~i).CD47SIRPa(TSP1bd!+,VEGFR2bd!3,c~i).vegfr2(l1!2,Y1175~Y,CD47bd,c~i) -> Trash() kdegr2NRP1i0noP*f_TSP1deg
+  vegf(r!1,r!2,nrp1bd!9,c~i).NRP1(vegfabd!9,c~i).vegfr2(l1!1,Y1175~pY,CD47bd!3,c~i).CD47SIRPa(TSP1bd!+,VEGFR2bd!3,c~i).vegfr2(l1!2,CD47bd!4,c~i).CD47SIRPa(VEGFR2bd!4,c~i) -> Trash() kdegr2NRP1i0*f_TSP1deg
+  vegf(r!1,r!2,nrp1bd!9,c~i).NRP1(vegfabd!9,c~i).vegfr2(l1!1,Y1175~Y,CD47bd!3,c~i).CD47SIRPa(TSP1bd!+,VEGFR2bd!3,c~i).vegfr2(l1!2,Y1175~Y,CD47bd!4,c~i).CD47SIRPa(VEGFR2bd!4,c~i) -> Trash() kdegr2NRP1i0noP*f_TSP1deg
+
+  vegf(r!1,r!2,nrp1bd!9,c~i2).NRP1(vegfabd!9,c~i2).vegfr2(l1!1,Y1175~pY,CD47bd!3,c~i2).CD47SIRPa(TSP1bd!+,VEGFR2bd!3,c~i2).vegfr2(l1!2,CD47bd,c~i2) -> Trash() kdegr2NRP1i20*f_TSP1deg
+  vegf(r!1,r!2,nrp1bd!9,c~i2).NRP1(vegfabd!9,c~i2).vegfr2(l1!1,Y1175~Y,CD47bd!3,c~i2).CD47SIRPa(TSP1bd!+,VEGFR2bd!3,c~i2).vegfr2(l1!2,Y1175~Y,CD47bd,c~i2) -> Trash() kdegr2NRP1i20noP*f_TSP1deg
+  vegf(r!1,r!2,nrp1bd!9,c~i2).NRP1(vegfabd!9,c~i2).vegfr2(l1!1,Y1175~pY,CD47bd!3,c~i2).CD47SIRPa(TSP1bd!+,VEGFR2bd!3,c~i2).vegfr2(l1!2,CD47bd!4,c~i2).CD47SIRPa(VEGFR2bd!4,c~i2) -> Trash() kdegr2NRP1i20*f_TSP1deg
+  vegf(r!1,r!2,nrp1bd!9,c~i2).NRP1(vegfabd!9,c~i2).vegfr2(l1!1,Y1175~Y,CD47bd!3,c~i2).CD47SIRPa(TSP1bd!+,VEGFR2bd!3,c~i2).vegfr2(l1!2,Y1175~Y,CD47bd!4,c~i2).CD47SIRPa(VEGFR2bd!4,c~i2) -> Trash() kdegr2NRP1i20noP*f_TSP1deg
+
+  #Single receptor 
+  vegfr2(l1,CD47bd!1,c~i).CD47SIRPa(TSP1bd,VEGFR2bd!1,c~i) -> Trash()    ksingleR2deg
+  vegfr2(l1,CD47bd,c~i) -> Trash()    ksingleR2deg
+  vegfr2(l1,CD47bd!1,c~i).CD47SIRPa(TSP1bd!+,VEGFR2bd!1,c~i) -> Trash()    ksingleR2deg*f_TSP1deg
+
+  # R2 receptor synthesis
+
+  I() -> I() +  vegfr2(l1,Y1175~Y,CD47bd,dimer,c~s)  ksingleR2syn*VEGFR2total 
+  #I() -> I() + CD47SIRPa(VEGFR2bd,TSP1bd,Y1~Y,c~s)     ksingleR2syn*CD47free_0 
+
+
+  vegfr2(l1,CD47bd,dimer,c~s) <-> vegfr2(l1,CD47bd,dimer,c~i)   ksingleR2si,ksingleR2is
+  vegfr2(l1,CD47bd!1,dimer,c~s).CD47SIRPa(VEGFR2bd!1,c~s) <-> vegfr2(l1,CD47bd!1,dimer,c~i).CD47SIRPa(VEGFR2bd!1,c~i)   ksingleR2si,ksingleR2is
+
+  vegfr2(l1,CD47bd,dimer!3,c~s).vegfr2(l1,CD47bd,dimer!3,c~s) <-> vegfr2(l1,CD47bd,dimer!3,c~i).vegfr2(l1,CD47bd,dimer!3,c~i) ksingleR2si,ksingleR2is
+  vegfr2(l1,CD47bd!1,dimer!3,c~s).CD47SIRPa(VEGFR2bd!1,c~s).vegfr2(l1,CD47bd,dimer!3,c~s) <-> vegfr2(l1,CD47bd!1,dimer!3,c~i).CD47SIRPa(VEGFR2bd!1,c~i).vegfr2(l1,CD47bd,dimer!3,c~i) ksingleR2si,ksingleR2is
+  vegfr2(l1,CD47bd!1,dimer!3,c~s).CD47SIRPa(VEGFR2bd!1,c~s).vegfr2(l1,CD47bd!2,dimer!3,c~s).CD47SIRPa(VEGFR2bd!2,c~s) <-> \
+  vegfr2(l1,CD47bd!1,dimer!3,c~i).CD47SIRPa(VEGFR2bd!1,c~i).vegfr2(l1,CD47bd!2,dimer!3,c~i).CD47SIRPa(VEGFR2bd!2,c~i) ksingleR2si,ksingleR2is
+
+  # Activating PLCgamma
+  PLCgamma(Yplc~Y) + vegfr2(Y1175~pY,c~s) -> PLCgamma(Yplc~pY) + vegfr2(Y1175~pY,c~s) kpPLCgamma
+  PLCgamma(Yplc~Y) + vegfr2(Y1175~pY,c~i) -> PLCgamma(Yplc~pY) + vegfr2(Y1175~pY,c~i) kpPLCgamma
+  PLCgamma(Yplc~Y) + vegfr2(Y1175~pY,c~i2) -> PLCgamma(Yplc~pY) + vegfr2(Y1175~pY,c~i2) kpPLCgamma
+
+  PLCgamma(Yplc~pY) -> PLCgamma(Yplc~Y)     kdpPLCgamma
+
+  # IP3 and DAG generation
+   PLCgamma(Yplc~pY) + PI(PIsite~3P) -> IP3_cyto(ip3rbd) + PLCgamma(Yplc~pY) kcatPLCgammaDAG*freepip2^(nDAG-1)/(kmPIP2PLCgamma^nDAG+freepip2^nDAG)
+   PLCgamma(Yplc~pY) + PI(PIsite~3P) -> DAG(pkcbd) + PLCgamma(Yplc~pY)   kcatPLCgammaDAG*freepip2^(nDAG-1)/(kmPIP2PLCgamma^nDAG+freepip2^nDAG)
+
+  I() -> I() + PI(PIsite~3P) kPIP2gen
+  IP3_cyto(ip3rbd) -> Trash()  kdeg_ip3
+  DAG(pkcbd) -> Trash()   kdeg_DAG
+
+  Calcium_cyto(bd) + CaF(cabd) <-> Calcium_cyto(bd!1).CaF(cabd!1) KBon,KBoff
+  I() -> I() + Istim()  ICracamp*(Kcrac^ncrac/(Kcrac^ncrac+Caer^ncrac))/tau_stim-Iopenstim/tau_stim
+  I() -> I() + Calcium_cyto(bd)  (VolER/Volcyto)*Iip3Ramp*(Caer-Cac)*(freeip3cyto^3.8/(freeip3cyto^3.8+KmIP3R^3.8))*(KiCa^3.8/(KiCa^3.8+Cac^3.8))            
+  I() -> I() + CaER(bd)  -Iip3Ramp*(Caer-Cac)*(freeip3cyto^3.8/(freeip3cyto^3.8+KmIP3R^3.8))*(KiCa^3.8/(KiCa^3.8+Cac^3.8))*( 1/(1+CSQN_total/(KCSQN+Caer)^2) ) 
+  I() -> I() + Calcium_cyto(bd)   -I_PMCAbar*Cac^1.4/(KmPMCA^1.4+Cac^1.4) + Iopenstim  # PMCA pump
+  I() -> I() + Calcium_cyto(bd)   -vSERCA*(Cac/(KmSERCA+Cac))^2 + KleakER*(Caer-Cac)^2    # SERCA pump
+  I() -> I() + CaER(bd)  vSERCA*(Cac/(KmSERCA+Cac))^2*(Volcyto/VolER)*(1/(1+CSQN_total/(KCSQN+Caer)^2)) # SERCA pump
+  I() -> I() + CaER(bd)  -KleakER*(Volcyto/VolER)*((Caer-Cac)^2)*(1/(1+CSQN_total/(KCSQN+Caer)^2))
+
+  # Calcium binding to CaM
+  CaM(NCaM) + Calcium_cyto(bd) -> CaM(NCaM!1).Calcium_cyto(bd!1) + Calcium_cyto(bd)  (koffCaNCaM1/kdCaNCaM)
+  CaM(NCaM!1).Calcium_cyto(bd!1) -> CaM(NCaM)    koffCaNCaM1
+  CaM(CCaM) + Calcium_cyto(bd) -> CaM(CCaM!1).Calcium_cyto(bd!1) + Calcium_cyto(bd) (koffCaCCaM1/kdCaCCaM)
+  CaM(CCaM!1).Calcium_cyto(bd!1) -> CaM(CCaM)   koffCaCCaM1
+
+  # PI3K/AKT pathway
+  # binding of TSAd (Tcell specific adaptor molecule)
+
+  TSADSrc(Y1~Y) + vegfr2(Y1175~pY!?,c~s) -> TSADSrc(Y1~pY) + vegfr2(Y1175~pY!?,c~s)  kpSrc     # Autophosphorylation of Src
+  TSADSrc(Y1~Y) + vegfr2(Y1175~pY!?,c~i) -> TSADSrc(Y1~pY) + vegfr2(Y1175~pY!?,c~i)  kpSrc     # Autophosphorylation of Src
+  TSADSrc(Y1~Y) + vegfr2(Y1175~pY!?,c~i2) -> TSADSrc(Y1~pY) + vegfr2(Y1175~pY!?,c~i2)  kpSrc      # Autophosphorylation of Src
+
+  TSADSrc(Y1~pY)  -> TSADSrc(Y1~Y) kdpSrc
+
+
+  # Activation of Axl by Src
+   
+  TSADSrc(Y1~pY) + Axl(Ysrc~Y) -> TSADSrc(Y1~pY) + Axl(Ysrc~pY)   kpSrcAxl
+
+  Axl(Ysrc~pY,Yaxl~Y) -> Axl(Ysrc~pY,Yaxl~pY)   kpAxlauto
+
+  Axl(Yaxl~pY) -> Axl(Yaxl~Y)   kdpautoAxl
+  Axl(Ysrc~pY) -> Axl(Ysrc~Y)   kdpSrcAxl
+
+  #Binding of PI3K to activated Axl
+
+  PI3K(state~inactive) + Axl(Yaxl~pY) -> PI3K(state~active) + Axl(Yaxl~pY)  konPI3KAxl
+  PI3K(state~active) -> PI3K(state~inactive)   koffPI3KAxl
+
+
+  PI3K(state~active) + PI(PIsite~3P)  -> PI3K(state~active) + PI(PIsite~4P)  kcatPI3KPIP2/(kmPIP2PI3K+freepip2)
+
+  PTEN(PIP3docking) + PI(PIsite~4P) -> PTEN(PIP3docking) + PI(PIsite~3P)  kcatPTENPIP3/(kmPIP3PTEN+freepip3)
+
+  PDK1(PHpdk1) + PI(PIsite~4P) <-> PDK1(PHpdk1!1).PI(PIsite~4P!1) konPDK1PIP3,koffPDK1PIP3
+  AKT(PHakt) + PI(PIsite~4P) <-> AKT(PHakt!1).PI(PIsite~4P!1) konAKTPIP3,koffAKTPIP3
+
+  AKT(PHakt!+,S473~S) -> AKT(PHakt!+,S473~pS)  kpmTORAKT
+
+  AKT(PHakt!+,S473~pS,T308~S) + PDK1(PHpdk1!+) -> \
+  PDK1(PHpdk1!+) + AKT(PHakt!+,S473~pS,T308~pS) kpAKTPDK1
+
+  AKT(S473~pS) ->   AKT(S473~S)   kdp473AKTPPase
+  AKT(T308~pS) ->   AKT(T308~S)   kdp308AKTPPase
+
+  # eNOS activation by Ca/CaM and pAKT
+
+  CaM(NCaM!+,NCaM!+,CCaM!+,CCaM!+,CaMtargetbd) + eNOS(CaMBD) <-> \
+  CaM(NCaM!+,NCaM!+,CCaM!+,CCaM!+,CaMtargetbd!1).eNOS(CaMBD!1) konCaMeNOS,koffCaMeNOS   
+
+  eNOS(CaMBD!+,cav1BD!1).caveolin1(eNOSbd!1) -> eNOS(CaMBD!+,cav1BD) + caveolin1(eNOSbd) koffeNOScav1
+
+  eNOS(cav1BD!1,S1177~pS).caveolin1(eNOSbd!1) -> eNOS(cav1BD,S1177~pS) + caveolin1(eNOSbd) koffeNOScav1
+  eNOS(CaMBD,cav1BD,S1177~S) + caveolin1(eNOSbd) -> eNOS(CaMBD,cav1BD!1,S1177~S).caveolin1(eNOSbd!1) koncaveNOS
+
+  eNOS(CaMBD!+,S1177~S) + AKT(T308~pS,S473~pS) -> eNOS(CaMBD!+,S1177~pS) + AKT(T308~pS,S473~pS)  kcateNOSAKT
+  eNOS(S1177~pS) -> eNOS(S1177~S) kdpeNOS
+
+
+  # TSP1 binding to CD47SIRPa
+
+  I() -> I() + TSP1(CD47bd)  -(koffCD47TSP1/kDCD47TSP1)/fextmolar*tsp1frees*cellarea*cd47s+koffCD47TSP1*cd47tsp1s*cellarea*(1/fextmolar)
+  TSP1(CD47bd) + CD47SIRPa(TSP1bd,c~s) -> TSP1(CD47bd) + TSP1(CD47bd!1).CD47SIRPa(TSP1bd!1,c~s)    (koffCD47TSP1/kDCD47TSP1)
+  TSP1(CD47bd!1).CD47SIRPa(TSP1bd!1,c~s) -> CD47SIRPa(TSP1bd,c~s)   koffCD47TSP1
+
+
+  vegfr2(CD47bd,c~s) + CD47SIRPa(VEGFR2bd,c~s) -> \
+  vegfr2(CD47bd!1,c~s).CD47SIRPa(VEGFR2bd!1,c~s)  kcd47free_on
+
+  PKC(CalciumBD) + Calcium_cyto(bd) <-> PKC(CalciumBD!1).Calcium_cyto(bd!1) konCaPKC,koffCaPKC
+  PKC(DAGBD) + DAG(pkcbd) <-> PKC(DAGBD!1).DAG(pkcbd!1) konDAGPKC,koffDAGPKC
+  CIB1(EF1) + Calcium_cyto(bd) <->  CIB1(EF1!1).Calcium_cyto(bd!1)  kon1CaCIB1,koff1CaCIB1
+  CIB1(EF2) + Calcium_cyto(bd) <->  CIB1(EF2!1).Calcium_cyto(bd!1)  kon2CaCIB1,koff2CaCIB1
+
+  CIB1(EF1!+,EF2!+,sk1bd,location~cytosol) + SphK(CIB1bd,Serk~pS) <-> \
+  CIB1(EF1!+,EF2!+,sk1bd!1,location~cytosol).SphK(CIB1bd!1,Serk~pS) konCIB1SphK1,koffCIB1SphK1
+
+  ERK2(S2~pS) + SphK(Serk~S) -> ERK2(S2~pS) + SphK(Serk~pS)  kcatERK/(freeSphK1+kmERKSK1)
+
+  CIB1(EF1!+,EF2!+,sk1bd!+,location~cytosol) <-> CIB1(EF1!+,EF2!+,sk1bd!+,location~membrane)   ktSK1,ktoffSK1
+  CIB1(EF1,EF2,location~membrane) -> CIB1(EF1,EF2,location~cytosol)  koffSK1
+
+  PKC(CalciumBD!+,DAGBD!1).DAG(pkcbd!1) + Raf(Spkc~S) -> \
+  PKC(CalciumBD!+,DAGBD!1).DAG(pkcbd!1) + Raf(Spkc~pS) kcatPKC/(freeraf+kmPKCRaf)
+
+  SphK(Serk~pS) -> SphK(Serk~S) kdpSK1
+
+  Raf(Spkc~pS) -> Raf(Spkc~S) kdpPKCRaf
+
+  I() -> I() + Sph(skbd) kSphgen
+
+  CIB1(sk1bd!1,location~membrane).SphK(CIB1bd!1,Serk~pS) +  Sph(skbd) -> S1P(bd) + CIB1(sk1bd!1,location~membrane).SphK(CIB1bd!1,Serk~pS)   \
+  kcatSK1Sph/(KmSK1Sph+freesphingosin)
+
+  S1P(bd) -> Sph(skbd)   kdpS1P
+
+  I() -> I() + RasGTP(rafbd)  kS1PRas*frees1p/(KmS1PRas+frees1p)-kRasGAP*gtpfreeras
+
+  Raf(rasbd) + RasGTP(rafbd) <-> Raf(rasbd!1).RasGTP(rafbd!1) konRasRaf,koffRasRaf
+  Raf(rasbd!1,Y1Y2~Y).RasGTP(rafbd!1) -> Raf(rasbd!1,Y1Y2~pY).RasGTP(rafbd!1)  kpRaf # Activation of Raf by Tyrosine phosphorylation
+  Raf(Y1Y2~pY) -> Raf(Y1Y2~Y)  kdpRaf
+
+  MEK12(S1~S) + Raf(Y1Y2~pY,Spkc~S) -> Raf(Y1Y2~pY,Spkc~S) + MEK12(S1~pS) kpMEK12Raf1/(KmMEK12Raf+mek12s1)
+  MEK12(S2~S) + Raf(Y1Y2~pY,Spkc~S) -> Raf(Y1Y2~pY,Spkc~S) + MEK12(S2~pS) kpMEK12Raf2/(KmMEK12Raf+mek12s2)
+  MEK12(S1~S) + Raf(Y1Y2~pY,Spkc~pS) -> Raf(Y1Y2~pY,Spkc~pS) + MEK12(S1~pS) kpMEK12Raf1/(KmMEK12Raf+mek12s2)
+  MEK12(S2~S) + Raf(Y1Y2~pY,Spkc~pS) -> Raf(Y1Y2~pY,Spkc~pS) + MEK12(S2~pS) kpMEK12Raf2/(KmMEK12Raf+mek12s2)
+  MEK12(S1~S) + Raf(Y1Y2~Y,Spkc~pS) -> Raf(Y1Y2~Y,Spkc~pS) + MEK12(S1~pS) kpMEK12Raf1/(KmMEK12Raf+mek12s1)
+  MEK12(S2~S) + Raf(Y1Y2~Y,Spkc~pS) -> Raf(Y1Y2~Y,Spkc~pS) + MEK12(S2~pS) kpMEK12Raf2/(KmMEK12Raf+mek12s2)
+
+  MEK12(S1~pS) -> MEK12(S1~S)  kdpMEK12_1
+  MEK12(S2~pS) -> MEK12(S2~S)  kdpMEK12_2
+
+  MEK12(S1~pS,S2~pS) + ERK1(S1~S) -> MEK12(S1~pS,S2~pS) + ERK1(S1~pS)  \
+  (kpMEK12ERK12_1/(kmMEKERK12+erk12s1))
+  MEK12(S1~pS,S2~pS) + ERK2(S2~S) -> \
+  MEK12(S1~pS,S2~pS) + ERK2(S2~pS)  \
+  (kpMEK12ERK12_2/(kmMEKERK12+erk12s2))
+
+  ERK1(S1~pS) -> ERK1(S1~S) kdpERK12_1
+  ERK2(S2~pS) -> ERK2(S2~S) kdpERK12_2
+end reaction rules
+
+end model
+
+## actions ##
+generate_network({overwrite=>1,max_agg=>10})
+writeMexfile({atol=>1e-9,rtol=>1e-6,t_start=>0,t_end=>18000,n_steps=>2000,max_num_steps=>1e6,sparse=>1,stiff=>1})
+writeSBML({})
