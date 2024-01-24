@@ -1021,7 +1021,7 @@ class Reaction {
       );
 
       //add plus under specific conditions
-      if (u < reactants.length - 1 || this.drawExtraPlus && products.length == 0 && sign == null) {
+      if (u < reactants.length - 1 || this.drawExtraPlus && products.length == 0 && this.sign == null) {
         this.drawList.push(
           {
             func: (ctx, totalLength, totalHeight) => {
@@ -1251,8 +1251,14 @@ window.getCanvasDimentions = function getCanvasDimentions(ctx, numMol, maxWidth,
     }
     dims[1] = y;
     //check if arrow is present
-    if (pixleAlpha(ctx, dims[0] + 3, Math.floor(dims[1] / 2)) != 0) {
-      dims[0] += 35;
+    y = 1;
+    x = dims[0] + 3;
+    //could do binary search here, but rn linear search doesn't affect runtime too much
+    while (y < dims[1]) {
+      if (pixleAlpha(ctx, x, y) != 0) {
+        dims[0] += 35;
+      }
+      y++;
     }
     return dims;
   }

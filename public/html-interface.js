@@ -184,6 +184,7 @@ class HTMLInterface {
       let reactants, products, sign;
       [reactants, products, sign] = bngl;
       parameters["manager"] = this.mm;
+      parameters["drawExtraPlus"] = drawExtraPlus;
       drawObj = new Reaction(reactants, products, sign, ctx, parameters);
       numberMolecules = reactants.length + products.length;
     } else if (type === "species") {
@@ -212,6 +213,8 @@ class HTMLInterface {
     //resize canvas
     canvas.width = dims[0];
     canvas.height = dims[1];
+    //canvas.width = 750;
+    //canvas.height = 100;
     //have to redraw
     ctx.clearRect(0, 0, 1000000, 10000);
     drawObj.doDrawList();

@@ -2,7 +2,7 @@ begin parameters
 end parameters
 
 begin compartments
-c0	3	1
+#c0	3	1
 end compartments
 
 begin molecular types
@@ -12,7 +12,7 @@ begin species
 end species
 
 begin reaction rules
-egfr(r!+) -> egfr(r!-)
+-> b
 end reaction rules
 
 begin observables

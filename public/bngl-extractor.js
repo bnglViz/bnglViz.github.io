@@ -41,6 +41,14 @@ function isSign(s, c) {
   return isReactionForward(s, c) || isReactionBack(s, c) || isReactionEquib(s, c);
 }
 
+function isReactionSymbol(s, c) {
+  return isReactionPlus(s, c) ||  isSign(s, c);
+}
+
+function notSymbolOrWhitespace(s, c) {
+  return !(isReactionSymbol(s, c) || /\s/.test(s[c]));
+}
+
 //returns index of first whitespace OR # OR + OR reaction sign
 function isWhitespace(s, c) {
   return /\s/.test(s[c]) || s[c] === "#" || isReactionPlus(s, c) || isSign(s, c);
@@ -65,11 +73,17 @@ window.BNGLExtractor = class BNGLExtractor {
     this.isReactionBack = isReactionBack;
     this.isReactionEquib = isReactionEquib;
     this.isSign = isSign;
+    this.isReactionSymbol = isReactionSymbol;
+    this.notSymbolOrWhitespace = notSymbolOrWhitespace;
   }
 
   //doen't include special case for comments like isWhitespace
   isNotWhitespace(s, c) {
     return !/\s/.test(s[c]);
+  }
+
+  isComment(s, c) {
+    return s[c] === "#";
   }
 
   isNewLine(s, c) {
@@ -215,8 +229,8 @@ window.BNGLExtractor = class BNGLExtractor {
         comment = s.slice(c, len);
         break;
       }
-      //starts with number
-      if ((!isNaN(parseFloat(char))) && c <= this.nextOccur(s, 0, this.isNotWhitespace)) {
+      //starts with number (might need to add something like this to extract bngl)
+      if ((!isNaN(parseFloat(char))) && c <= this.nextOccur(s, 0, this.isNotWhitespace) && (this.nextOccur(s, c, this.isReactionSymbol) > this.nextOccur(s, c, this.notSymbolOrWhitespace))) {
         c = this.nextOccur(s, c, this.isWhitespace);
         continue;
       }
@@ -303,7 +317,7 @@ window.BNGLExtractor = class BNGLExtractor {
       }
       //is rate
       if (this.isNotWhitespace(s, c) && !wasPlus) {
-        let n = this.nextOccur(s, c, this.isWhitespace, false, -1);
+        let n = this.nextOccur(s, c, this.isComment, false, -1);
         rate += " " + s.slice(c, n + 1);
         c = n;
       }
