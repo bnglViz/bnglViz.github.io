@@ -148,6 +148,7 @@ class HTMLInterface {
     //set up drawing context. "willReadFrequently: true" puts processes in GPU
     let ctx = canvas.getContext("2d", { willReadFrequently: true });
     let drawObj, compartment, numberMolecules;
+    let noReacts = false;
     let parameters = {
       mode: 'compact',
       darkMode: this.darkMode,
@@ -187,6 +188,7 @@ class HTMLInterface {
       parameters["drawExtraPlus"] = drawExtraPlus;
       drawObj = new Reaction(reactants, products, sign, ctx, parameters);
       numberMolecules = reactants.length + products.length;
+      noReacts = reactants.length == 0;
     } else if (type === "species") {
       if (compartmentMap) {
         compartment = compartmentMap[bngl];
@@ -209,7 +211,15 @@ class HTMLInterface {
     drawObj.doDrawList();
     //get dimensions
     let dims;
-    dims = getCanvasDimentions(ctx, numberMolecules, this.maxWidth, this.maxHeight);
+    dims = getCanvasDimentions(
+      ctx,
+      {
+        numberMolecules: numberMolecules,
+        noReacts: noReacts
+      },
+      this.maxWidth,
+      this.maxHeight
+    );
     //resize canvas
     canvas.width = dims[0];
     canvas.height = dims[1];

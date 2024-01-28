@@ -1150,10 +1150,12 @@ window.pixleAlpha = function pixleAlpha(ctx, x, y) {
 }
 
 //find the size of drawing in ctx
-window.getCanvasDimentions = function getCanvasDimentions(ctx, numMol, maxWidth, maxHeight) {
+window.getCanvasDimentions = function getCanvasDimentions(ctx, data, maxWidth, maxHeight) {
   let dims = [null, null];
+  let numMol = data.numberMolecules;
+  let noReacts = data.noReacts;
   //if binary search can be used
-  if (numMol == 1) {
+  if (numMol == 1 && !noReacts) {
     //find initial furthest visible pixle right with binary search
     let x = maxWidth;
     let y = 1;
@@ -1257,6 +1259,7 @@ window.getCanvasDimentions = function getCanvasDimentions(ctx, numMol, maxWidth,
     while (y < dims[1]) {
       if (pixleAlpha(ctx, x, y) != 0) {
         dims[0] += 35;
+        break;
       }
       y++;
     }

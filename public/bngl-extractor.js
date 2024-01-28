@@ -153,8 +153,6 @@ window.BNGLExtractor = class BNGLExtractor {
   }
 
   //used for all cases except reactions and observables
-  //might need to add case for when comment immediately follows conc
-  //^ I do, see toy1 (1).bngl
   extractSingleLineBNGL(s) {
     //initialize vars
     let c = 0;
