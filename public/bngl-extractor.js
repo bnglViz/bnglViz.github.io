@@ -234,7 +234,7 @@ window.BNGLExtractor = class BNGLExtractor {
       }
       //is reaction plus
       if (this.isReactionPlus(s, c)) {
-        c = this.nextOccur(s, c, this.isWhitespace);
+        c += 1;
         wasPlus = true;
         continue;
       }
