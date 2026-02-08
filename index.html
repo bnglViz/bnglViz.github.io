@@ -5,33 +5,36 @@
     <link rel="stylesheet" type="text/css" href="public/styleblack.css"/>
 </head>
 <body>
-<p><h1>BioNetGenLanguage (BNGL) code visualizer</h1>
+<div id="top-box"></div>
+<div class="top-content">
+<h1>BioNetGenLanguage (BNGL) code visualizer</h1>
     <h4><a href="https://doi.org/10.1093/bioinformatics/btae351">
-        doi:10.1093/bioinformatics/btae351</a></h4></p>
+        doi:10.1093/bioinformatics/btae351</a></h4>
 <table cellpadding="20">
- <tr>
+   <tr>
      </tr>
     <tr>
-    <td id="canvas-text">
+    <td class="canvas-text">
       <a href=index.html><b>BNGL VISUALIZER</b></a>
     </td>
-    <td id="canvas-text">
-      <a href=bngl.html>BNGL overview</a>
+  <td class="canvas-text">
+      <a href=bngl.html><b>BNGL overview</a>
     </td>
-    <td id="canvas-text">
-      <a href=viz.html>Visualization conventions</a>
+   <td class="canvas-text">
+      <a href=viz.html><b>Visualization conventions</b></a>
     </td>
-    <td id="canvas-text">
-      <a href=examples.html>Examples</a>
+    <td class="canvas-text">
+      <a href=examples.html><b>Examples</b></a>
     </td>
-    <td id="canvas-text">
-      <a href=about.html>About</a>
+    <td class="canvas-text">
+      <a href=about.html><b>About</b></a>
     </td>
     <td>
       <button id="dark-button" onclick="htmlInterface.switchDarkMode();">Toggle Light/Dark Mode</button>
     </td>
   </tr>
 </table>
+</div>
 <hr>
 <h3>
   Visualize BioNetGen model: &nbsp; &nbsp;
@@ -58,6 +61,19 @@
 
 <div id="canvas-container"></div>
 <div id="table-container"></div>
+<script>
+  function updateTopBoxHeight() {
+    const table = document.querySelector('table');
+    const topBox = document.getElementById('top-box');
+    if (!table || !topBox) return;
+    const rect = table.getBoundingClientRect();
+    const height = rect.bottom + window.scrollY;
+    topBox.style.height = height + 'px';
+  }
+  window.addEventListener('load', updateTopBoxHeight);
+  window.addEventListener('resize', updateTopBoxHeight);
+  window.addEventListener('DOMContentLoaded', updateTopBoxHeight);
+</script>
 <script src="public/model-graphics.js"></script>
 <script src="public/bngl-extractor.js"></script>
 <script src="public/html-interface.js"></script>
