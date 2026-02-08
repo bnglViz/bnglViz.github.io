@@ -1,0 +1,295 @@
+.top-content {
+  padding-top: 20px;
+}
+
+body {
+  background-color: white;
+  line-height: 1.6;
+}
+
+* {
+  color: black;
+  font-family: "Times New Roman", Times, serif;
+}
+
+p {
+  margin: 8px 0;
+}
+
+/* Purple Header */
+
+#top-box {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 160px;
+  background-color: #4c4faf;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.top-content {
+  position: relative;
+  z-index: 1;
+}
+
+.top-content,
+.top-content * {
+  background-color: transparent !important;
+}
+
+canvas {
+  display: block;
+}
+
+h1, h4 {
+  text-align: center;
+}
+
+h3 {
+  display: block;
+  font-size: 1.5em;
+  margin-block-start: 0.83em;
+  margin-block-end: 0.83em;
+  margin-inline-start: 0px;
+  margin-inline-end: 0px;
+  font-weight: bold;
+  unicode-bidi: isolate;
+}
+
+/* Light mode heading colors */
+body.light-mode h1,
+body.light-mode h4,
+body.light-mode .bngl-header,
+body.light-mode .canvas-text a,
+body.light-mode .top-content a {
+  color: #ffffff;
+}
+
+/* Dark mode heading colors */
+body.dark-mode h1,
+body.dark-mode h4,
+body.dark-mode .bngl-header,
+body.dark-mode .canvas-text a,
+body.dark-mode .top-content a {
+  color: #ffffff;
+}
+
+.top-content .canvas-text a,
+.top-content .canvas-text a b,
+#dark-button {
+  color: #ffffff !important;
+}
+
+#dark-button {
+  background-color: white !important;
+  border-color: white !important;
+  color: #4c4faf !important;
+}
+
+.canvas-text a {
+  text-decoration: none;
+}
+
+/* Make BNGL VISUALIZER and Visualization conventions yellow */
+.canvas-text a[href="index.html"],
+.canvas-text a[href="viz.html"],
+.canvas-text a[href="index.html"] b,
+.canvas-text a[href="viz.html"] b {
+  color: #ffff00 !important;
+}
+
+body.light-mode .canvas-text a:hover,
+body.light-mode .canvas-text a:active,
+body.dark-mode .canvas-text a:hover,
+body.dark-mode .canvas-text a:active,
+body.light-mode .canvas-text a:hover b,
+body.light-mode .canvas-text a:active b,
+body.dark-mode .canvas-text a:hover b,
+body.dark-mode .canvas-text a:active b {
+  text-decoration: underline;
+  color: #ff0000 !important;
+}
+
+.canvas-text {
+  text-align: center;
+}
+
+/* Button & Input Styles */
+
+button {
+  border: 1px solid #d0d0d0;
+  border-radius: 2px;
+  padding: 1px 6px;
+  font-size: 13.333333px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background-color: #f8f8f8;
+}
+
+button:hover {
+  background-color: #e8e8e8;
+  border-color: #999;
+}
+
+h3 button {
+  background-color: #f0f0f0 !important;
+  border: 1px solid #999 !important;
+  color: #000 !important;
+}
+
+input::file-selector-button {
+  border: 1px solid #d0d0d0;
+  border-radius: 2px;
+  padding: 1px 6px;
+  background-color: #f8f8f8;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 13.333333px;
+}
+
+input::file-selector-button:hover {
+  background-color: #e8e8e8;
+  border-color: #999;
+}
+
+#bngl-file-input::file-selector-button {
+  background-color: #f0f0f0 !important;
+}
+
+/*  Dark & Light Mode */
+
+.dark-mode {
+  background-color: #000000;
+  color: #ffffff;
+}
+
+.light-mode {
+  background-color: white;
+  color: black;
+}
+
+body.dark-mode {
+  background-color: #000000;
+}
+
+body.dark-mode * {
+  color: #ffffff;
+}
+
+body.dark-mode button {
+  background-color: #2a2a2a;
+  border-color: #444;
+  color: #ffffff;
+}
+
+body.dark-mode button:hover {
+  background-color: #3a3a3a;
+  border-color: #666;
+}
+
+body.dark-mode input::file-selector-button {
+  background-color: #2a2a2a;
+  border-color: #444;
+  color: #000000;
+}
+
+body.dark-mode input::file-selector-button:hover {
+  background-color: #3a3a3a;
+  border-color: #666;
+  color: #000000;
+}
+
+body.dark-mode #canvas-container,
+body.dark-mode #table-container,
+body.dark-mode h3,
+body.dark-mode p {
+  background-color: #000000 !important;
+}
+
+table {
+  margin: 0 auto;
+}
+
+.big-arrow {
+  font-size: 24px;
+  opacity: 0.8;
+}
+
+.main-td {
+  padding: 12px 16px;
+  line-height: 1.8;
+}
+
+.main-td > p {
+  white-space: pre-wrap;
+  font-family: "Courier New", Courier, monospace;
+  border-radius: 4px;
+  padding: 8px 12px;
+  background-color: #f5f5f5;
+  border-left: 3px solid #4c4faf;
+  margin: 10px 0;
+}
+
+.divider-td {
+  padding: 0px;
+  height: 0px;
+}
+
+.bngl-header {
+  text-align: center;
+  margin: 0px;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.table-divider {
+  font-size: 30px;
+  text-align: left;
+  margin: 16px 0;
+  font-weight: 300;
+  color: #333;
+}
+
+ul, ol {
+  margin: 12px 0;
+  padding-left: 24px;
+}
+
+li {
+  margin: 6px 0;
+  line-height: 1.7;
+}
+
+code {
+  font-family: "Courier New", Courier, monospace;
+  background-color: #f5f5f5;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 0.95em;
+}
+
+body.dark-mode code {
+  background-color: #1e1e1e;
+  color: #e0e0e0;
+}
+
+hr {
+  border: none;
+  border-top: 1px solid #d0d0d0;
+  margin: 20px 0;
+}
+
+body.dark-mode hr {
+  border-top-color: #444;
+}
+
+#limitation-div {
+  display: block;
+}
+
+#loading-p {
+  display: none;
+}
