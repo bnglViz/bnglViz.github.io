@@ -1,5 +1,13 @@
-.top-content {
+header {
+  position: relative;
+  z-index: 1;
   padding-top: 20px;
+  background-color: #4c4faf;
+}
+
+header,
+header * {
+  background-color: transparent !important;
 }
 
 body {
@@ -14,29 +22,6 @@ body {
 
 p {
   margin: 8px 0;
-}
-
-/* Purple Header */
-
-#top-box {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 160px;
-  background-color: #4c4faf;
-  z-index: -1;
-  pointer-events: none;
-}
-
-.top-content {
-  position: relative;
-  z-index: 1;
-}
-
-.top-content,
-.top-content * {
-  background-color: transparent !important;
 }
 
 canvas {
@@ -58,12 +43,18 @@ h3 {
   unicode-bidi: isolate;
 }
 
+h2 {
+  display: block;
+  font-size: 1.5em;
+  margin-block-start: 0.83em;
+}
+
 /* Light mode heading colors */
 body.light-mode h1,
 body.light-mode h4,
 body.light-mode .bngl-header,
 body.light-mode .canvas-text a,
-body.light-mode .top-content a {
+body.light-mode header a {
   color: #ffffff;
 }
 
@@ -72,17 +63,44 @@ body.dark-mode h1,
 body.dark-mode h4,
 body.dark-mode .bngl-header,
 body.dark-mode .canvas-text a,
-body.dark-mode .top-content a {
+body.dark-mode header a {
   color: #ffffff;
 }
 
-.top-content .canvas-text a,
-.top-content .canvas-text a b,
+/* Heading color schemes */
+body.color1 header { background-color: #4C4FAF !important; }
+body.color1 #dark-button,
+body.color1 #color-button { color: #4C4FAF !important; }
+
+body.color2 header { background-color: #2F6F73 !important; }
+body.color2 #dark-button,
+body.color2 #color-button { color: #2F6F73 !important; }
+
+body.color3 header { background-color: #984CAF !important; }
+body.color3 #dark-button,
+body.color3 #color-button { color: #984CAF !important; }
+
+body.color4 header { background-color: #4CAF74 !important; }
+body.color4 #dark-button,
+body.color4 #color-button { color: #4CAF74 !important; }
+
+body.color5 header { background-color: #AF4C75 !important; }
+body.color5 #dark-button,
+body.color5 #color-button { color: #AF4C75 !important; }
+
+header .canvas-text a,
+header .canvas-text a b,
 #dark-button {
   color: #ffffff !important;
 }
 
 #dark-button {
+  background-color: white !important;
+  border-color: white !important;
+  color: #4c4faf !important;
+}
+
+#color-button {
   background-color: white !important;
   border-color: white !important;
   color: #4c4faf !important;
@@ -115,8 +133,6 @@ body.dark-mode .canvas-text a:active b {
 .canvas-text {
   text-align: center;
 }
-
-/* Button & Input Styles */
 
 button {
   border: 1px solid #d0d0d0;
@@ -287,9 +303,55 @@ body.dark-mode hr {
 }
 
 #limitation-div {
+  display: inline-block;
+  width: 65%;
+  vertical-align: top;
+}
+
+#egfr-image-div {
+  position: relative;
+  display: inline-block;
+  width: 33%;
+  margin-left: 20px;
+  vertical-align: top;
+  text-align: center;
+}
+
+#egfr-image-div img {
+  max-width: 100%;
+  height: auto;
+  margin-top: 20px;
   display: block;
 }
 
+#egfr-image-div .egfr-label {
+  position: absolute;
+  top: -10px;
+  left: 12px;
+  font-weight: 700;
+  color: #000;
+  background: transparent;
+  padding: 2px 6px;
+  font-size: 22px;
+  line-height: 1.1;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+body.dark-mode #egfr-image-div .egfr-label { color: #fff; }
+
 #loading-p {
   display: none;
+}
+
+header {
+    background: #4B006E;
+    color: #fff;
+    padding: 1em 2em 1em 2em;
+    border-radius: 0 0 10px 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    width: 50000;
+    height: 258.11px;
+    margin: 0 auto;
+    box-sizing: border-box;
 }

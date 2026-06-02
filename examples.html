@@ -4,32 +4,37 @@
     <title>BNGL Visualizer: Examples</title>
     <link rel="stylesheet" type="text/css" href="public/styleblack.css"/>
 </head>
-<body>
-<p><h1>BioNetGenLanguage (BNGL) code visualizer</h1>
+<body class="color1">
+<header>
+<h1>BioNetGenLanguage (BNGL) code visualizer</h1>
     <h4><a href="https://doi.org/10.1093/bioinformatics/btae351">
-        doi:10.1093/bioinformatics/btae351</a></h4></p>
+        doi:10.1093/bioinformatics/btae351</a></h4>
 <table cellpadding="20">
- <tr>
+   <tr>
      </tr>
     <tr>
-    <td id="canvas-text">
+    <td class="canvas-text">
       <a href=index.html><b>BNGL VISUALIZER</b></a>
-    </td>   
-    <td id="canvas-text">
-      <a href=bngl.html>BNGL overview</a>
     </td>
-    <td id="canvas-text">
-      <a href=viz.html>Visualization conventions</a>
+  <td class="canvas-text">
+      <a href=bngl.html><b>BNGL overview</a>
     </td>
-    <td id="canvas-text">
-      <a href=examples.html>Examples</a>
+   <td class="canvas-text">
+      <a href=viz.html><b>Visualization conventions</b></a>
     </td>
-    <td id="canvas-text">
-      <a href=about.html>About</a>
+    <td class="canvas-text">
+      <a href=examples.html><b>Examples</b></a>
     </td>
-  </tr> 
-</table>
-    <hr>
+    <td class="canvas-text">
+      <a href=about.html><b>About</b></a>
+    </td>
+    <td>
+      <button id="dark-button" onclick="htmlInterface.switchDarkMode();">Toggle Light/Dark Mode</button>
+      <button id="color-button" onclick="let colors=['color1','color2','color3','color4','color5']; let curr=document.body.className.match(/color\d/)?.[0]||'color1'; let next=colors[(colors.indexOf(curr)+1)%colors.length]; document.body.className=document.body.className.replace(/color\d/,next)||next;">Toggle Colors</button>
+    </td>
+  </tr>
+  </table>
+</div>
 
     <h2>Examples</h2>
     <h3>* -compartmental model</h3>
