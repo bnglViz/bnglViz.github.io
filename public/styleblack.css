@@ -15,6 +15,7 @@ body {
   line-height: 1.6;
 }
 
+
 * {
   color: black;
   font-family: "Times New Roman", Times, serif;
@@ -49,22 +50,12 @@ h2 {
   margin-block-start: 0.83em;
 }
 
-/* Light mode heading colors */
-body.light-mode h1,
-body.light-mode h4,
-body.light-mode .bngl-header,
-body.light-mode .canvas-text a,
-body.light-mode header a {
-  color: #ffffff;
-}
-
-/* Dark mode heading colors */
-body.dark-mode h1,
-body.dark-mode h4,
-body.dark-mode .bngl-header,
-body.dark-mode .canvas-text a,
-body.dark-mode header a {
-  color: #ffffff;
+h1,
+h4,
+.bngl-header,
+.canvas-text a,
+header a {
+  color: #ffffff !important;
 }
 
 /* Heading color schemes */

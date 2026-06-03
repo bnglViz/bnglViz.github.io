@@ -32,9 +32,9 @@
       <button id="dark-button" onclick="htmlInterface.switchDarkMode();">Toggle Light/Dark Mode</button>
       <button id="color-button" onclick="let colors=['color1','color2','color3','color4','color5']; let curr=document.body.className.match(/color\d/)?.[0]||'color1'; let next=colors[(colors.indexOf(curr)+1)%colors.length]; document.body.className=document.body.className.replace(/color\d/,next)||next;">Toggle Colors</button>
     </td>
-  </tr>
-  </table>
-</div>
+    </tr>
+    </table>
+</header>
 
     <h2>Examples</h2>
     <h3>* -compartmental model</h3>
@@ -221,5 +221,23 @@
     </ul>        
     </ul>
    
+<script>
+    // Minimal htmlInterface providing switchDarkMode used by header buttons
+    window.htmlInterface = {
+        switchDarkMode: function() {
+            const body = document.body;
+            if (body.classList.contains('dark-mode')) {
+                body.classList.remove('dark-mode');
+                body.classList.add('light-mode');
+            } else if (body.classList.contains('light-mode')) {
+                body.classList.remove('light-mode');
+                body.classList.add('dark-mode');
+            } else {
+                body.classList.add('dark-mode');
+            }
+        }
+    };
+</script>
 </body>
 </html>
+
