@@ -346,3 +346,29 @@ header {
     margin: 0 auto;
     box-sizing: border-box;
 }
+.viz-table {
+  border-collapse: collapse;
+  margin: 0 auto;
+}
+
+.viz-table td,
+.viz-table th {
+  border: 1px solid currentColor;
+  padding: 10px;
+  background-color: inherit;
+}
+
+body.light-mode .viz-table,
+body.light-mode .viz-table td,
+body.light-mode .viz-table th {
+  color: black;
+}
+
+body.dark-mode .viz-table,
+body.dark-mode .viz-table td,
+body.dark-mode .viz-table th {
+  color: white;
+}
+.viz-table code {
+  color: inherit;
+}
