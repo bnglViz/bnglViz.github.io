@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RuleHub BNGL Visualizer</title>
+
+  <link rel="stylesheet" href="https://bnglviz.github.io/public/stylecolor.css" />
+
+  <style>
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      margin: 1.5rem;
+    }
+
+    header {
+      margin-bottom: 1rem;
+    }
+
+    nav {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin: 0.75rem 0;
+    }
+
+    nav a {
+      color: inherit;
+      text-decoration: underline;
+    }
+
+    .controls {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      align-items: center;
+      margin: 1rem 0;
+    }
+
+    button {
+      padding: 0.55rem 0.85rem;
+      cursor: pointer;
+    }
+
+    #status {
+      margin: 1rem 0;
+      font-weight: 600;
+    }
+
+    #modelInfo {
+      margin: 0.75rem 0;
+      color: #555;
+      word-break: break-word;
+    }
+
+    #tableDiv {
+      margin-top: 1rem;
+      overflow-x: auto;
+    }
+
+    #canvasDiv {
+      display: none;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-bottom: 1.25rem;
+    }
+
+    td, th {
+      padding: 0.35rem 0.5rem;
+      vertical-align: middle;
+    }
+
+    .main-td {
+      border-bottom: 1px solid #ddd;
+    }
+
+    .divider-td {
+      padding-top: 1.25rem;
+    }
+
+    .table-divider {
+      font-size: 1.35rem;
+      font-weight: bold;
+      margin: 0.4rem 0;
+    }
+
+    canvas.bngl-canvas {
+      max-width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    #rawBngl {
+      white-space: pre-wrap;
+      display: none;
+      padding: 1rem;
+      border: 1px solid #ddd;
+      background: #f8f8f8;
+      max-height: 420px;
+      overflow: auto;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.85rem;
+    }
+  </style>
+
+  <script src="https://bnglviz.github.io/public/model-graphics.js"></script>
+  <script src="https://bnglviz.github.io/public/bngl-extractor.js"></script>
+  <script src="https://bnglviz.github.io/public/html-interface.js"></script>
+</head>
+
+<body id="body">
+  <header>
+    <h1>BioNetGen Language BNGL code visualizer</h1>
+
+    <nav>
+      <a href="https://bnglviz.github.io/">BNGL VISUALIZER</a>
+      <a href="https://bnglviz.github.io/bngl.html">BNGL overview</a>
+      <a href="https://bnglviz.github.io/viz.html">Visualization conventions</a>
+      <a href="https://bnglviz.github.io/examples.html">Examples</a>
+      <a href="https://bnglviz.github.io/about.html">About</a>
+      <a href="https://bnglviz.github.io/rulehub.html">RuleHub table</a>
+    </nav>
+
+    <div class="controls">
+      <button id="toggleTheme">Toggle Light/Dark Mode</button>
+      <button id="reloadModel">Reload model</button>
+      <button id="toggleRaw">Show/Hide raw BNGL</button>
+      <a id="rawLink" href="#" target="_blank" rel="noopener">Raw BNGL</a>
+      <a id="githubLink" href="#" target="_blank" rel="noopener">GitHub file</a>
+    </div>
+
+    <div id="modelInfo"></div>
+    <div id="status">Loading...</div>
+  </header>
+
+  <input id="fileInput" type="file" style="display:none" />
+  <div id="canvasDiv"></div>
+  <pre id="rawBngl"></pre>
+  <div id="tableDiv"></div>
+
+  <script>
+    window.body = document.body;
+
+    const params = new URLSearchParams(window.location.search);
+    const bnglUrl = params.get("bngl");
+    const label = params.get("label") || "RuleHub BNGL model";
+    const githubUrl = params.get("github") || "";
+
+    const statusEl = document.getElementById("status");
+    const modelInfoEl = document.getElementById("modelInfo");
+    const tableDiv = document.getElementById("tableDiv");
+    const canvasDiv = document.getElementById("canvasDiv");
+    const fileInput = document.getElementById("fileInput");
+    const rawBnglEl = document.getElementById("rawBngl");
+    const rawLinkEl = document.getElementById("rawLink");
+    const githubLinkEl = document.getElementById("githubLink");
+
+    let interfaceInstance = null;
+    let currentBnglText = "";
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    async function fetchText(url) {
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        throw new Error(`${response.status} ${response.statusText}: ${url}`);
+      }
+
+      return response.text();
+    }
+
+    function setupLinks() {
+      if (bnglUrl) {
+        rawLinkEl.href = bnglUrl;
+      } else {
+        rawLinkEl.style.display = "none";
+      }
+
+      if (githubUrl) {
+        githubLinkEl.href = githubUrl;
+      } else {
+        githubLinkEl.style.display = "none";
+      }
+    }
+
+    async function visualize() {
+      if (!bnglUrl) {
+        statusEl.textContent = "Error: no BNGL URL was provided. Use ?bngl=<raw BNGL URL>.";
+        return;
+      }
+
+      statusEl.textContent = `Loading ${label}...`;
+      document.title = `bnglViz — ${label}`;
+      modelInfoEl.innerHTML = `<strong>${escapeHtml(label)}</strong><br>${escapeHtml(bnglUrl)}`;
+
+      try {
+        currentBnglText = await fetchText(bnglUrl);
+        rawBnglEl.textContent = currentBnglText;
+
+        tableDiv.innerHTML = "";
+        canvasDiv.innerHTML = "";
+
+        interfaceInstance = new HTMLInterface(
+          document.body,
+          canvasDiv,
+          tableDiv,
+          fileInput,
+          statusEl
+        );
+
+        interfaceInstance.visualize(currentBnglText);
+
+        statusEl.textContent = `Rendered ${label}.`;
+      } catch (error) {
+        console.error(error);
+        statusEl.textContent = `Error: ${error.message}`;
+      }
+    }
+
+    document.getElementById("toggleTheme").addEventListener("click", () => {
+      if (interfaceInstance) {
+        interfaceInstance.switchDarkMode();
+      }
+    });
+
+    document.getElementById("reloadModel").addEventListener("click", visualize);
+
+    document.getElementById("toggleRaw").addEventListener("click", () => {
+      rawBnglEl.style.display =
+        rawBnglEl.style.display === "none" || !rawBnglEl.style.display
+          ? "block"
+          : "none";
+    });
+
+    setupLinks();
+    visualize();
+  </script>
+</body>
+</html>
