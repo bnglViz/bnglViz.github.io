@@ -1,0 +1,1321 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RuleHub Models Metadata</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/js-yaml@4/dist/js-yaml.min.js"></script>
+
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 2rem;
+      color: #222;
+    }
+
+    h1 {
+      margin-bottom: 0.25rem;
+    }
+
+    .muted {
+      color: #666;
+      margin-top: 0;
+    }
+
+    .controls {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      align-items: center;
+      margin: 1.5rem 0;
+    }
+
+    input[type="search"], select {
+      padding: 0.6rem;
+      font-size: 1rem;
+    }
+
+    input[type="search"] {
+      min-width: 340px;
+    }
+
+    button {
+      padding: 0.55rem 0.85rem;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    .small-button {
+      padding: 0.25rem 0.5rem;
+      font-size: 0.85rem;
+    }
+
+    #status {
+      margin: 1rem 0;
+      color: #444;
+    }
+
+    .filter-panel,
+    .column-panel {
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 1rem;
+      margin: 1rem 0 1.5rem;
+      background: #fafafa;
+    }
+
+    .filter-panel h2,
+    .column-panel h2 {
+      margin: 0;
+      font-size: 1rem;
+    }
+
+    .column-header {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+
+    .filter-groups {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      align-items: flex-start;
+    }
+
+    .filter-group {
+      display: flex;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .filter-group-title {
+      font-weight: 700;
+      margin-right: 0.25rem;
+    }
+
+    .filter-group label {
+      display: inline-flex;
+      gap: 0.4rem;
+      align-items: center;
+      padding: 0.3rem 0.55rem;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      background: #fff;
+    }
+
+    .difficulty-beginner {
+      background: #d9f7d9 !important;
+    }
+
+    .difficulty-intermediate {
+      background: #fff3bf !important;
+    }
+
+    .difficulty-advanced {
+      background: #ffd6d6 !important;
+    }
+
+    .model-name {
+      display: inline-block;
+      padding: 0.25rem 0.45rem;
+      border-radius: 5px;
+      font-weight: 600;
+    }
+
+    .type-badge {
+      display: inline-block;
+      padding: 0.2rem 0.45rem;
+      border-radius: 999px;
+      border: 1px solid #ccc;
+      background: #fff;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .column-actions {
+      display: flex;
+      gap: 0.35rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .checkbox-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 0.4rem 1rem;
+      max-height: 260px;
+      overflow-y: auto;
+      padding-right: 0.5rem;
+    }
+
+    .checkbox-grid label {
+      display: flex;
+      gap: 0.4rem;
+      align-items: center;
+      font-size: 0.9rem;
+      word-break: break-word;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      min-width: 900px;
+      font-size: 0.92rem;
+    }
+
+    th, td {
+      border-bottom: 1px solid #eee;
+      padding: 0.55rem 0.7rem;
+      vertical-align: top;
+      text-align: left;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      background: #f7f7f7;
+      z-index: 1;
+      white-space: nowrap;
+    }
+
+    .th-content {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .sort-button {
+      border: 1px solid #ccc;
+      background: #fff;
+      padding: 0.15rem 0.35rem;
+      font-size: 0.8rem;
+      line-height: 1;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .sort-button.active {
+      font-weight: 700;
+      border-color: #555;
+      background: #eee;
+    }
+
+    tr:hover td {
+      background: #fafafa;
+    }
+
+    code {
+      background: #f4f4f4;
+      padding: 0.1rem 0.25rem;
+      border-radius: 3px;
+    }
+
+    a {
+      color: #0757a8;
+    }
+
+    .pagination {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      margin: 1rem 0 0;
+    }
+
+    .pagination-controls {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .pagination button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>RuleHub Models Metadata</h1>
+  <p class="muted">
+    Dynamically generated from YAML and BNGL files in
+    <code>RuleWorld/RuleHub/Published</code>,
+    <code>RuleWorld/RuleHub/Examples</code>, and
+    <code>RuleWorld/RuleHub/Tutorials</code>.
+  </p>
+
+  <div class="controls">
+    <input
+      id="search"
+      type="search"
+      placeholder="Search all YAML fields..."
+      aria-label="Search all YAML fields"
+    />
+    <button id="clearSearch">Clear search</button>
+    <button id="reload">Reload from GitHub</button>
+    <button id="downloadCsv">Download visible CSV</button>
+  </div>
+
+  <div id="status">Loading...</div>
+
+  <section class="filter-panel">
+    <h2>Filters</h2>
+
+    <div class="filter-groups">
+      <div class="filter-group">
+        <span class="filter-group-title">Difficulty:</span>
+
+        <label class="difficulty-beginner">
+          <input type="checkbox" class="difficulty-checkbox" value="beginner" checked>
+          Beginner
+        </label>
+
+        <label class="difficulty-intermediate">
+          <input type="checkbox" class="difficulty-checkbox" value="intermediate" checked>
+          Intermediate
+        </label>
+
+        <label class="difficulty-advanced">
+          <input type="checkbox" class="difficulty-checkbox" value="advanced" checked>
+          Advanced
+        </label>
+      </div>
+
+      <div class="filter-group">
+        <span class="filter-group-title">Type:</span>
+
+        <label>
+          <input type="checkbox" class="type-checkbox" value="Examples" checked>
+          Examples
+        </label>
+
+        <label>
+          <input type="checkbox" class="type-checkbox" value="Tutorials" checked>
+          Tutorials
+        </label>
+
+        <label>
+          <input type="checkbox" class="type-checkbox" value="Published" checked>
+          Published
+        </label>
+      </div>
+
+      <div class="filter-group">
+        <span class="filter-group-title">Compatibility/features:</span>
+
+        <label>
+          <input type="checkbox" class="feature-checkbox" value="compatibility.nfsim_compatible">
+          NFsim compatible
+        </label>
+
+        <label>
+          <input type="checkbox" class="feature-checkbox" value="compatibility.bng2_compatible">
+          bng2 compatible
+        </label>
+
+        <label>
+          <input type="checkbox" class="feature-checkbox" value="compatibility.uses_compartments">
+          Use compartments
+        </label>
+
+        <label>
+          <input type="checkbox" class="feature-checkbox" value="compatibility.uses_energy">
+          Use energy
+        </label>
+
+        <label>
+          <input type="checkbox" class="feature-checkbox" value="compatibility.uses_functions">
+          Use functions
+        </label>
+      </div>
+    </div>
+  </section>
+
+  <section class="column-panel">
+    <div class="column-header">
+      <h2>Columns</h2>
+
+      <div class="column-actions">
+        <button id="showDefault" class="small-button">Default columns</button>
+        <button id="showAll" class="small-button">Show all</button>
+        <button id="hideAll" class="small-button">Hide all</button>
+      </div>
+    </div>
+
+    <!--
+      The following column checkboxes are intentionally commented out / hidden:
+      file,
+      path,
+      id,
+      source.source_path,
+      source.origin,
+      playground.visible,
+      playground.featured,
+      parse_error,
+      collection.count,
+      collection.parent_model,
+      collection.type,
+      collection.variant_key,
+      source.original_format,
+      source.original_repository,
+      raw
+    -->
+
+    <div id="columnCheckboxes" class="checkbox-grid"></div>
+  </section>
+
+  <div class="table-wrap">
+    <table id="metadataTable"></table>
+  </div>
+
+  <div class="pagination">
+    <div id="pageSummary"></div>
+
+    <div class="pagination-controls">
+      <label>
+        Rows per page:
+        <select id="pageSize">
+          <option value="50" selected>50</option>
+          <option value="100">100</option>
+          <option value="all">All</option>
+        </select>
+      </label>
+
+      <button id="firstPage">First</button>
+      <button id="prevPage">Previous</button>
+      <span id="pageNumber"></span>
+      <button id="nextPage">Next</button>
+      <button id="lastPage">Last</button>
+    </div>
+  </div>
+
+  <script>
+    const OWNER = "RuleWorld";
+    const REPO = "RuleHub";
+    const BRANCH = "master";
+
+    const ROOTS = [
+      { folder: "Published", type: "Published" },
+      { folder: "Examples", type: "Examples" },
+      { folder: "Tutorials", type: "Tutorials" }
+    ];
+
+    const TREE_API =
+      `https://api.github.com/repos/${OWNER}/${REPO}/git/trees/${BRANCH}?recursive=1`;
+
+    const RAW_BASE =
+      `https://raw.githubusercontent.com/${OWNER}/${REPO}/refs/heads/${BRANCH}/`;
+
+    const GITHUB_BLOB_BASE =
+      `https://github.com/${OWNER}/${REPO}/blob/${BRANCH}/`;
+
+    const BNGLVIZ_PAGE =
+      "https://bnglviz.github.io/bnglviz.html";
+
+    const RULES_RAILROAD_PAGE =
+      "https://rulesrailroad.github.io/bngl_rrr.html";
+
+    const BNG_PLAYGROUND_PAGE =
+      "https://ruleworld.github.io/bngplayground/";
+
+    const DEFAULT_VISIBLE_COLUMNS = [
+      "type",
+      "name",
+      "description",
+      "bngl_code",
+      "bnglviz",
+      "rules_railroad",
+      "bngplayground"
+    ];
+
+    const FEATURE_FILTER_COLUMNS = new Set([
+      "compatibility.nfsim_compatible",
+      "compatibility.bng2_compatible",
+      "compatibility.uses_compartments",
+      "compatibility.uses_energy",
+      "compatibility.uses_functions"
+    ]);
+
+    const COMMENTED_OUT_COLUMN_CHECKBOXES = new Set([
+      "file",
+      "path",
+      "id",
+      "source.source_path",
+      "source.origin",
+      "playground.visible",
+      "playground.featured",
+      "parse_error",
+      "collection.count",
+      "collection.parent_model",
+      "collection.type",
+      "collection.variant_key",
+      "source.original_format",
+      "source.original_repository",
+      "raw"
+    ]);
+
+    const HIDDEN_COLUMN_CHECKBOXES = new Set([
+      "playground.difficulty",
+      "difficulty",
+      ...FEATURE_FILTER_COLUMNS,
+      ...COMMENTED_OUT_COLUMN_CHECKBOXES
+    ]);
+
+    const NON_SORTABLE_COLUMNS = new Set([
+      "bngl_code",
+      "bnglviz",
+      "rules_railroad",
+      "bngplayground",
+      "raw",
+      "github"
+    ]);
+
+    const COLUMN_LABELS = {
+      "type": "Type",
+      "name": "Name",
+      "description": "Description",
+      "bngl_code": "BNGL code",
+      "bnglviz": "bnglViz",
+      "rules_railroad": "RulesRailRoad",
+      "bngplayground": "bngPlayground"
+    };
+
+    const table = document.getElementById("metadataTable");
+    const statusEl = document.getElementById("status");
+    const searchEl = document.getElementById("search");
+    const columnCheckboxesEl = document.getElementById("columnCheckboxes");
+
+    const pageSizeEl = document.getElementById("pageSize");
+    const pageSummaryEl = document.getElementById("pageSummary");
+    const pageNumberEl = document.getElementById("pageNumber");
+
+    const firstPageBtn = document.getElementById("firstPage");
+    const prevPageBtn = document.getElementById("prevPage");
+    const nextPageBtn = document.getElementById("nextPage");
+    const lastPageBtn = document.getElementById("lastPage");
+
+    let rows = [];
+    let columns = [];
+    let visibleColumns = new Set(DEFAULT_VISIBLE_COLUMNS);
+    let sortState = { column: null, direction: 1 };
+    let currentPage = 1;
+
+    function pathRoot(path) {
+      return ROOTS.find(item => path === item.folder || path.startsWith(`${item.folder}/`)) || null;
+    }
+
+    function typeFromPath(path) {
+      const root = pathRoot(path);
+      return root ? root.type : "";
+    }
+
+    function isInTargetRoot(path) {
+      return Boolean(pathRoot(path));
+    }
+
+    function isYamlPath(path) {
+      return isInTargetRoot(path) && (path.endsWith(".yaml") || path.endsWith(".yml"));
+    }
+
+    function isBnglPath(path) {
+      return isInTargetRoot(path) && path.endsWith(".bngl");
+    }
+
+    function dirname(path) {
+      const parts = path.split("/");
+      parts.pop();
+      return parts.join("/");
+    }
+
+    function basename(path) {
+      return path.split("/").pop();
+    }
+
+    function flattenObject(value, prefix = "", output = {}) {
+      if (Array.isArray(value)) {
+        output[prefix] = value.map(item => {
+          if (item && typeof item === "object") return JSON.stringify(item);
+          return String(item);
+        }).join("; ");
+        return output;
+      }
+
+      if (value && typeof value === "object") {
+        for (const [key, nestedValue] of Object.entries(value)) {
+          const nextPrefix = prefix ? `${prefix}.${key}` : key;
+          flattenObject(nestedValue, nextPrefix, output);
+        }
+        return output;
+      }
+
+      output[prefix] = value == null ? "" : String(value);
+      return output;
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    async function fetchJson(url) {
+      const response = await fetch(url, {
+        headers: { "Accept": "application/vnd.github+json" }
+      });
+
+      if (!response.ok) {
+        throw new Error(`${response.status} ${response.statusText}: ${url}`);
+      }
+
+      return response.json();
+    }
+
+    async function fetchText(url) {
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        throw new Error(`${response.status} ${response.statusText}: ${url}`);
+      }
+
+      return response.text();
+    }
+
+    function getColumnLabel(column) {
+      return COLUMN_LABELS[column] || column;
+    }
+
+    function normalizeDifficulty(value) {
+      const text = String(value ?? "").trim().toLowerCase();
+
+      if (text.includes("beginner") || text === "easy" || text === "introductory") return "beginner";
+      if (text.includes("intermediate") || text === "medium") return "intermediate";
+      if (text.includes("advanced") || text === "hard") return "advanced";
+
+      return "";
+    }
+
+    function getRowDifficulty(row) {
+      return normalizeDifficulty(
+        row["playground.difficulty"] ||
+        row["difficulty"] ||
+        row["level"]
+      );
+    }
+
+    function getSelectedDifficulties() {
+      return new Set(
+        [...document.querySelectorAll(".difficulty-checkbox:checked")]
+          .map(input => input.value)
+      );
+    }
+
+    function getSelectedTypes() {
+      return new Set(
+        [...document.querySelectorAll(".type-checkbox:checked")]
+          .map(input => input.value)
+      );
+    }
+
+    function rowMatchesType(row) {
+      const selected = getSelectedTypes();
+
+      if (!row.type) {
+        return selected.size > 0;
+      }
+
+      return selected.has(row.type);
+    }
+
+    function getSelectedFeatureFilters() {
+      return [...document.querySelectorAll(".feature-checkbox:checked")]
+        .map(input => input.value);
+    }
+
+    function isTruthyYamlValue(value) {
+      const text = String(value ?? "").trim().toLowerCase();
+      return text === "true" || text === "yes" || text === "1";
+    }
+
+    function makeBnglVizUrl(item) {
+      const url = new URL(BNGLVIZ_PAGE);
+      url.searchParams.set("bngl", item.rawUrl);
+      url.searchParams.set("label", item.label);
+      url.searchParams.set("github", item.githubUrl);
+      return url.toString();
+    }
+
+    function makeRulesRailRoadUrl(item) {
+      const url = new URL(RULES_RAILROAD_PAGE);
+      url.searchParams.set("bngl", item.rawUrl);
+      url.searchParams.set("label", item.label);
+      url.searchParams.set("github", item.githubUrl);
+      return url.toString();
+    }
+
+    function makeBngPlaygroundUrl(item) {
+      const url = new URL(BNG_PLAYGROUND_PAGE);
+      url.searchParams.set("model", item.path);
+      return url.toString();
+    }
+
+    function makeBnglLinks(yamlPath, bnglPaths) {
+      const yamlDir = dirname(yamlPath);
+      const matchingBngl = bnglPaths.filter(path => dirname(path) === yamlDir);
+
+      if (matchingBngl.length === 0) {
+        return "";
+      }
+
+      return matchingBngl.map(path => {
+        const item = {
+          path,
+          label: basename(path),
+          rawUrl: RAW_BASE + path,
+          githubUrl: GITHUB_BLOB_BASE + path
+        };
+
+        item.bnglVizUrl = makeBnglVizUrl(item);
+        item.rulesRailRoadUrl = makeRulesRailRoadUrl(item);
+        item.bngPlaygroundUrl = makeBngPlaygroundUrl(item);
+
+        return item;
+      });
+    }
+
+    async function loadYamlFile(path, bnglPaths) {
+      const rawUrl = RAW_BASE + path;
+      const githubUrl = GITHUB_BLOB_BASE + path;
+      const bngl_code = makeBnglLinks(path, bnglPaths);
+
+      try {
+        const text = await fetchText(rawUrl);
+        const parsed = jsyaml.load(text) || {};
+        const flat = flattenObject(parsed);
+
+        return {
+          type: typeFromPath(path),
+          file: basename(path),
+          path,
+          github: githubUrl,
+          raw: rawUrl,
+          bngl_code,
+          bnglviz: bngl_code,
+          rules_railroad: bngl_code,
+          bngplayground: bngl_code,
+          ...flat
+        };
+      } catch (error) {
+        return {
+          type: typeFromPath(path),
+          file: basename(path),
+          path,
+          github: githubUrl,
+          raw: rawUrl,
+          bngl_code,
+          bnglviz: bngl_code,
+          rules_railroad: bngl_code,
+          bngplayground: bngl_code,
+          parse_error: error.message
+        };
+      }
+    }
+
+    async function loadAllMetadata() {
+      statusEl.textContent = "Fetching repository tree from GitHub...";
+      table.innerHTML = "";
+      columnCheckboxesEl.innerHTML = "";
+
+      const treeData = await fetchJson(TREE_API);
+
+      if (treeData.truncated) {
+        console.warn("GitHub returned a truncated tree. Some files may be missing.");
+      }
+
+      const allPaths = treeData.tree
+        .filter(item => item.type === "blob")
+        .map(item => item.path)
+        .sort();
+
+      const yamlPaths = allPaths.filter(isYamlPath);
+      const bnglPaths = allPaths.filter(isBnglPath);
+
+      statusEl.textContent =
+        `Found ${yamlPaths.length} YAML file(s) and ${bnglPaths.length} BNGL file(s). Loading metadata...`;
+
+      rows = await Promise.all(
+        yamlPaths.map(path => loadYamlFile(path, bnglPaths))
+      );
+
+      const allColumnNames = new Set();
+      rows.forEach(row => Object.keys(row).forEach(key => allColumnNames.add(key)));
+
+      const preferred = [
+        "type",
+        "name",
+        "description",
+        "bngl_code",
+        "bnglviz",
+        "rules_railroad",
+        "bngplayground",
+        "file",
+        "path",
+        "id",
+        "authors",
+        "contributors",
+        "citation.doi",
+        "citation.pmid",
+        "citation.reference",
+        "date.created",
+        "date.modified",
+        "date.published",
+        "tags",
+        "category",
+        "compatibility.min_bng_version",
+        "compatibility.simulation_methods",
+        "source.origin",
+        "source.source_path",
+        "playground.visible",
+        "playground.gallery_categories",
+        "playground.featured",
+        "github",
+        "raw",
+        "parse_error"
+      ];
+
+      columns = [
+        ...preferred.filter(column =>
+          (
+            allColumnNames.has(column) ||
+            column === "type" ||
+            column === "bngl_code" ||
+            column === "bnglviz" ||
+            column === "rules_railroad" ||
+            column === "bngplayground"
+          ) &&
+          !HIDDEN_COLUMN_CHECKBOXES.has(column)
+        ),
+        ...[...allColumnNames]
+          .filter(column => !preferred.includes(column))
+          .filter(column => !HIDDEN_COLUMN_CHECKBOXES.has(column))
+          .sort()
+      ];
+
+      visibleColumns = new Set(
+        DEFAULT_VISIBLE_COLUMNS.filter(column => columns.includes(column))
+      );
+
+      if (sortState.column && NON_SORTABLE_COLUMNS.has(sortState.column)) {
+        sortState = { column: null, direction: 1 };
+      }
+
+      currentPage = 1;
+      renderColumnCheckboxes();
+      renderTable();
+      updateStatus();
+    }
+
+    function renderColumnCheckboxes() {
+      columnCheckboxesEl.innerHTML = columns.map(column => {
+        const checked = visibleColumns.has(column) ? "checked" : "";
+        const label = getColumnLabel(column);
+
+        return `
+          <label>
+            <input type="checkbox" value="${escapeHtml(column)}" ${checked}>
+            <span>${escapeHtml(label)}</span>
+          </label>
+        `;
+      }).join("");
+
+      columnCheckboxesEl.querySelectorAll("input[type='checkbox']").forEach(input => {
+        input.addEventListener("change", () => {
+          if (input.checked) visibleColumns.add(input.value);
+          else visibleColumns.delete(input.value);
+
+          currentPage = 1;
+          renderTable();
+          updateStatus();
+        });
+      });
+    }
+
+    function renderBnglLinkList(value) {
+      if (!Array.isArray(value) || value.length === 0) return "";
+
+      return value.map(item =>
+        `<a href="${escapeHtml(item.rawUrl)}" target="_blank" rel="noopener" title="${escapeHtml(item.label)}">view</a>`
+      ).join("<br>");
+    }
+
+    function renderBnglVizLinkList(value) {
+      if (!Array.isArray(value) || value.length === 0) return "";
+
+      return value.map(item =>
+        `<a href="${escapeHtml(item.bnglVizUrl)}" target="_blank" rel="noopener" title="${escapeHtml(item.label)}">view</a>`
+      ).join("<br>");
+    }
+
+    function renderRulesRailRoadLinkList(value) {
+      if (!Array.isArray(value) || value.length === 0) return "";
+
+      return value.map(item =>
+        `<a href="${escapeHtml(item.rulesRailRoadUrl)}" target="_blank" rel="noopener" title="${escapeHtml(item.label)}">view</a>`
+      ).join("<br>");
+    }
+
+    function renderBngPlaygroundLinkList(value) {
+      if (!Array.isArray(value) || value.length === 0) return "";
+
+      return value.map(item =>
+        `<a href="${escapeHtml(item.bngPlaygroundUrl)}" target="_blank" rel="noopener" title="${escapeHtml(item.label)}">view</a>`
+      ).join("<br>");
+    }
+
+    function renderCell(column, value, row) {
+      if (column === "github" || column === "raw") {
+        if (!value) return "";
+        return `<a href="${escapeHtml(value)}" target="_blank" rel="noopener">link</a>`;
+      }
+
+      if (column === "type") {
+        return `<span class="type-badge">${escapeHtml(value)}</span>`;
+      }
+
+      if (column === "bngl_code") {
+        return renderBnglLinkList(value);
+      }
+
+      if (column === "bnglviz") {
+        return renderBnglVizLinkList(value);
+      }
+
+      if (column === "rules_railroad") {
+        return renderRulesRailRoadLinkList(value);
+      }
+
+      if (column === "bngplayground") {
+        return renderBngPlaygroundLinkList(value);
+      }
+
+      if (column === "name") {
+        const difficulty = getRowDifficulty(row);
+        const className = difficulty ? `difficulty-${difficulty}` : "";
+
+        return `
+          <span class="model-name ${className}" title="${escapeHtml(difficulty || "difficulty not specified")}">
+            ${escapeHtml(value)}
+          </span>
+        `;
+      }
+
+      return escapeHtml(value);
+    }
+
+    function searchableText(value) {
+      if (Array.isArray(value)) return value.map(item => searchableText(item)).join(" ");
+      if (value && typeof value === "object") return Object.values(value).map(item => searchableText(item)).join(" ");
+      return String(value ?? "");
+    }
+
+    function rowMatchesSearch(row, query) {
+      if (!query) return true;
+
+      return Object.values(row).some(value =>
+        searchableText(value).toLowerCase().includes(query)
+      );
+    }
+
+    function rowMatchesDifficulty(row) {
+      const selected = getSelectedDifficulties();
+      const difficulty = getRowDifficulty(row);
+
+      if (!difficulty) return selected.size > 0;
+      return selected.has(difficulty);
+    }
+
+    function rowMatchesFeatureFilters(row) {
+      const selectedFeatureFilters = getSelectedFeatureFilters();
+
+      return selectedFeatureFilters.every(column =>
+        isTruthyYamlValue(row[column])
+      );
+    }
+
+    function valueForSort(row, column) {
+      const value = row[column];
+
+      if (
+        (column === "bngl_code" ||
+         column === "bnglviz" ||
+         column === "rules_railroad" ||
+         column === "bngplayground") &&
+        Array.isArray(value)
+      ) {
+        return value.map(link => link.label).join("; ").toLowerCase();
+      }
+
+      return String(value ?? "").toLowerCase();
+    }
+
+    function getFilteredSortedRows() {
+      const query = searchEl.value.trim().toLowerCase();
+
+      let filteredRows = rows
+        .filter(row => rowMatchesSearch(row, query))
+        .filter(row => rowMatchesDifficulty(row))
+        .filter(row => rowMatchesType(row))
+        .filter(row => rowMatchesFeatureFilters(row));
+
+      if (sortState.column && !NON_SORTABLE_COLUMNS.has(sortState.column)) {
+        const column = sortState.column;
+        const direction = sortState.direction;
+
+        filteredRows = [...filteredRows].sort((a, b) => {
+          const av = valueForSort(a, column);
+          const bv = valueForSort(b, column);
+
+          return av.localeCompare(bv, undefined, {
+            numeric: true,
+            sensitivity: "base"
+          }) * direction;
+        });
+      }
+
+      return filteredRows;
+    }
+
+    function getPageSize() {
+      const value = pageSizeEl.value;
+      return value === "all" ? "all" : Number(value);
+    }
+
+    function getTotalPages(totalRows) {
+      const pageSize = getPageSize();
+      if (pageSize === "all") return 1;
+      return Math.max(1, Math.ceil(totalRows / pageSize));
+    }
+
+    function getPaginatedRows(filteredRows) {
+      const pageSize = getPageSize();
+
+      if (pageSize === "all") return filteredRows;
+
+      const totalPages = getTotalPages(filteredRows.length);
+
+      if (currentPage > totalPages) currentPage = totalPages;
+      if (currentPage < 1) currentPage = 1;
+
+      const start = (currentPage - 1) * pageSize;
+      const end = start + pageSize;
+
+      return filteredRows.slice(start, end);
+    }
+
+    function renderTable() {
+      const activeColumns = columns.filter(column => visibleColumns.has(column));
+      const filteredRows = getFilteredSortedRows();
+      const pageRows = getPaginatedRows(filteredRows);
+
+      if (activeColumns.length === 0) {
+        table.innerHTML = `
+          <tbody>
+            <tr>
+              <td>No columns selected.</td>
+            </tr>
+          </tbody>
+        `;
+        updatePagination(filteredRows.length);
+        return;
+      }
+
+      const headerHtml = `
+        <thead>
+          <tr>
+            ${activeColumns.map(column => {
+              if (NON_SORTABLE_COLUMNS.has(column)) {
+                return `
+                  <th>
+                    <span class="th-content">
+                      <span>${escapeHtml(getColumnLabel(column))}</span>
+                    </span>
+                  </th>
+                `;
+              }
+
+              const isActive = sortState.column === column;
+              const icon = isActive
+                ? sortState.direction === 1 ? "A→Z" : "Z→A"
+                : "↕";
+
+              const title = isActive
+                ? sortState.direction === 1
+                  ? "Sorted ascending. Click for descending."
+                  : "Sorted descending. Click for ascending."
+                : "Sort alphanumerically";
+
+              return `
+                <th>
+                  <span class="th-content">
+                    <span>${escapeHtml(getColumnLabel(column))}</span>
+                    <button
+                      class="sort-button ${isActive ? "active" : ""}"
+                      data-column="${escapeHtml(column)}"
+                      title="${escapeHtml(title)}"
+                      aria-label="Sort ${escapeHtml(getColumnLabel(column))}"
+                    >${escapeHtml(icon)}</button>
+                  </span>
+                </th>
+              `;
+            }).join("")}
+          </tr>
+        </thead>
+      `;
+
+      const bodyHtml = `
+        <tbody>
+          ${pageRows.map(row => `
+            <tr>
+              ${activeColumns.map(column =>
+                `<td>${renderCell(column, row[column], row)}</td>`
+              ).join("")}
+            </tr>
+          `).join("")}
+        </tbody>
+      `;
+
+      table.innerHTML = headerHtml + bodyHtml;
+
+      table.querySelectorAll(".sort-button").forEach(button => {
+        button.addEventListener("click", event => {
+          event.stopPropagation();
+
+          const column = button.dataset.column;
+
+          if (NON_SORTABLE_COLUMNS.has(column)) {
+            return;
+          }
+
+          if (sortState.column === column) {
+            sortState.direction *= -1;
+          } else {
+            sortState = { column, direction: 1 };
+          }
+
+          currentPage = 1;
+          renderTable();
+        });
+      });
+
+      updatePagination(filteredRows.length);
+    }
+
+    function updatePagination(totalFilteredRows) {
+      const pageSize = getPageSize();
+      const totalPages = getTotalPages(totalFilteredRows);
+
+      if (pageSize === "all") currentPage = 1;
+      else currentPage = Math.min(Math.max(currentPage, 1), totalPages);
+
+      const start = totalFilteredRows === 0
+        ? 0
+        : pageSize === "all"
+          ? 1
+          : (currentPage - 1) * pageSize + 1;
+
+      const end = pageSize === "all"
+        ? totalFilteredRows
+        : Math.min(currentPage * pageSize, totalFilteredRows);
+
+      pageSummaryEl.textContent =
+        `Showing ${start}-${end} of ${totalFilteredRows} matching row(s).`;
+
+      pageNumberEl.textContent =
+        pageSize === "all"
+          ? "Page 1 of 1"
+          : `Page ${currentPage} of ${totalPages}`;
+
+      firstPageBtn.disabled = currentPage <= 1 || pageSize === "all";
+      prevPageBtn.disabled = currentPage <= 1 || pageSize === "all";
+      nextPageBtn.disabled = currentPage >= totalPages || pageSize === "all";
+      lastPageBtn.disabled = currentPage >= totalPages || pageSize === "all";
+    }
+
+    function updateStatus() {
+      const typeCounts = rows.reduce((acc, row) => {
+        acc[row.type] = (acc[row.type] || 0) + 1;
+        return acc;
+      }, {});
+
+      const summary = ["Published", "Examples", "Tutorials"]
+        .map(type => `${type}: ${typeCounts[type] || 0}`)
+        .join("; ");
+
+      statusEl.textContent =
+        `Loaded ${rows.length} YAML file(s). Showing ${visibleColumns.size} column(s). ${summary}.`;
+    }
+
+    function getRowsForCsv() {
+      return getFilteredSortedRows();
+    }
+
+    function csvValueForColumn(row, column) {
+      if (column === "bngl_code" && Array.isArray(row[column])) {
+        return row[column].map(link => link.rawUrl).join("; ");
+      }
+
+      if (column === "bnglviz" && Array.isArray(row[column])) {
+        return row[column].map(link => link.bnglVizUrl).join("; ");
+      }
+
+      if (column === "rules_railroad" && Array.isArray(row[column])) {
+        return row[column].map(link => link.rulesRailRoadUrl).join("; ");
+      }
+
+      if (column === "bngplayground" && Array.isArray(row[column])) {
+        return row[column].map(link => link.bngPlaygroundUrl).join("; ");
+      }
+
+      return row[column] ?? "";
+    }
+
+    function downloadCsv() {
+      const activeColumns = columns.filter(column => visibleColumns.has(column));
+      const csvRows = getRowsForCsv();
+
+      const csv = [
+        activeColumns.map(column => csvEscape(getColumnLabel(column))).join(","),
+        ...csvRows.map(row =>
+          activeColumns
+            .map(column => csvEscape(csvValueForColumn(row, column)))
+            .join(",")
+        )
+      ].join("\n");
+
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "rulehub-models-metadata-visible-columns.csv";
+      link.click();
+
+      URL.revokeObjectURL(url);
+    }
+
+    function csvEscape(value) {
+      const text = String(value ?? "");
+      if (/[",\n\r]/.test(text)) {
+        return `"${text.replaceAll('"', '""')}"`;
+      }
+      return text;
+    }
+
+    document.getElementById("reload").addEventListener("click", loadAllMetadata);
+
+    document.getElementById("downloadCsv").addEventListener("click", downloadCsv);
+
+    document.getElementById("clearSearch").addEventListener("click", () => {
+      searchEl.value = "";
+      currentPage = 1;
+      renderTable();
+    });
+
+    document.getElementById("showDefault").addEventListener("click", () => {
+      visibleColumns = new Set(DEFAULT_VISIBLE_COLUMNS.filter(column => columns.includes(column)));
+      currentPage = 1;
+      renderColumnCheckboxes();
+      renderTable();
+      updateStatus();
+    });
+
+    document.getElementById("showAll").addEventListener("click", () => {
+      visibleColumns = new Set(columns);
+      currentPage = 1;
+      renderColumnCheckboxes();
+      renderTable();
+      updateStatus();
+    });
+
+    document.getElementById("hideAll").addEventListener("click", () => {
+      visibleColumns = new Set();
+      currentPage = 1;
+      renderColumnCheckboxes();
+      renderTable();
+      updateStatus();
+    });
+
+    searchEl.addEventListener("input", () => {
+      currentPage = 1;
+      renderTable();
+    });
+
+    document.querySelectorAll(".difficulty-checkbox").forEach(input => {
+      input.addEventListener("change", () => {
+        currentPage = 1;
+        renderTable();
+      });
+    });
+
+    document.querySelectorAll(".type-checkbox").forEach(input => {
+      input.addEventListener("change", () => {
+        currentPage = 1;
+        renderTable();
+      });
+    });
+
+    document.querySelectorAll(".feature-checkbox").forEach(input => {
+      input.addEventListener("change", () => {
+        currentPage = 1;
+        renderTable();
+      });
+    });
+
+    pageSizeEl.addEventListener("change", () => {
+      currentPage = 1;
+      renderTable();
+    });
+
+    firstPageBtn.addEventListener("click", () => {
+      currentPage = 1;
+      renderTable();
+    });
+
+    prevPageBtn.addEventListener("click", () => {
+      currentPage -= 1;
+      renderTable();
+    });
+
+    nextPageBtn.addEventListener("click", () => {
+      currentPage += 1;
+      renderTable();
+    });
+
+    lastPageBtn.addEventListener("click", () => {
+      const totalRows = getFilteredSortedRows().length;
+      currentPage = getTotalPages(totalRows);
+      renderTable();
+    });
+
+    loadAllMetadata().catch(error => {
+      console.error(error);
+      statusEl.textContent = `Error: ${error.message}`;
+    });
+  </script>
+</body>
+</html>
