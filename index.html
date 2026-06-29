@@ -3,36 +3,44 @@
 <head>
     <title>BNGL Visualizer</title>
     <link rel="stylesheet" type="text/css" href="public/styleblack.css"/>
+    <link rel="icon" type="image/png" href="/favicon.png">
 </head>
-<body>
-<p><h1>BioNetGenLanguage (BNGL) code visualizer</h1>
+<body class="color1">
+<header>
+<h1>BioNetGenLanguage (BNGL) code visualizer</h1>
     <h4><a href="https://doi.org/10.1093/bioinformatics/btae351">
-        doi:10.1093/bioinformatics/btae351</a></h4></p>
+        doi:10.1093/bioinformatics/btae351</a></h4>
 <table cellpadding="20">
- <tr>
+   <tr>
      </tr>
     <tr>
-    <td id="canvas-text">
+    <td class="canvas-text">
       <a href=index.html><b>BNGL VISUALIZER</b></a>
     </td>
-    <td id="canvas-text">
-      <a href=bngl.html>BNGL overview</a>
+  <td class="canvas-text">
+      <a href=bngl.html><b>BNGL overview</a>
     </td>
-    <td id="canvas-text">
-      <a href=viz.html>Visualization conventions</a>
+   <td class="canvas-text">
+      <a href=viz.html><b>Visualization conventions</b></a>
     </td>
-    <td id="canvas-text">
-      <a href=examples.html>Examples</a>
+    <td class="canvas-text">
+      <a href=examples.html><b>Examples</b></a>
     </td>
-    <td id="canvas-text">
-      <a href=about.html>About</a>
+
+     <td class="canvas-text">
+    <a href="inputbox.html"><b>BNGLViz Sandbox</b></a>
+  </td>
+
+    <td class="canvas-text">
+      <a href=about.html><b>About</b></a>
     </td>
     <td>
       <button id="dark-button" onclick="htmlInterface.switchDarkMode();">Toggle Light/Dark Mode</button>
+      <button id="color-button" onclick="let colors=['color1','color2','color3','color4','color5']; let curr=document.body.className.match(/color\d/)?.[0]||'color1'; let next=colors[(colors.indexOf(curr)+1)%colors.length]; document.body.className=document.body.className.replace(/color\d/,next)||next;">Toggle Colors</button>
     </td>
   </tr>
 </table>
-<hr>
+</header>
 <h3>
   Visualize BioNetGen model: &nbsp; &nbsp;
   <input id="bngl-file-input" type="file" oninput="loadingText.style.display='block'; htmlInterface.visualize(fileInput.files[0]); limitsDiv.style.display='none';" onclick="inputClick();">
@@ -40,7 +48,6 @@
 </h3>
 <p id="loading-p">Loading...</p>
 <div id="limitation-div">
-  <hr>
   <b>Usage and limitations:</b>
   <ul>
     <li>Non-visual parts of BNGL code such as parameter's block and actions are omitted in visualization for clarity, but all comments for molecules, species,
@@ -52,9 +59,12 @@
     <li>There are many extensions and undocumented/semi-documented features in BNGL. We do not guarantee that all of them are supported.
     Please email <a href="mailto:blinov@uchc.edu">Michael Blinov</a> and we'll try to accommodate the visualization of more features.</li>
   </ul>
-  <hr>
 </div>
 
+<div id="egfr-image-div">
+  <img src="images/egfr-blinov.png" width="454" height="138" alt="EGFR">
+  <span class="egfr-label">EGFR(ecd,tmd,y1068~u~p,y1173~u~p)</span>
+</div>
 
 <div id="canvas-container"></div>
 <div id="table-container"></div>
