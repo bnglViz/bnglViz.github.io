@@ -3,75 +3,48 @@
 <head>
     <title>BNGL Visualizer</title>
     <link rel="stylesheet" type="text/css" href="public/styleblack.css"/>
-    <link rel="icon" type="image/png" href="/favicon.png">
 </head>
-<body class="color1">
-<header>
-<h1>BioNetGenLanguage (BNGL) code visualizer</h1>
-<h4>
-  <a href="https://doi.org/10.1093/bioinformatics/btae351">
-    doi:10.1093/bioinformatics/btae351
-  </a>
-</h4>
-
+<body>
+<p><h1>BioNetGenLanguage (BNGL) code visualizer</h1>
+    <h4><a href="https://doi.org/10.1093/bioinformatics/btae351">
+        doi:10.1093/bioinformatics/btae351</a></h4></p>
 <table cellpadding="20">
-<tr>
-  <td class="canvas-text">
-    <a href="index.html"><b>BNGL VISUALIZER</b></a>
-  </td>
-
-  <td class="canvas-text">
-    <a href="bngl.html"><b>BNGL overview</b></a>
-  </td>
-
-  <td class="canvas-text">
-    <a href="viz.html"><b>Visualization conventions</b></a>
-  </td>
-
-  <td class="canvas-text">
-    <a href="examples.html"><b>Examples</b></a>
-  </td>
-
-   <td class="canvas-text">
-    <a href="inputbox.html"><b>BNGLViz Sandbox</b></a>
-  </td>
-
-  <td class="canvas-text">
-    <a href="about.html"><b>About</b></a>
-  </td>
-
-  <td>
-    <button id="dark-button"
-      onclick="htmlInterface.switchDarkMode();">
-      Toggle Light/Dark Mode
-    </button>
-
-    <button id="color-button"
-      onclick="let colors=['color1','color2','color3','color4','color5'];
-      let curr=document.body.className.match(/color\d/)?.[0]||'color1';
-      let next=colors[(colors.indexOf(curr)+1)%colors.length];
-      document.body.className=document.body.className.replace(/color\d/,next)||next;">
-      Toggle Colors
-    </button>
-  </td>
-</tr>
+ <tr>
+     </tr>
+    <tr>
+    <td id="canvas-text">
+      <a href=index.html><b>BNGL VISUALIZER</b></a>
+    </td>   
+    <td id="canvas-text">
+      <a href=bngl.html>BNGL overview</a>
+    </td>
+    <td id="canvas-text">
+      <a href=viz.html>Visualization conventions</a>
+    </td>
+    <td id="canvas-text">
+      <a href=examples.html>Examples</a>
+    </td>
+    <td id="canvas-text">
+      <a href=about.html>About</a>
+    </td>
+  </tr> 
 </table>
-</header>
+    <hr>
 
     <h2>Visualization conventions</h2>
 
 
-  <table class="viz-table" cellpadding="10">
+  <table cellpadding="10" border="1">
  <tr>
-    <td class="canvas-text">
+    <td id="canvas-text">
       <b>BNGL code</b>
     </td>
-    <td class="canvas-text">
+    <td id="canvas-text">
       <b>bnglViz visualization</b>
     </td>
  </tr>
 <tr>
-       <td class="canvas-text">
+       <td id="canvas-text">
      <code>begin compartments<br>
         Cyt	3	1<br>
         EC	3	1<br> 
@@ -80,37 +53,37 @@
             So, M is 2D membrane while Cyt and EC are volumetric cytosil and extracellular space. 
             These definitions are not compatible with cBNGL but used by VCell software only. </small> 
        </td>
-    <td class="canvas-text">
+    <td id="canvas-text">
       <img src="images/bngl_comp.png" width=200>
     </td>
   </tr> 
  <tr>
-       <td class="canvas-text">
+       <td id="canvas-text">
      <code>begin molecules<br>
      1 EGFR(ecd,tmd,Y1~u~p,Y2~u~p)   #EGF receptor</code><br><br>
     <small><b>NB:</b> The first number is optional and not included in BNGL processing or visualization. 
            Instead of <code>begin molecules</code> the block may start with <code>begin molecular types</code>. 
            This block can be omitted, and BioNetGen will find molecules by processing species and reaction rules.</small>
     </td>
-    <td class="canvas-text">
+    <td id="canvas-text">
       <img src="images/bngl_molec.png" width=400>
     </td>
        </tr> 
  <tr>
-            <td class="canvas-text">
+            <td id="canvas-text">
      <code>begin species<br>
 1  egfr(l,r,Y1068~Y,Y1148~Y)     egfr_tot #unphosphorylated receptor</code><br><br>
     <small><b>NB:</b> The first number is optional and not included in BNGL processing or visualization. 
            Instead of <code>begin species</code> the block may start with <code>begin seed species</code>. 
            This block can NOT be omitted.</small>
     </td>
-    <td class="canvas-text">
+    <td id="canvas-text">
       <img src="images/bngl_species.png" width=400>
     </td>
   </tr> 
 
       <tr>
-            <td class="canvas-text">
+            <td id="canvas-text">
      <code>begin reaction rules<br>
 1  egfr(l,r,Y1068~Y,Y1148~Y)     egfr_tot #unphosphorylated receptor</code><br><br>
     <small><b>NB:</b> The symbols before <code>:</code> is reaction rule order - it is optional and not included in BNGL processing or visualization. 
@@ -118,30 +91,13 @@
            This block can NOT be omitted. For details of notations (<code>?</code>, <code>|</code> under site shape, grey vs color, etc) 
         refer to <a href="https://pubmed.ncbi.nlm.nih.gov/19399430/">Faeder et al., 2009</a>. </small>
     </td>
-    <td class="canvas-text">
+    <td id="canvas-text">
       <img src="images/bngl_rule.png" width=400>
     </td>
   </tr> 
       
 </table>
-<script>
-window.htmlInterface = {
-    switchDarkMode: function() {
-        const body = document.body;
 
-        if (body.classList.contains('dark-mode')) {
-            body.classList.remove('dark-mode');
-            body.classList.add('light-mode');
-        }
-        else if (body.classList.contains('light-mode')) {
-            body.classList.remove('light-mode');
-            body.classList.add('dark-mode');
-        }
-        else {
-            body.classList.add('dark-mode');
-        }
-    }
-};
-</script>   
+   
 </body>
 </html>

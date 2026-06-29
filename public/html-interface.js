@@ -537,11 +537,9 @@ class HTMLInterface {
   }
 
   //render everything in bngl
- visualize(blob) {
-
+  visualize(blob) {
     this.clear();
     this.currentBlob = blob;
-    
     //render new file
     function read(bngl, intrObj) {
       //sort tokens
@@ -583,6 +581,7 @@ class HTMLInterface {
     let reader = new FileReader();
     reader.onload = () => {
       read(reader.result, this);
+      this.loadingText.style.display = "none";
     }
     //read if file present
     if (typeof blob == "string") {

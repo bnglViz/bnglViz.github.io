@@ -3,44 +3,33 @@
 <head>
     <title>BNGL Visualizer: Examples</title>
     <link rel="stylesheet" type="text/css" href="public/styleblack.css"/>
-    <link rel="icon" type="image/png" href="/favicon.png">
 </head>
-<body class="color1">
-<header>
-<h1>BioNetGenLanguage (BNGL) code visualizer</h1>
+<body>
+<p><h1>BioNetGenLanguage (BNGL) code visualizer</h1>
     <h4><a href="https://doi.org/10.1093/bioinformatics/btae351">
-        doi:10.1093/bioinformatics/btae351</a></h4>
+        doi:10.1093/bioinformatics/btae351</a></h4></p>
 <table cellpadding="20">
-   <tr>
+ <tr>
      </tr>
     <tr>
-    <td class="canvas-text">
+    <td id="canvas-text">
       <a href=index.html><b>BNGL VISUALIZER</b></a>
+    </td>   
+    <td id="canvas-text">
+      <a href=bngl.html>BNGL overview</a>
     </td>
-  <td class="canvas-text">
-      <a href=bngl.html><b>BNGL overview</a>
+    <td id="canvas-text">
+      <a href=viz.html>Visualization conventions</a>
     </td>
-   <td class="canvas-text">
-      <a href=viz.html><b>Visualization conventions</b></a>
+    <td id="canvas-text">
+      <a href=examples.html>Examples</a>
     </td>
-    <td class="canvas-text">
-      <a href=examples.html><b>Examples</b></a>
+    <td id="canvas-text">
+      <a href=about.html>About</a>
     </td>
-
-     <td class="canvas-text">
-    <a href="inputbox.html"><b>BNGLViz Sandbox</b></a>
-    </td>
-
-    <td class="canvas-text">
-      <a href=about.html><b>About</b></a>
-    </td>
-    <td>
-      <button id="dark-button" onclick="htmlInterface.switchDarkMode();">Toggle Light/Dark Mode</button>
-      <button id="color-button" onclick="let colors=['color1','color2','color3','color4','color5']; let curr=document.body.className.match(/color\d/)?.[0]||'color1'; let next=colors[(colors.indexOf(curr)+1)%colors.length]; document.body.className=document.body.className.replace(/color\d/,next)||next;">Toggle Colors</button>
-    </td>
-    </tr>
-    </table>
-</header>
+  </tr> 
+</table>
+    <hr>
 
     <h2>Examples</h2>
     <h3>* -compartmental model</h3>
@@ -227,23 +216,5 @@
     </ul>        
     </ul>
    
-<script>
-    // Minimal htmlInterface providing switchDarkMode used by header buttons
-    window.htmlInterface = {
-        switchDarkMode: function() {
-            const body = document.body;
-            if (body.classList.contains('dark-mode')) {
-                body.classList.remove('dark-mode');
-                body.classList.add('light-mode');
-            } else if (body.classList.contains('light-mode')) {
-                body.classList.remove('light-mode');
-                body.classList.add('dark-mode');
-            } else {
-                body.classList.add('dark-mode');
-            }
-        }
-    };
-</script>
 </body>
 </html>
-
