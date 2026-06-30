@@ -1,9 +1,6 @@
 header {
-    position: relative;
-    z-index: 1;
-    padding: 20px 0 15px 0;
-    width: 100%;
-    box-sizing: border-box;
+    text-align: center;
+    padding: 18px 32px;
 }
 
 header,
@@ -11,9 +8,21 @@ header * {
   background-color: transparent !important;
 }
 
+header h1,
+header h2,
+header h3,
+header h4,
+header p,
+header table,
+header .canvas-text {
+    margin: 2px 0;
+    line-height: 1.35;
+}
+
 body {
-  background-color: white;
-  line-height: 1.35;
+    margin: 0 8px 8px 8px;
+    background-color: white;
+    line-height: 1.35;
 }
 
 
@@ -37,8 +46,8 @@ h1, h4 {
 h3 {
   display: block;
   font-size: 1.5em;
-  margin-block-start: 0.83em;
-  margin-block-end: 0.83em;
+  margin-block-start: 0;
+  margin-block-end: 0;
   margin-inline-start: 0px;
   margin-inline-end: 0px;
   font-weight: bold;
@@ -48,7 +57,8 @@ h3 {
 h2 {
     display: block;
     font-size: 1.5em;
-    margin-block-start: 0.83em;
+    margin-block-start: 0;
+    margin-block-end: 0;
     font-weight: bold;
 }
 
@@ -129,7 +139,9 @@ body.dark-mode .canvas-text a:active b {
 }
 
 .canvas-text {
-  text-align: center;
+    text-align: center;
+    margin: 2px 0;
+    line-height: 1.15;
 }
 
 button {
@@ -226,6 +238,16 @@ body.dark-mode p {
 header table {
     width: 100%;
     margin: 0 auto;
+    border-collapse: collapse;
+}
+
+header td {
+    vertical-align: top;
+}
+
+.toggle-buttons {
+    vertical-align: top;
+    white-space: nowrap;
 }
 
 .big-arrow {
@@ -242,10 +264,11 @@ header table {
 
 .bngl-header {
   text-align: center;
-  margin: 0px;
+  margin: 0;
   font-size: 18px;
   font-weight: 600;
-  letter-spacing: 0.3px;
+  line-height: 1.1;
+  letter-spacing: 0.2px;
 }
 
 .table-divider {
@@ -372,16 +395,15 @@ body.dark-mode .viz-table th {
 
 .info-panel {
     flex: 1;
-    padding: 20px;
+    padding: 5px;
     border: 1px solid #888;
-    border-radius: 8px;
+    border-radius: 6px;
 }
 
 #bngl-input {
     width: 100%;
-    height: 500px;
-    min-height: 200px;
-    resize: vertical;
+    height: 290px;
+    resize: both;
 }
 
 .info-panel button {

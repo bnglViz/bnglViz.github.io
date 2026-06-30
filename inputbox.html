@@ -4,13 +4,16 @@
     <title>BNGL Visualizer</title>
     <link rel="stylesheet" type="text/css" href="public/styleblack.css"/>
     <link rel="icon" type="image/png" href="/favicon.png">
+<style>
+  editor-label { display: block; margin-top: 0.2em; font-size: 1em;}
+  </style>
 </head>
 <body class="color1">
 <header>
 <h1>BioNetGenLanguage (BNGL) code visualizer</h1>
     <h4><a href="https://doi.org/10.1093/bioinformatics/btae351">
         doi:10.1093/bioinformatics/btae351</a></h4>
-<table cellpadding="20">
+<table cellpadding="6">
    <tr>
      </tr>
     <tr>
@@ -34,7 +37,7 @@
     <td class="canvas-text">
       <a href=about.html><b>About</b></a>
     </td>
-    <td>
+    <td class="toggle-buttons">
       <button id="dark-button" onclick="htmlInterface.switchDarkMode();">Toggle Light/Dark Mode</button>
       <button id="color-button" onclick="let colors=['color1','color2','color3','color4','color5']; let curr=document.body.className.match(/color\d/)?.[0]||'color1'; let next=colors[(colors.indexOf(curr)+1)%colors.length]; document.body.className=document.body.className.replace(/color\d/,next)||next;">Toggle Colors</button>
     </td>
@@ -46,10 +49,30 @@
 <div class="sandbox-layout">
 
     <div class="editor-panel">
-
+      <div class="editor-label">
+        <label for="bnglTextInput"> Paste/Write BNGL code directly:</label> 
+        </div>
         <textarea
             id="bngl-input"
-            placeholder="Paste your BNGL model here..."></textarea>
+            placeholder="Paste your BNGL model here...">
+          begin molecule types
+          EGFR(l,r,Y1068~u~p,Y1148~u~p)
+          end molecule types
+          
+          begin species
+          EGFR(l,r,Y1068~u,Y1148~u) 22
+          EGFR(l,r,aa,Y1068~u,Y1148~u) 44 # error - undefined site
+          EGF(l,r,aa,Y1068~u,Y1148~u) 55 # error - undefined molecule
+          end species
+          
+          begin observables
+          Molecules ObsEGFR EGFR()
+          Molecules ObsEGFR EGFRa() # error - undefined molecule
+          end observables
+          
+          begin reaction rules
+          EGFR(Y1068~u) -> EGFR(Y1069~p) kp
+          end reaction rules</textarea>
 
     </div>
 
@@ -75,14 +98,14 @@
 
         <button id="visualize-btn">Visualize</button>
         <button id="clear-btn">Clear</button>
-        <button id="example-btn">Load Example</button>
-
     </div>
 
 </div>
 
 <div id="canvas-container"></div>
 <div id="table-container"></div>
+<br>
+</br>
 <script src="public/model-graphics.js"></script>
 <script src="public/bngl-extractor.js"></script>
 <script src="public/html-interface.js"></script>
@@ -103,22 +126,6 @@ document.getElementById("visualize-btn").onclick = () => {
 document.getElementById("clear-btn").onclick = () => {
   input.value = "";
   htmlInterface.clear();
-};
-
-document.getElementById("example-btn").onclick = () => {
-  input.value = `begin molecule types
-A(x)
-B(y)
-end molecule types
-
-begin species
-A(x) 100
-B(y) 50
-end species
-
-begin reaction rules
-A(x)+B(y)->A(x!1).B(y!1) k
-end reaction rules`;
 };
 </script>
 </body>

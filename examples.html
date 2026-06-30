@@ -10,9 +10,7 @@
 <h1>BioNetGenLanguage (BNGL) code visualizer</h1>
     <h4><a href="https://doi.org/10.1093/bioinformatics/btae351">
         doi:10.1093/bioinformatics/btae351</a></h4>
-<table cellpadding="20">
-   <tr>
-     </tr>
+<table cellpadding="6">
     <tr>
     <td class="canvas-text">
       <a href=index.html><b>BNGL VISUALIZER</b></a>
@@ -34,7 +32,7 @@
     <td class="canvas-text">
       <a href=about.html><b>About</b></a>
     </td>
-    <td>
+    <td class="toggle-buttons">
       <button id="dark-button" onclick="htmlInterface.switchDarkMode();">Toggle Light/Dark Mode</button>
       <button id="color-button" onclick="let colors=['color1','color2','color3','color4','color5']; let curr=document.body.className.match(/color\d/)?.[0]||'color1'; let next=colors[(colors.indexOf(curr)+1)%colors.length]; document.body.className=document.body.className.replace(/color\d/,next)||next;">Toggle Colors</button>
     </td>
@@ -226,7 +224,8 @@
 </li>
     </ul>        
     </ul>
-   
+<br>
+</br>
 <script>
     // Minimal htmlInterface providing switchDarkMode used by header buttons
     window.htmlInterface = {

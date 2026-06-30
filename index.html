@@ -10,9 +10,7 @@
 <h1>BioNetGenLanguage (BNGL) code visualizer</h1>
     <h4><a href="https://doi.org/10.1093/bioinformatics/btae351">
         doi:10.1093/bioinformatics/btae351</a></h4>
-<table cellpadding="20">
-   <tr>
-     </tr>
+<table cellpadding="6">
     <tr>
     <td class="canvas-text">
       <a href=index.html><b>BNGL VISUALIZER</b></a>
@@ -34,7 +32,7 @@
     <td class="canvas-text">
       <a href=about.html><b>About</b></a>
     </td>
-    <td>
+    <td class="toggle-buttons">
       <button id="dark-button" onclick="htmlInterface.switchDarkMode();">Toggle Light/Dark Mode</button>
       <button id="color-button" onclick="let colors=['color1','color2','color3','color4','color5']; let curr=document.body.className.match(/color\d/)?.[0]||'color1'; let next=colors[(colors.indexOf(curr)+1)%colors.length]; document.body.className=document.body.className.replace(/color\d/,next)||next;">Toggle Colors</button>
     </td>
@@ -61,13 +59,18 @@
   </ul>
 </div>
 
+<hr>
+
 <div id="egfr-image-div">
   <img src="images/egfr-blinov.png" width="454" height="138" alt="EGFR">
+  <br></br>
   <span class="egfr-label">EGFR(ecd,tmd,y1068~u~p,y1173~u~p)</span>
 </div>
 
 <div id="canvas-container"></div>
 <div id="table-container"></div>
+<br>
+</br>
 <script src="public/model-graphics.js"></script>
 <script src="public/bngl-extractor.js"></script>
 <script src="public/html-interface.js"></script>

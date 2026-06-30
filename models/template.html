@@ -7,8 +7,6 @@
 <body>
 <p><h1>BioNetGenLanguage (BNGL) code visualizer</h1></p>
 <table cellpadding="30">
- <tr>
-     </tr>
     <tr>
     <td id="canvas-text">
       <a href=index.html><b>BNGL VISUALIZER</b></a>
@@ -31,7 +29,7 @@
     <h2>Visualize BioNetGen model</h2>
     <table>
     <tr>
-    <td>
+    <td class="toggle-buttons">
       <input id="bngl-file-input" type="file" oninput="htmlInterface.visualize(fileInput.files[0]);" onclick="inputClick();">
       <button id="dark-button" onclick="htmlInterface.switchDarkMode();">Toggle DarkMode</button>
     </td>
@@ -42,6 +40,8 @@
 </table>
 <div id="canvas-container"></div>
 <div id="table-container"></div>
+<br>
+</br>
 <script src="public/model-graphics.js"></script>
 <script src="public/bngl-extractor.js"></script>
 <script src="public/html-interface.js"></script>
