@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BNGL Visualizer</title>
+  <link rel="stylesheet" type="text/css" href="public/styleblack.css">
+  <link rel="icon" type="image/png" href="favicon.png">
+</head>
+
+<body class="color1">
+<header>
+  <h1>BioNetGenLanguage (BNGL) code visualizer</h1>
+
+  <h4>
+    <a href="https://doi.org/10.1093/bioinformatics/btae351">
+      doi:10.1093/bioinformatics/btae351
+    </a>
+  </h4>
+
+  <table cellpadding="6">
+    <tr>
+      <td class="canvas-text"><a href="index.html"><b>BNGL VISUALIZER</b></a></td>
+      <td class="canvas-text"><a href="bngl.html"><b>BNGL overview</b></a></td>
+      <td class="canvas-text"><a href="viz.html"><b>Visualization conventions</b></a></td>
+      <td class="canvas-text"><a href="examples.html"><b>Examples</b></a></td>
+      <td class="canvas-text"><a href="inputbox.html"><b>BNGLViz Sandbox</b></a></td>
+      <td class="canvas-text"><a href="about.html"><b>About</b></a></td>
+      <td class="toggle-buttons">
+        <button id="dark-button" onclick="htmlInterface.switchDarkMode();">Toggle Light/Dark Mode</button>
+        <button id="color-button" onclick="cycleColors();">Toggle Colors</button>
+      </td>
+    </tr>
+  </table>
+</header>
+
+<h3>
+  Visualize BioNetGen model from URL: &nbsp;&nbsp;
+  <span id="model-label">Loading...</span>
+</h3>
+
+<p id="source-links"></p>
+<p id="loading-p">Loading...</p>
+
+<div id="limitation-div">
+  <b>Usage and limitations:</b>
+  <ul>
+    <li>Non-visual parts of BNGL code such as parameter blocks and actions are omitted in visualization for clarity, but comments for molecules, species, rules, and observables are displayed.</li>
+    <li>No code validation is provided: the BNGL is visualized as is.</li>
+    <li>cBNGL is not supported, but compartmental export from VCell is supported.</li>
+  </ul>
+</div>
+
+<hr>
+
+<div id="canvas-container"></div>
+<div id="table-container"></div>
+<br>
+
+<script src="public/model-graphics.js"></script>
+<script src="public/bngl-extractor.js"></script>
+<script src="public/html-interface.js"></script>
+
+<script>
+  // Major elements expected by public/html-interface.js.
+  const canvContain = document.getElementById("canvas-container");
+  const tableContain = document.getElementById("table-container");
+  const body = document.body;
+  const limitsDiv = document.getElementById("limitation-div");
+  const loadingText = document.getElementById("loading-p");
+
+  // A file input is not displayed on this URL-driven page, but HTMLInterface
+  // expects a fileInput object. Its value must be empty when visualizing a string.
+  const fileInput = document.createElement("input");
+  fileInput.type = "file";
+  fileInput.style.display = "none";
+  document.body.appendChild(fileInput);
+
+  // Connect the existing bnglViz interface.
+  var htmlInterface = new HTMLInterface(body, canvContain, tableContain, fileInput, loadingText);
+
+  function cycleColors() {
+    const colors = ["color1", "color2", "color3", "color4", "color5"];
+    const curr = document.body.className.match(/color\d/)?.[0] || "color1";
+    const next = colors[(colors.indexOf(curr) + 1) % colors.length];
+    document.body.className = document.body.className.replace(/color\d/, next) || next;
+  }
+
+  function escapeHTML(value) {
+    return String(value)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  async function loadBNGLFromQuery() {
+    const params = new URLSearchParams(window.location.search);
+    const bnglUrl = params.get("bngl");
+    const label = params.get("label") || "BNGL model";
+    const githubUrl = params.get("github");
+
+    const labelEl = document.getElementById("model-label");
+    const linksEl = document.getElementById("source-links");
+
+    labelEl.textContent = label;
+
+    if (githubUrl) {
+      linksEl.innerHTML =
+        `<a href="${escapeHTML(githubUrl)}" target="_blank" rel="noopener">View BNGL source on GitHub</a>`;
+    }
+
+    if (!bnglUrl) {
+      loadingText.textContent = "No BNGL URL was provided. Use ?bngl=<raw-BNGL-url>&label=<name>&github=<GitHub-url>.";
+      return;
+    }
+
+    try {
+      loadingText.style.display = "block";
+      loadingText.textContent = `Loading ${label}...`;
+
+      const response = await fetch(bnglUrl, { cache: "no-store" });
+      if (!response.ok) {
+        throw new Error(`${response.status} ${response.statusText}`);
+      }
+
+      const bnglText = await response.text();
+      limitsDiv.style.display = "none";
+      loadingText.textContent = `Loaded ${label}.`;
+
+      // Existing bnglViz HTMLInterface.visualize accepts a string directly.
+      htmlInterface.visualize(bnglText);
+      loadingText.style.display = "none";
+    } catch (error) {
+      console.error(error);
+      loadingText.style.display = "block";
+      loadingText.textContent = `Could not load BNGL model from ${bnglUrl}: ${error.message}`;
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", loadBNGLFromQuery);
+</script>
+</body>
+</html>
